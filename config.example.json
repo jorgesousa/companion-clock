@@ -2,5 +2,11 @@
   "calendarUrl": "https://script.google.com/macros/s/<deployment-id>/exec?k=<your-key>",
   "unsitCode": "<your-ntfy-topic-code>",
   "dayEndMinute": 1035,
-  "brandColors": { "acme": "#f06c00" }
+  "brandColors": { "acme": "#f06c00" },
+  "lat": 38.722,
+  "lon": -9.139,
+  "lat2": 51.507,
+  "lon2": -0.128,
+  "place2": "UK",
+  "brandAccent": { "name": "Mindera", "color": "#ffc500" }
 }

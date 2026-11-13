@@ -56,17 +56,19 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 
 ## What it does
 
-- **Home.** Hours solid, minutes outlined, seconds beside them. The next meeting, with "in 12 min"; 15 minutes before it the time turns to the accent and a line burns down to the start. While a meeting runs, a dot pulses and the same line fills as it goes. Swipe or tap to see today's later meetings. Long titles glide to show the end. With nothing left today it says Free; tap it to see when the next meeting is ("Until Mon 09:00").
+- **Home.** Hours solid in the accent colour, minutes outlined, seconds beside them. The colour travels: when a meeting is close or on, or a timer is in its last minute, the hours turn white and the colour stays only on what needs you. The next meeting, with "in 12 min"; 15 minutes before it the time turns to the accent and a line burns down to the start. While a meeting runs, a dot pulses and the same line fills as it goes. Swipe or tap to see today's later meetings. Long titles glide to show the end. With nothing left today it says Free; tap it to see when the next meeting is ("Until Mon 09:00").
 - **Bottom strip.** The timer and the alarm, always on Home. A running timer burns down as a fuse; drag its spark back to the start to cancel it. With nothing set it says so ("No timer", "No alarm set"). Tap it to open Clock.
+- **Weather in the digits.** Rain runs inside the outlined minutes, lightning lights the digits, snow drifts, the hours warm up in the sun, stars twinkle on a clear night. The temperature sits in the header; tap it to switch to a second place (the UK by default). Each calendar day shows its forecast high. Data from [Open-Meteo](https://open-meteo.com), no key needed. Settings has Weather Live / Off; Sleep always shows it.
+- **A friend.** Tap the seconds and the Minder (Mindera's mascot) peeks out from a hiding place, leaning or lying down, looks around, blinks and hides again.
 - **Colour has a job.** White is a value, grey is a label, colour is a state (now, soon, free, behind).
 - **Steps.** Today's count against 10,000, with the pace you should be at by now ("Expected 3,820 · 1,040 ahead").
 - **Calendar.** Grouped by day, with a summary per day ("4 meetings · 4h free"). Free time is counted inside the working day (09:00–17:00, Monday to Friday) in gaps of 15 minutes or more. Each client in `[Brackets]` gets its own colour, or its brand colour if you set one.
   A meeting's time turns to the accent only when it's on now or starts within 30 minutes.
 - **Working location.** Google Calendar's Home / Office shows in each day's heading; Office in white.
 - **Clock.** One timer (presets from 5 to 60 minutes) and one alarm. Both ring full-screen until you pull the sheet down.
-- **Sleep.** One button dims the screen to almost nothing and leaves the time drifting slowly.
+- **Sleep.** One button turns the screen into a calm, centred clock in the same staircase as Home, with the next alarm and the weather.
 - **TV.** Plays an HLS playlist (M3U) you provide. Ships with no channels; use only playlists you're entitled to.
-- **Settings.** Brightness 10–100%, eight accent colours and muting the TV in meetings, remembered on the clock.
+- **Settings.** Brightness 10–100%, eight accent colours (one can be your company's, set in `config.json`), muting the TV in meetings and Weather Live / Off, remembered on the clock.
 
 ## How it works
 
@@ -75,7 +77,7 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **Starts itself.** [`device/boot.sh`](device/boot.sh) runs at boot: it starts the server, restarts it if it ever stops, keeps the kiosk browser in front, and resets the touch panel if it gets stuck.
 - **Calendar.** A Google Apps Script web app in your own account ([`calendar/Code.gs`](calendar/Code.gs)) returns your events as JSON, guarded by a random key. The clock asks for it every 5 minutes.
 - **Steps.** Read from an [ntfy.sh](https://ntfy.sh) topic that your phone posts to (for example with [Unsit](https://github.com/jorgesousa/Unsit)).
-- **Private values stay on the clock.** The calendar URL and key, the steps topic and the playlist URL live only in the clock's `config.json` and `m3u.url`, never in this repo. See [`config.example.json`](config.example.json).
+- **Private values stay on the clock.** The calendar URL and key, the steps topic, your coordinates and the playlist URL live only in the clock's `config.json` and `m3u.url`, never in this repo. See [`config.example.json`](config.example.json).
 
 ## Install
 

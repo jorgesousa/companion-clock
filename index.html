@@ -59,6 +59,9 @@ nav{position:relative}
 .mrow{display:flex;align-items:flex-end;margin-top:10px}
 /* Home: staircase, the minutes step right and up into the hours; a dark halo cuts where they cross */
 #v-home .col-l .big{font-size:196px}
+/* the colour travels: it rests on the hours, and moves to whatever needs you (meeting soon or on, timer's last minute) */
+#v-home #h-h{color:var(--accent);transition:color .8s var(--ease)}
+.attn #v-home #h-h{color:var(--fg)}
 #v-home .col-l{justify-content:center;padding-bottom:14px}
 /* a single hairline separates the clock from the information; the column keeps its full width for long meeting names */
 #v-home .col-r{align-self:center;justify-content:flex-start;margin-left:26px;padding-left:20px;border-left:1px solid var(--line)}
@@ -227,6 +230,7 @@ nav{position:relative}
 /* day heading: the day in big type, date and location small beside it, a white rule closing it */
 .ev-group>.dh{display:flex;align-items:baseline;padding:10px 0 12px;border-bottom:2px solid var(--fg);position:-webkit-sticky;position:sticky;top:0;z-index:2;background:var(--bg)}
 .dh .dbig{font:800 34px/1 var(--sans);letter-spacing:-.035em}
+.dh .dtemp{margin-left:12px;font:700 26px/1 var(--sans);letter-spacing:-.02em;color:var(--fg)}
 .dh .dsm{flex:1;margin-left:14px;font:500 var(--t-cap)/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .dh .sum{color:var(--muted);white-space:nowrap}
 .ev{display:flex;align-items:baseline;padding:15px 0;border-bottom:1px solid var(--line)}
@@ -353,6 +357,45 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #amb.night .outline{-webkit-text-stroke-color:#e2ded5}
 #amb.night .mono{color:var(--muted)}
 
+/* the temperature sits in the header beside Sleep, on every screen; tap to switch home / UK */
+#hdr-temp{height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+#hdr-temp b{font:700 26px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
+#hdr-temp i{font-style:normal;margin-left:6px}
+#a-h{position:relative;display:inline-block;vertical-align:top}
+/* a small friend peeks up from the bottom edge, in the empty middle of the strip (spike, clock only) */
+#minder{position:fixed;left:0;top:0;width:48px;height:58px;overflow:hidden;pointer-events:none;z-index:5;visibility:hidden}
+#minder.on{visibility:visible}
+#minder svg{display:block;transition:transform .6s cubic-bezier(.34,1.4,.64,1)}
+#minder.down svg{transition:transform .45s cubic-bezier(.5,0,.75,0)}
+#minder.still svg{transition:none}
+#mi-p{transition:transform .28s var(--ease)}
+#mi-eye{transform-origin:24px 19.5px;transition:transform .09s linear}
+#mi-eye.blink{transform:scaleY(.12)}
+/* weather lives inside the outlined minutes (spike) */
+.wx{position:absolute;left:0;top:0;pointer-events:none;color:transparent;-webkit-background-clip:text;background-clip:text;opacity:0;transition:opacity 1.2s var(--ease);z-index:2}
+.wx-rain .wx,.wx-storm .wx{opacity:1;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='120'%3E%3Cg stroke='%23bcd3ea' stroke-linecap='round' stroke-width='2.4'%3E%3Cline x1='8' y1='6' x2='8' y2='32' opacity='.95'/%3E%3Cline x1='31' y1='50' x2='31' y2='70' opacity='.6'/%3E%3Cline x1='50' y1='16' x2='50' y2='46' opacity='.85'/%3E%3Cline x1='20' y1='82' x2='20' y2='104' opacity='.7'/%3E%3Cline x1='43' y1='90' x2='43' y2='116' opacity='.5'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='170'%3E%3Cg stroke='%23dfe8f2' stroke-linecap='round' stroke-width='1.6'%3E%3Cline x1='6' y1='20' x2='6' y2='38' opacity='.5'/%3E%3Cline x1='27' y1='96' x2='27' y2='118' opacity='.45'/%3E%3Cline x1='38' y1='140' x2='38' y2='156' opacity='.35'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-animation:wxrain .6s linear infinite;animation:wxrain .6s linear infinite}
+@-webkit-keyframes wxrain{from{background-position:0 0,13px 0}to{background-position:0 120px,13px 170px}}
+@keyframes wxrain{from{background-position:0 0,13px 0}to{background-position:0 120px,13px 170px}}
+.wx-snow .wx{opacity:1;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='90'%3E%3Cg fill='%23f2efe8'%3E%3Ccircle cx='10' cy='12' r='3'/%3E%3Ccircle cx='44' cy='34' r='2.2' opacity='.7'/%3E%3Ccircle cx='26' cy='62' r='2.6' opacity='.85'/%3E%3Ccircle cx='60' cy='80' r='1.8' opacity='.6'/%3E%3C/g%3E%3C/svg%3E");-webkit-animation:wxsnow 5s linear infinite;animation:wxsnow 5s linear infinite}
+@-webkit-keyframes wxsnow{from{background-position:0 0}to{background-position:70px 90px}}
+@keyframes wxsnow{from{background-position:0 0}to{background-position:70px 90px}}
+.wx-stars .wx{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Cg fill='%23f2efe8'%3E%3Ccircle cx='12' cy='14' r='1.6'/%3E%3Ccircle cx='52' cy='30' r='1.1'/%3E%3Ccircle cx='30' cy='56' r='1.4'/%3E%3Ccircle cx='70' cy='60' r='.9'/%3E%3C/g%3E%3C/svg%3E");-webkit-animation:wxtw 3.2s ease-in-out infinite alternate;animation:wxtw 3.2s ease-in-out infinite alternate}
+@-webkit-keyframes wxtw{from{opacity:.25}to{opacity:1}}
+@keyframes wxtw{from{opacity:.25}to{opacity:1}}
+.wx-haze .wx{opacity:1;background-image:linear-gradient(90deg,rgba(242,239,232,0),rgba(242,239,232,.32),rgba(242,239,232,0));background-size:320px 100%;-webkit-animation:wxhaze 9s linear infinite;animation:wxhaze 9s linear infinite}
+@-webkit-keyframes wxhaze{from{background-position:-320px 0}to{background-position:320px 0}}
+@keyframes wxhaze{from{background-position:-320px 0}to{background-position:320px 0}}
+.wx-sun #h-h,.wx-sun #a-h{color:#f6dcae;-webkit-animation:wxsun 7s ease-in-out infinite alternate;animation:wxsun 7s ease-in-out infinite alternate}
+@-webkit-keyframes wxsun{from{text-shadow:0 0 0 rgba(246,200,120,0)}to{text-shadow:0 0 46px rgba(246,200,120,.35)}}
+@keyframes wxsun{from{text-shadow:0 0 0 rgba(246,200,120,0)}to{text-shadow:0 0 46px rgba(246,200,120,.35)}}
+/* lightning: the digits light up for a moment */
+.flash #h-m .r,.flash #a-m{-webkit-text-stroke-color:#fff}
+.flash #h-h,.flash #a-h{color:#fff;text-shadow:0 0 38px rgba(200,215,255,.9)}
+.flash .wx{opacity:1;-webkit-filter:brightness(2.2);filter:brightness(2.2)}
+
 /* preferences */
 #prefs{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:350;padding:22px 36px 34px;display:flex;flex-direction:column}
 .pf-head{display:flex;justify-content:space-between;align-items:center;height:56px;margin-bottom:6px}
@@ -411,7 +454,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
     <i id="nav-bar"></i>
   </nav>
   <span id="hdr-right" class="mono">
-    <button id="sleep-btn" aria-label="Sleep"><svg class="i"><use href="#i-moon"/></svg></button>
+    <button id="hdr-temp" hidden aria-label="Temperature: tap to switch place"></button><button id="sleep-btn" aria-label="Sleep"><svg class="i"><use href="#i-moon"/></svg></button>
   </span>
 </header>
 <!-- active timer: a small tab hanging from the top edge; tap opens Timer, pull it down to stop -->
@@ -422,7 +465,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 <section class="view" id="v-home">
   <div class="col-l">
     <div class="num big solid" id="h-h">00</div>
-    <div class="mrow"><div class="num big roller" id="h-m"><span class="r outline">00</span></div><span class="num" id="h-s">00</span></div>
+    <div class="mrow"><div class="num big roller" id="h-m"><span class="r outline">00</span></div><span class="num" id="h-s">00</span><span class="num big wx" id="h-wx" aria-hidden="true">00</span></div>
   </div>
   <div class="col-r">
     <div class="cap mono muted"><span id="h-date">—</span><span class="cap-side"><span id="h-timer" role="button"></span><span id="h-alarm" class="solid"></span></span></div>
@@ -437,6 +480,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
       <i id="h-sync"></i>
     </div>
   </div>
+  <div id="minder" aria-hidden="true"><svg viewBox="0 0 48 56" width="48" height="56"><path d="M24 2C36.5 2 46 11 46 23.5C46 37 37.5 51.5 26.5 54C14.5 56.5 4.5 47 3 33C1.5 16.5 10.5 2 24 2Z" fill="#ffc500"/><g id="mi-eye"><path d="M12.5 19.5C16 14.8 20 13.2 24 13.2C28 13.2 32 14.8 35.5 19.5C32 24.2 28 25.8 24 25.8C20 25.8 16 24.2 12.5 19.5Z" fill="#fff"/><circle id="mi-p" cx="24" cy="19.5" r="4.4" fill="#111"/></g></svg></div>
   <div id="h-strip" hidden role="button" aria-label="Open timer and alarms">
     <div id="hs-trk"><i id="hs-fill"></i><b id="hs-dot"></b></div>
     <div class="hs-row"><span id="hs-tm"></span><span id="hs-al" class="mono muted"></span></div>
@@ -519,7 +563,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 <div id="amb" hidden>
   <div id="amb-in">
     <div class="num big solid" id="a-h">00</div>
-    <div class="mrow" id="a-mrow"><div class="num big outline" id="a-m">00</div><span class="num" id="a-s">00</span></div>
+    <div class="mrow" id="a-mrow"><div class="num big outline" id="a-m">00</div><span class="num" id="a-s">00</span><span class="num big wx" id="a-wx" aria-hidden="true">00</span></div>
     <div class="mono muted" id="a-l"></div>
   </div>
 </div>
@@ -530,7 +574,10 @@ video::-internal-media-controls-overlay-cast-button{display:none}
   <div class="pf-bright" id="pf-bright"></div>
   <div class="pf-sec mono muted">Accent colour</div>
   <div class="pf-grid" id="pf-grid"></div>
-  <div class="pf-row"><span class="mono muted">Mute in meetings</span><div class="pf-sw" id="pf-mute"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
+  <div class="pf-pair">
+    <div class="pf-row"><span class="mono muted">Mute in meetings</span><div class="pf-sw" id="pf-mute"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
+    <div class="pf-row"><span class="mono muted">Weather</span><div class="pf-sw" id="pf-wx"><button data-v="0">Off</button><button data-v="1">Live</button></div></div>
+  </div>
   <div class="pf-foot mono muted">Crafted by Jorge Sousa · jorgesousa.github.io</div>
 </div>
 
@@ -561,18 +608,27 @@ function mins(d){return d.getHours()*60+d.getMinutes()}
 // ---------- accent colour (escolhido no relógio, guardado localmente) ----------
 var ACCENTS=[['Warm red','#e8473a'],['Signal red','#ef3b33'],['Cyan','#22c3e6'],['Amber','#f5b83d'],['Lime','#c8f04b'],['Cobalt','#5b7cff'],['Violet','#9b7bff'],['Pink','#ff6b9a']];
 var ACCENT_CLASH={'#22c3e6':'#5fd0c4','#f5b83d':'#f2c14e','#5b7cff':'#8fb3ff','#9b7bff':'#b48cf2','#ff6b9a':'#f28fb3'};
-var accent='#e8473a';try{accent=localStorage.getItem('accent')||accent}catch(e){}
-if(!ACCENTS.some(function(a){return a[1]===accent}))accent='#e8473a'; // a removed accent falls back to the default
-document.documentElement.style.setProperty('--accent',accent);
+var accent='#e8473a',savedAccent=null;try{savedAccent=localStorage.getItem('accent')}catch(e){}
+function pickAccent(){ // a removed accent falls back to the default
+  accent=savedAccent&&ACCENTS.some(function(a){return a[1]===savedAccent})?savedAccent:'#e8473a';
+  document.documentElement.style.setProperty('--accent',accent);
+}
+pickAccent();
+// a brand colour can come from the clock's config.json ({"brandAccent":{"name":"…","color":"#…"}}); it takes Amber's place
+function brandAccent(){ // runs once config.json is loaded
+  var b=cfg.brandAccent;if(!b||!/^#[0-9a-f]{6}$/i.test(b.color||''))return;
+  ACCENTS[3]=[String(b.name||'Brand').slice(0,14),b.color.toLowerCase()];ACCENT_CLASH[b.color.toLowerCase()]='#f2c14e';
+  pickAccent();
+}
 var BRIGHT=[10,25,40,60,80,100];
 function brightPct(){var v=cfg.brightDay,best=BRIGHT[0];BRIGHT.forEach(function(p){if(Math.abs(p*2.55-v)<Math.abs(best*2.55-v))best=p});return best}
 function setBright(p){cfg.brightDay=Math.max(3,Math.round(p*2.55));try{localStorage.setItem('brightDay',String(cfg.brightDay))}catch(e){}bright(cfg.brightDay);renderPrefs()}
 function renderPrefs(){
   var cur=brightPct();$('pf-bright').innerHTML=BRIGHT.map(function(p){return '<button data-p="'+p+'"'+(p===cur?' class="on"':'')+'>'+p+'%</button>'}).join('');
-  $('pf-grid').innerHTML=ACCENTS.map(function(a){return '<button class="acc-opt'+(a[1]===accent?' on':'')+'" data-c="'+a[1]+'" style="background-image:linear-gradient('+a[1]+','+a[1]+')"><b>'+a[0]+'</b></button>'}).join('');
+  $('pf-grid').innerHTML=ACCENTS.map(function(a){return '<button class="acc-opt'+(a[1]===accent?' on':'')+'" data-c="'+a[1]+'" style="background-image:linear-gradient('+a[1]+','+a[1]+')"><b>'+esc(a[0])+'</b></button>'}).join('');
 }
 function setAccent(c){
-  accent=c;document.documentElement.style.setProperty('--accent',c);try{localStorage.setItem('accent',c)}catch(e){}
+  accent=savedAccent=c;document.documentElement.style.setProperty('--accent',c);try{localStorage.setItem('accent',c)}catch(e){}
   clientMap={};renderPrefs();if(events)renderCal();
 }
 $('net').addEventListener('click',function(){renderPrefs();$('prefs').hidden=false});
@@ -634,7 +690,9 @@ function tick(){
   var now=new Date(),h=f2(now.getHours()),m=f2(now.getMinutes());
   $('h-h').textContent=h;$('a-h').textContent=h;$('h-s').textContent=f2(now.getSeconds());
   $('a-m').textContent=m;$('a-m').setAttribute('data-t',m);$('a-s').textContent=f2(now.getSeconds());
+  if($('h-wx').textContent!==m){$('h-wx').textContent=m;$('a-wx').textContent=m}
   applyMute();fitDate(now);meetLine();
+  var nb=$('h-next-blk').classList;document.body.classList.toggle('attn',nb.contains('soon')||nb.contains('live')||(tRun&&tLeft<60));
   if(now.getMinutes()!==lastMin){
     setMinute(m,lastMin!==-1);
     lastMin=now.getMinutes();
@@ -867,7 +925,8 @@ function renderCal(){
   for(var i=0;i<days;i++){
     var a=new Date(t0);a.setDate(a.getDate()+i);var b=new Date(a);b.setDate(b.getDate()+1);
     // big day word (Today / Tomorrow / Mon) with the date small beside it
-    var lab='<span class="dbig">'+(i===0?'Today':i===1?'Tomorrow':DN[a.getDay()])+'</span><span class="dsm">'+(i<2?DN[a.getDay()]+' ':'')+a.getDate()+' '+MN[a.getMonth()];
+    var tk=a.getFullYear()+'-'+f2(a.getMonth()+1)+'-'+f2(a.getDate()),tmax=wxDays[tk];
+    var lab='<span class="dbig">'+(i===0?'Today':i===1?'Tomorrow':DN[a.getDay()])+'</span>'+(tmax!=null?'<span class="dtemp">'+tmax+'°</span>':'')+'<span class="dsm">'+(i<2?DN[a.getDay()]+' ':'')+a.getDate()+' '+MN[a.getMonth()];
     // a red rule with the week number marks where next week starts
     var nw=i>1&&i>=((8-t0.getDay())%7||7)&&!wk,g=grp(lab,a,b);
     if(nw&&g){wk=true;g=weekRule(a)+g}
@@ -1255,9 +1314,86 @@ function calmSoon(){clearTimeout(calmT);calmT=setTimeout(function(){$('player').
 $('player').addEventListener('click',function(ev){if(ev.target.closest('#pl-close'))return;$('player').classList.remove('calm');calmSoon()});
 $('pl-close').addEventListener('click',function(){clearTimeout(calmT);var v=$('vid');v.pause();v.removeAttribute('src');v.load();if(hls){hls.destroy();hls=null}$('player').hidden=true;resetIdle()});
 
+// ---------- weather in the digits (spike): Open-Meteo, coordinates only in config.json ----------
+var wxNow=null,wxSeen=null,flashT=null,wxDays={}; // wxDays: 'YYYY-MM-DD' -> forecast max °C, for the calendar headings
+// Live: the weather moves inside the digits; Off: plain digits (the temperature always stays)
+var wxLive=true;try{wxLive=localStorage.getItem('wxLive')!=='0'}catch(e){}
+function renderWxPref(){[].forEach.call($('pf-wx').children,function(b){b.classList.toggle('on',(b.getAttribute('data-v')==='1')===wxLive)})}
+$('pf-wx').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;wxLive=b.getAttribute('data-v')==='1';try{localStorage.setItem('wxLive',wxLive?'1':'0')}catch(e){}renderWxPref();setWx(wxSeen)});
+renderWxPref();
+function wxKind(c,day){
+  if(c>=95)return 'storm';
+  if((c>=51&&c<=67)||(c>=80&&c<=82))return 'rain';
+  if((c>=71&&c<=77)||c===85||c===86)return 'snow';
+  if(c<=1)return day?'sun':'stars';
+  return 'haze';
+}
+function setWx(k){
+  // Sleep always shows the weather live; the Off setting only calms the rest of the app
+  var b=document.body,a=$('amb');['rain','storm','snow','sun','stars','haze'].forEach(function(x){b.classList.remove('wx-'+x);a.classList.remove('wx-'+x)});
+  wxSeen=k;wxNow=k;
+  if(k){a.classList.add('wx-'+k);if(wxLive)b.classList.add('wx-'+k)}
+  clearTimeout(flashT);b.classList.remove('flash');a.classList.remove('flash');if(k==='storm')nextFlash();
+}
+function nextFlash(){flashT=setTimeout(function(){
+  var b=wxLive?document.body:$('amb');b.classList.add('flash');
+  setTimeout(function(){b.classList.remove('flash')},90);
+  setTimeout(function(){b.classList.add('flash')},180);
+  setTimeout(function(){b.classList.remove('flash');if(wxNow==='storm')nextFlash()},330);
+},4000+Math.random()*8000)}
+var wxT={home:null,away:null},wxAway=false;
+function showTemp(){
+  var away=wxAway&&wxT.away,t=away?wxT.away:wxT.home;if(!t)return;
+  var b=$('hdr-temp');b.hidden=false;b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'');
+}
+$('hdr-temp').addEventListener('click',function(){if(!wxT.away)return;wxAway=!wxAway;showTemp()});
+function loadWx(){
+  var o=(location.search.match(/wx=(\w+)/)||[])[1];if(o){setWx(o);return}
+  if(cfg.lat==null)return;
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+cfg.lat+'&longitude='+cfg.lon+'&current=weather_code,is_day,temperature_2m&daily=temperature_2m_max&forecast_days=16&timezone=auto',{cache:'no-store'})
+    .then(function(r){return r.json()}).then(function(d){
+      var days={};(d.daily&&d.daily.time||[]).forEach(function(k,i){var v=d.daily.temperature_2m_max[i];if(v!=null)days[k]=Math.round(v)});
+      wxDays=days;if(events){var cl=$('cal-list'),y=cl.scrollTop;renderCal();cl.scrollTop=y}
+      setWx(wxKind(d.current.weather_code,d.current.is_day));
+      wxT.home=Math.round(d.current.temperature_2m)+'°';showTemp();
+    }).catch(function(){});
+  // the second place you work for (UK by default): tap the temperature on Home to switch
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+(cfg.lat2!=null?cfg.lat2:51.5072)+'&longitude='+(cfg.lon2!=null?cfg.lon2:-0.1276)+'&current=temperature_2m',{cache:'no-store'})
+    .then(function(r){return r.json()}).then(function(d){wxT.away=Math.round(d.current.temperature_2m)+'°';showTemp()}).catch(function(){});
+}
+cfgReady.then(function(){loadWx();setInterval(loadWx,15*60*1000)});
+
+// ---------- a friend peeks in now and then (spike, clock only) ----------
+// easter egg: tap the seconds and it peeks out from one of its hiding places
+var minderBusy=false,minderLast=-1;
+function minderSpots(){
+  var hh=$('h-h').getBoundingClientRect(),cr=document.querySelector('#v-home .col-r').getBoundingClientRect(),capTop=hh.top+hh.height*0.13;
+  function tilt(a,b){return a+Math.random()*(b-a)}
+  return [ // rot: it leans or lies down, a little different each time
+    {l:innerWidth/2-24,t:innerHeight-58,w:48,h:58,hide:[0,62],show:[0,16],look:[-5,5],rot:tilt(-18,18)},          // up from the bottom edge
+    {l:cr.left-56,t:hh.top+hh.height*0.22,w:56,h:56,hide:[62,0],show:[28,0],look:[-4,4],rot:tilt(-100,-80)}      // lying down, out from behind the column line
+  ];
+}
+function minderPeek(){
+  var m=$('minder');if(minderBusy||cur!=='home'||sleeping||!$('player').hidden||!$('alert').hidden)return;
+  var sp=minderSpots(),i;do{i=Math.floor(Math.random()*sp.length)}while(i===minderLast&&sp.length>1);minderLast=i;var s=sp[i];
+  var svg=m.querySelector('svg'),p=$('mi-p'),e=$('mi-eye');
+  function tr(v){svg.style.transform=svg.style.webkitTransform='translate('+v[0]+'px,'+v[1]+'px) rotate('+s.rot.toFixed(1)+'deg)'}
+  function look(x){p.setAttribute('transform','translate('+x+' 0)')}
+  function blink(){e.classList.add('blink');setTimeout(function(){e.classList.remove('blink')},140)}
+  minderBusy=true;m.style.left=s.l+'px';m.style.top=s.t+'px';m.style.width=s.w+'px';m.style.height=s.h+'px';
+  m.classList.add('still');m.classList.remove('down');tr(s.hide);look(0);void m.offsetWidth;
+  m.classList.remove('still');m.classList.add('on');tr(s.show);
+  [[900,function(){look(s.look[0])}],[1900,function(){look(s.look[1])}],[2900,function(){look(0);blink()}],[3500,blink],
+   [4600,function(){m.classList.add('down');tr(s.hide)}],[5200,function(){m.classList.remove('on');minderBusy=false}]]
+    .forEach(function(x){setTimeout(x[1],x[0])});
+}
+$('h-s').addEventListener('click',minderPeek);
+
 // ---------- arranque ----------
 setTimer(25*60);
 cfgReady.then(function(){
+  brandAccent();
   try{var sb=+localStorage.getItem('brightDay');if(sb)cfg.brightDay=sb}catch(e){}
   tick();setInterval(tick,1000);
   fetchSteps();setInterval(fetchSteps,60*1000);
