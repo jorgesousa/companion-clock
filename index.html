@@ -97,10 +97,11 @@ nav{position:relative}
 .blk.hot #h-next-l .pos{color:var(--accent-ink)}
 .cl{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:12px;vertical-align:2px;flex-shrink:0}
 .cl.none{box-shadow:inset 0 0 0 1.5px var(--muted)}
-@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
+@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#alert.ringing:before,#alert.ringing .al-wave,#alert.ringing .al-digits,#alert.ringing .al-tap{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
 
 .cap{padding-bottom:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
 .cap-side{white-space:nowrap;flex-shrink:0;margin-left:16px}
+#h-muted{color:var(--accent);margin-left:12px}
 #h-date{font-size:var(--t-ui);letter-spacing:.04em;color:var(--fg);white-space:nowrap}
 #h-alarm svg.i{margin-right:6px;vertical-align:-3px}
 .blk{padding:18px 0;border-bottom:1px solid var(--line)}
@@ -250,11 +251,16 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #pf-close svg.i{margin-right:8px}
 .pf-sec{margin:0 0 10px}
 .pf-foot{margin-top:auto;text-align:right}
+.pf-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.pf-sw{display:flex}
+.pf-sw button{width:96px;height:48px;border:1px solid var(--line);font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
+.pf-sw button:first-child{border-radius:4px 0 0 4px}.pf-sw button:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
+.pf-sw button.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg);position:relative}
 .pf-bright{display:grid;grid-template-columns:repeat(6,1fr);grid-gap:8px;margin-bottom:20px}
-.pf-bright button{height:60px;border:1px solid var(--line);border-radius:4px;font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
+.pf-bright button{height:52px;border:1px solid var(--line);border-radius:4px;font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
 .pf-bright button.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
 .pf-bright button:active{background:var(--bg2)}
-.pf-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:64px;grid-gap:8px}
+.pf-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:56px;grid-gap:8px}
 .acc-opt{border:1px solid var(--line);border-radius:4px;display:block;text-align:left;background-repeat:no-repeat;background-position:14px 50%;background-size:26px 26px;padding:0 10px 0 52px;position:relative}
 .acc-opt b{display:block;font:600 var(--t-ui)/1.1 var(--sans);letter-spacing:-.01em;white-space:nowrap}
 .acc-opt.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
@@ -266,6 +272,23 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #alert .outline{color:var(--accent);-webkit-text-stroke:4px var(--accent-ink)}
 #alert .outline:after{color:var(--accent)}
 #alert .mono{color:var(--accent-ink)}
+/* ringing: the screen beats with the beeps (two beats every 1.4 s), waves pulse out from the digits */
+#alert{overflow:hidden}
+#alert>*{position:relative;z-index:1}
+#alert:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:#fff;opacity:0;z-index:0}
+#alert .al-wave{position:absolute;z-index:0;left:120px;top:50%;width:240px;height:240px;margin-top:-120px;border:8px solid var(--accent-ink);border-radius:50%;opacity:0}
+#alert .al-digits{-webkit-transform-origin:0 50%;transform-origin:0 50%}
+#alert.ringing:before{animation:al-flash 1.4s ease-out infinite}
+#alert.ringing .al-wave{animation:al-wave 1.4s cubic-bezier(.16,1,.3,1) infinite}
+#alert.ringing .al-wave.w2{animation-delay:.45s}
+#alert.ringing .al-digits{animation:al-thump 1.4s cubic-bezier(.16,1,.3,1) infinite}
+#alert.ringing .al-tap{animation:al-blink 1.4s steps(1) infinite}
+@keyframes al-flash{0%{opacity:.22}12%{opacity:0}32%{opacity:.22}44%{opacity:0}100%{opacity:0}}
+@keyframes al-wave{0%{-webkit-transform:scale(.6);transform:scale(.6);opacity:.55}60%{opacity:0}100%{-webkit-transform:scale(3.6);transform:scale(3.6);opacity:0}}
+@keyframes al-thump{0%{-webkit-transform:scale(1.07);transform:scale(1.07)}14%{-webkit-transform:scale(1);transform:scale(1)}32%{-webkit-transform:scale(1.07);transform:scale(1.07)}46%{-webkit-transform:scale(1);transform:scale(1)}}
+@keyframes al-blink{0%{opacity:1}50%{opacity:.35}}
+#alert .al-foot{display:flex;justify-content:space-between;align-items:baseline}
+#alert .al-silent{background:var(--accent-ink);color:var(--accent);padding:6px 12px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -307,7 +330,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
     <div class="mrow"><div class="num big roller" id="h-m"><span class="r outline">00</span></div><span class="num" id="h-s">00</span></div>
   </div>
   <div class="col-r">
-    <div class="cap mono muted"><span id="h-date">—</span><span class="cap-side"><span id="h-timer" role="button"></span><span id="h-alarm" class="solid"></span></span></div>
+    <div class="cap mono muted"><span id="h-date">—</span><span class="cap-side"><span id="h-muted" hidden>Muted</span><span id="h-timer" role="button"></span><span id="h-alarm" class="solid"></span></span></div>
     <div class="blk" id="h-next-blk">
       <div id="h-next-c"><div class="v num" id="h-next">—</div>
       <div class="l mono muted" id="h-next-l">Next meeting</div></div>
@@ -399,16 +422,18 @@ video::-internal-media-controls-overlay-cast-button{display:none}
   <div class="pf-bright" id="pf-bright"></div>
   <div class="pf-sec mono muted">Accent colour</div>
   <div class="pf-grid" id="pf-grid"></div>
+  <div class="pf-row"><span class="mono muted">Mute during meetings</span><div class="pf-sw" id="pf-mute"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
   <div class="pf-foot mono muted">Crafted by Jorge Sousa · jorgesousa.github.io</div>
 </div>
 
 <div id="alert" hidden>
+  <i class="al-wave"></i><i class="al-wave w2"></i>
   <div class="mono" id="al-what">Alarm</div>
-  <div>
+  <div class="al-digits">
     <div class="num big" id="al-h">07</div>
     <div class="num big outline" id="al-m" style="margin-top:10px">00</div>
   </div>
-  <div class="mono">Tap the screen to stop</div>
+  <div class="al-foot"><span class="mono al-tap">Tap the screen to stop</span><span class="mono al-silent" id="al-silent" hidden>Silent · in a meeting</span></div>
 </div>
 
 <script>
@@ -444,6 +469,15 @@ function setAccent(c){
 $('net').addEventListener('click',function(){renderPrefs();$('prefs').hidden=false});
 $('pf-close').addEventListener('click',function(){$('prefs').hidden=true});
 $('pf-bright').addEventListener('click',function(ev){var b=ev.target.closest('button');if(b)setBright(+b.getAttribute('data-p'))});
+// mute during meetings: alarm/timer beeps stay silent and TV plays muted while a meeting is on
+var muteMtg=false;try{muteMtg=localStorage.getItem('muteMeetings')==='1'}catch(e){}
+function inMeeting(){if(!events)return false;var n=new Date();return events.some(function(e){return !e.all&&e.s<=n&&e.e>n})}
+function quiet(){return muteMtg&&inMeeting()}
+var tvMutedByUs=false;
+function applyMute(){var v=$('vid'),q=quiet();if(q&&!v.muted){v.muted=true;tvMutedByUs=true}else if(!q&&tvMutedByUs){v.muted=false;tvMutedByUs=false}}
+function renderMute(){[].forEach.call($('pf-mute').children,function(b){b.classList.toggle('on',(b.getAttribute('data-v')==='1')===muteMtg)})}
+$('pf-mute').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;muteMtg=b.getAttribute('data-v')==='1';try{localStorage.setItem('muteMeetings',muteMtg?'1':'0')}catch(e){}renderMute();applyMute();renderNext()});
+renderMute();
 $('pf-grid').addEventListener('click',function(ev){var b=ev.target.closest('.acc-opt');if(b)setAccent(b.getAttribute('data-c'))});
 
 // ---------- config (só no relógio) ----------
@@ -490,7 +524,7 @@ function tick(){
   var now=new Date(),h=f2(now.getHours()),m=f2(now.getMinutes());
   $('h-h').textContent=h;$('a-h').textContent=h;$('h-s').textContent=f2(now.getSeconds());
   $('a-m').textContent=m;
-  fitDate(now);
+  applyMute();$('h-muted').hidden=!quiet();fitDate(now);
   if(now.getMinutes()!==lastMin){
     setMinute(m,lastMin!==-1);
     lastMin=now.getMinutes();
@@ -740,18 +774,22 @@ function fetchSteps(){
 // ---------- som ----------
 var actx=null;
 function ctx(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();return actx}
-function beep(freq,dur){try{var c=ctx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.35,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.start();o.stop(c.currentTime+dur)}catch(e){}}
+function beep(freq,dur){if(quiet())return;try{var c=ctx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.35,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);o.start();o.stop(c.currentTime+dur)}catch(e){}}
 document.addEventListener('touchstart',function(){try{ctx()}catch(e){}},{once:true,passive:true});
 
 // ---------- alerta (alarme / fim do timer) ----------
 var ringI=null,ringT=null;
 function ring(what,h,m){
   $('al-what').textContent=what;$('al-h').textContent=h;$('al-m').textContent=m;
-  $('alert').hidden=false;$('amb').hidden=true;bright(cfg.brightDay);
-  clearInterval(ringI);ringI=setInterval(function(){beep(880,.35);setTimeout(function(){beep(880,.35)},450)},1400);
+  $('al-silent').hidden=!quiet();
+  var al=$('alert');al.classList.remove('ringing');al.hidden=false;void al.offsetWidth;al.classList.add('ringing');
+  $('amb').hidden=true;bright(cfg.brightDay);
+  // beeps start with the first beat so sound and pulse stay in step
+  function dbl(){beep(880,.35);setTimeout(function(){beep(880,.35)},450)}
+  clearInterval(ringI);dbl();ringI=setInterval(dbl,1400);
   clearTimeout(ringT);ringT=setTimeout(stopRing,90*1000);
 }
-function stopRing(){clearInterval(ringI);clearTimeout(ringT);$('alert').hidden=true;awake();checkSleep(new Date())}
+function stopRing(){clearInterval(ringI);clearTimeout(ringT);$('alert').classList.remove('ringing');$('alert').hidden=true;awake();checkSleep(new Date())}
 $('alert').addEventListener('click',stopRing);
 
 // ---------- timer ----------
