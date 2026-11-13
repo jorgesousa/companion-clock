@@ -99,7 +99,7 @@ nav{position:relative}
 .blk.hot #h-next-l .pos{color:var(--accent-ink)}
 .cl{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:12px;vertical-align:2px;flex-shrink:0}
 .cl.none{box-shadow:inset 0 0 0 1.5px var(--muted)}
-@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#alert.ringing:before,#alert.ringing .al-wave,#alert.ringing .al-digits,#alert.ringing .al-tap{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
+@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#h-steps-blk.syncing #h-sync,#h-steps-blk.syncing .v,#h-steps-blk.synced .v{animation:none}#alert.ringing:before,#alert.ringing .al-wave,#alert.ringing .al-digits,#alert.ringing .al-tap{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
 
 .cap{padding-bottom:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
 .cap-side{white-space:nowrap;flex-shrink:0;margin-left:16px}
@@ -113,6 +113,15 @@ nav{position:relative}
 .blk .l{margin-top:9px}
 .blk .v .of{font:600 var(--t-ui)/1 var(--sans);color:var(--muted);letter-spacing:-.01em;margin-left:8px}
 #h-steps-l{letter-spacing:.02em;white-space:nowrap}
+/* tap steps to refresh: the number breathes and a light runs along the block while it syncs */
+#h-steps-blk{position:relative;overflow:hidden}
+#h-sync{position:absolute;left:0;top:0;height:2px;width:30%;background:var(--accent);opacity:0}
+#h-steps-blk.syncing #h-sync{opacity:1;animation:sync-sweep .9s cubic-bezier(.65,0,.35,1) infinite}
+#h-steps-blk.syncing .v{animation:sync-breathe .9s ease-in-out infinite}
+@keyframes sync-sweep{from{-webkit-transform:translateX(-100%);transform:translateX(-100%)}to{-webkit-transform:translateX(340%);transform:translateX(340%)}}
+@keyframes sync-breathe{50%{opacity:.35}}
+#h-steps-blk.synced .v{animation:sync-pop .5s cubic-bezier(.16,1,.3,1)}
+@keyframes sync-pop{0%{-webkit-transform:scale(.94);transform:scale(.94)}100%{-webkit-transform:none;transform:none}}
 
 /* agenda */
 #v-cal{flex-direction:column;padding-bottom:0}
@@ -343,9 +352,10 @@ video::-internal-media-controls-overlay-cast-button{display:none}
       <div class="l mono muted" id="h-next-l">Next meeting</div></div>
       <i id="h-live"></i>
     </div>
-    <div class="blk">
+    <div class="blk" id="h-steps-blk" role="button" aria-label="Refresh steps">
       <div class="v num" id="h-steps">—</div>
       <div class="l mono muted" id="h-steps-l">Steps</div>
+      <i id="h-sync"></i>
     </div>
   </div>
 </section>
@@ -772,18 +782,32 @@ function renderSteps(steps,upd){
   else if(steps>=exp)l.innerHTML='Expected '+fmtN(exp)+' · '+fmtN(steps-exp)+' ahead';
   else l.innerHTML='Expected '+fmtN(exp)+' · <span class="acc">'+fmtN(exp-steps)+' behind</span>';
 }
+var stepsAt=null;
 function fetchSteps(){
-  if(!cfg.unsitCode){renderSteps(null);return}
-  fetch('https://ntfy.sh/'+encodeURIComponent('unsit-'+cfg.unsitCode)+'/json?poll=1&since=12h',{cache:'no-store'}).then(function(r){return r.text()}).then(function(txt){
+  if(!cfg.unsitCode){renderSteps(null);return Promise.resolve()}
+  return fetch('https://ntfy.sh/'+encodeURIComponent('unsit-'+cfg.unsitCode)+'/json?poll=1&since=12h',{cache:'no-store'}).then(function(r){return r.text()}).then(function(txt){
     setNet(true);
     var msgs=txt.split('\n').filter(Boolean).map(function(l){try{return JSON.parse(l)}catch(e){return null}}).filter(function(e){return e&&e.event==='message'});
     var last=msgs[msgs.length-1];if(!last){renderSteps(null,null);return}
     var raw=String(last.message).replace(/[“”„″]/g,'"').replace(/\r?\n/g,' '),body;
     try{body=JSON.parse(raw)}catch(e){body={steps:(raw.match(/\d[\d.,\s]*/)||[''])[0]}}
-    var steps=parseInt(String(body.steps).replace(/\D/g,''),10),upd=new Date(last.time*1000);
+    var steps=parseInt(String(body.steps).replace(/\D/g,''),10),upd=new Date(last.time*1000);stepsAt=upd;
     renderSteps(isNaN(steps)||upd.toDateString()!==new Date().toDateString()?null:steps,upd);
   }).catch(function(){setNet(false)});
 }
+
+// tap the steps block: fetch now, then say when the phone last sent steps
+var syncBusy=false;
+$('h-steps-blk').addEventListener('click',function(){
+  if(syncBusy)return;syncBusy=true;
+  var b=$('h-steps-blk'),l=$('h-steps-l'),t0=Date.now();
+  b.classList.remove('synced');b.classList.add('syncing');l.textContent='Syncing…';
+  fetchSteps().then(function(){return new Promise(function(r){setTimeout(r,Math.max(0,900-(Date.now()-t0)))})}).then(function(){
+    b.classList.remove('syncing');void b.offsetWidth;b.classList.add('synced');
+    l.textContent=stepsAt?'From phone at '+hhmm(stepsAt):'Waiting for phone';
+    setTimeout(function(){syncBusy=false;fetchSteps()},3500);
+  });
+});
 
 // ---------- som ----------
 var actx=null;
