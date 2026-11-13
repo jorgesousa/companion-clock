@@ -41,9 +41,13 @@ irq(){ grep tlsc6x /proc/interrupts | tr -s ' ' | cut -d' ' -f3; }
     fi
     cur=$(irq); d=$((cur - prev)); prev=$cur
     if [ "$d" -gt 250 ]; then
-      edge=$(dmesg | grep 'pointer report' | tail -40 | sed 's/.*Y is \([0-9]*\),.*/\1/' | grep -cvE '^[0-8]$')
-      if [ "$edge" -eq 0 ]; then
-        echo "$(date) ghost touch at top edge ($d irq/5s) - reset" >> $C/touch.log
+      # ghost touch: the panel keeps reporting a touch with no finger on it.
+      # Two shapes seen: stuck on the top edge (Y<=8), or glued to one exact point.
+      last=$(dmesg | grep 'pointer report' | tail -60 | sed 's/.*X is \([0-9]*\), Y is \([0-9]*\),.*/\1 \2/')
+      edge=$(echo "$last" | awk '$2>8{c++} END{print c+0}')
+      pts=$(echo "$last" | sort -u | wc -l)
+      if [ "$edge" -eq 0 ] || [ "$pts" -le 1 ]; then
+        echo "$(date) ghost touch ($d irq/5s, $pts point(s)) - reset" >> $C/touch.log
         input keyevent 223; sleep 2; input keyevent 224; sleep 2; prev=$(irq)
       fi
     fi

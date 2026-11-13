@@ -60,3 +60,15 @@ adb push index.html /data/local/tmp/
 adb shell 'su -c "mv /data/local/tmp/index.html /data/local/companion-clock/index.html; chmod 644 /data/local/companion-clock/index.html"'
 adb shell am start -n de.ozerov.fully/.MainActivity -a android.intent.action.VIEW -d http://localhost:8080/
 ```
+
+## Touch panel stops responding (ghost touch)
+
+Some Mi Smart Clocks have a touch panel that, now and then, keeps reporting a touch with no finger on it. The screen looks frozen: real taps don't get through because the panel says it's already being pressed. You can see it in `dmesg` as a flood of identical `pointer report X is …, Y is …` lines from the `tlsc6x` driver, either stuck on the top edge (Y≈0–8) or glued to one exact point.
+
+Turning the screen off and on resets the panel:
+
+```bash
+adb shell input keyevent 223; sleep 2; adb shell input keyevent 224
+```
+
+`device/boot.sh` does this on its own. Every 5 seconds it counts the panel's interrupts; when the panel has been reporting continuously and the last reports are all on the top edge or all on the same point, it resets the panel and writes a line to `/data/local/companion-clock/touch.log`. A real finger always moves a little, so normal taps and long presses aren't affected.

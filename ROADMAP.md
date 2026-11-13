@@ -20,7 +20,7 @@
 
 ## Known issues
 
-- **Ghost touch** on the touch panel's top edge (the panel reports a constant touch at Y≈2). The watchdog in `device/boot.sh` resets the panel automatically and logs to `touch.log` on the clock. Likely physical.
+- **Ghost touch.** The touch panel sometimes keeps reporting a touch with no finger on it (stuck on the top edge, or glued to one point), so the screen looks frozen. `device/boot.sh` detects both shapes and resets the panel within about 5 seconds; see [docs/setup.md](docs/setup.md#touch-panel-stops-responding-ghost-touch). Likely a hardware quirk of this panel.
 
 ## Done
 
