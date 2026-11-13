@@ -157,8 +157,7 @@ nav{position:relative}
 .ev.free.live{position:relative}
 .ev.free.live .t{color:var(--ok)}
 .ev.free.live em{font:600 var(--t-row)/1.15 var(--sans);letter-spacing:-.015em}
-.ev.free.live .left{margin-left:12px;color:var(--muted)}
-.ev.free.live .drain{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--ok);-webkit-transform-origin:100% 50%;transform-origin:100% 50%;transition:transform 1s linear}
+.ev.free.live .left{margin-left:12px;color:var(--ok)}
 #cal-list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:22px}
 .empty-title{font-size:84px;line-height:.9;letter-spacing:-.045em}
 .empty-text{margin-top:22px;max-width:620px;color:var(--muted);font:500 var(--t-ui)/1.4 var(--sans);letter-spacing:-.005em}
@@ -696,7 +695,7 @@ function renderCal(){
   // the free slot you're in right now is live and drains
   function freeRow(f,t){var m=Math.round((t-f)/60000);return '<div class="ev free"><span class="t mono">'+hhmm(f)+'–'+hhmm(t)+'</span><span class="n"><i class="cl"></i><em>Free · '+dur(m)+'</em></span></div>'}
   function freeNow(f0,t){var n0=new Date(now);n0.setSeconds(0,0);var left=Math.round((t-n0)/60000),p=Math.max(0,Math.min(1,(t-now)/(t-f0)));
-    return '<div class="ev free live"><span class="t mono">'+hhmm(f0)+'–'+hhmm(t)+'</span><span class="n"><i class="cl"></i><em>Free now</em><span class="left mono">'+dur(left)+' left</span></span><i class="drain" style="-webkit-transform:scaleX('+p.toFixed(4)+');transform:scaleX('+p.toFixed(4)+')"></i></div>'}
+    return '<div class="ev free live"><span class="t mono">'+hhmm(f0)+'–'+hhmm(t)+'</span><span class="n"><i class="cl"></i><em>Free now</em><span class="left mono">'+dur(left)+' left</span></span></div>'}
   function grp(label,a,b){
     var rows=events.filter(function(e){return (e.all?(e.s<b&&e.e>a):(e.s>=a&&e.s<b))&&e.e>now});
     var wd=a.getDay()>0&&a.getDay()<6;
