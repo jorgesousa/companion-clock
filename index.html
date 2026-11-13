@@ -345,7 +345,8 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 /* the same staircase as Home, centred on the screen */
 #amb-in{position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}
 #amb .big{font-size:230px}
-#a-m{margin:-45px 0 0 70px;z-index:1}
+#a-mrow{margin:-45px 0 0 70px;position:relative;z-index:1}
+#a-s{font-size:54px;color:var(--muted);margin:0 0 6px 16px;letter-spacing:-.03em}
 #a-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:14px var(--bg);z-index:-1}
 #amb .mono{margin:16px 0 0 74px}
 #amb.night .solid{color:#e2ded5}
@@ -518,7 +519,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 <div id="amb" hidden>
   <div id="amb-in">
     <div class="num big solid" id="a-h">00</div>
-    <div class="num big outline" id="a-m">00</div>
+    <div class="mrow" id="a-mrow"><div class="num big outline" id="a-m">00</div><span class="num" id="a-s">00</span></div>
     <div class="mono muted" id="a-l"></div>
   </div>
 </div>
@@ -632,7 +633,7 @@ var lastMin=-1;
 function tick(){
   var now=new Date(),h=f2(now.getHours()),m=f2(now.getMinutes());
   $('h-h').textContent=h;$('a-h').textContent=h;$('h-s').textContent=f2(now.getSeconds());
-  $('a-m').textContent=m;$('a-m').setAttribute('data-t',m);
+  $('a-m').textContent=m;$('a-m').setAttribute('data-t',m);$('a-s').textContent=f2(now.getSeconds());
   applyMute();fitDate(now);meetLine();
   if(now.getMinutes()!==lastMin){
     setMinute(m,lastMin!==-1);
