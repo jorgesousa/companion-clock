@@ -348,9 +348,9 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #a-m{margin:-45px 0 0 70px;z-index:1}
 #a-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:14px var(--bg);z-index:-1}
 #amb .mono{margin:16px 0 0 74px}
-#amb.night .solid{color:#a29e94}
-#amb.night .outline{-webkit-text-stroke-color:#a29e94}
-#amb.night .mono{color:#7a766c}
+#amb.night .solid{color:#e2ded5}
+#amb.night .outline{-webkit-text-stroke-color:#e2ded5}
+#amb.night .mono{color:var(--muted)}
 
 /* preferences */
 #prefs{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:350;padding:22px 36px 34px;display:flex;flex-direction:column}
@@ -589,7 +589,7 @@ renderMute();
 $('pf-grid').addEventListener('click',function(ev){var b=ev.target.closest('.acc-opt');if(b)setAccent(b.getAttribute('data-c'))});
 
 // ---------- config (só no relógio) ----------
-var cfg={sleepStart:'00:00',sleepEnd:'00:00',brightDay:160,brightNight:14,dayEndMinute:1035};
+var cfg={sleepStart:'00:00',sleepEnd:'00:00',brightDay:160,brightNight:191,dayEndMinute:1035};
 var cfgReady=fetch('config.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}}).then(function(c){
   for(var k in c)cfg[k]=c[k];
 });
