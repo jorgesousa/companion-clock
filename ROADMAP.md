@@ -27,7 +27,7 @@
 - Local server, boot script with self-repair, ADB over Wi-Fi (firewalled to one IP).
 - Design aligned with jorgesousa.github.io; English UI; manual sleep mode with brightness control.
 - Calendar via an Apps Script web app: today to the end of next week, declined events hidden, working location per day (Office highlighted), a red rule with the week number where next week starts.
-- Free time: gaps of 15+ min inside 09:00–17:00 shown as hatched Free rows; the slot you are in is live and drains.
+- Free time: gaps of 15+ min inside 09:00–17:00 shown as hatched Free rows; the slot you are in stands out as "Free now · Xh left".
 - Home: current meeting is live (dot, accent time, filling rule); swipe or tap to browse today's later meetings; long titles glide.
 - Steps (ntfy) with pace: "Expected X · N ahead/behind".
 - TV player for your own HLS playlist, through a local playlist proxy.
