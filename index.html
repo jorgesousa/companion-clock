@@ -897,7 +897,12 @@ function checkSleep(now){
   sleeping=true;
   if($('amb').hidden&&$('player').hidden&&$('alert').hidden&&Date.now()-lastTouch>30000)showAmb(true);
 }
-function resetIdle(){lastTouch=Date.now();clearTimeout(idleT);idleT=setTimeout(function(){if(!sleeping)showAmb(false)},3*60*1000)}
+// no daytime screensaver: after 3 min untouched the clock goes back to Home
+// (not while TV plays or an alarm rings; a running timer shows on Home anyway)
+function resetIdle(){lastTouch=Date.now();clearTimeout(idleT);idleT=setTimeout(function(){
+  if(sleeping||!$('player').hidden||!$('alert').hidden)return;
+  $('prefs').hidden=true;if(cur!=='home')go('home');
+},3*60*1000)}
 $('amb').addEventListener('click',function(){
   if(manualSleep){manualSleep=false;sleeping=false;awake();return}
   awake();
