@@ -71,4 +71,4 @@ Turning the screen off and on resets the panel:
 adb shell input keyevent 223; sleep 2; adb shell input keyevent 224
 ```
 
-`device/boot.sh` does this on its own. Every 5 seconds it counts the panel's interrupts; when the panel has been reporting continuously and the last reports are all on the top edge or all on the same point, it resets the panel and writes a line to `/data/local/companion-clock/touch.log`. A real finger always moves a little, so normal taps and long presses aren't affected.
+`device/boot.sh` does this on its own. Every 2 seconds it counts the panel's interrupts; when the panel has been reporting continuously and, in two checks in a row, the last reports are all on the top edge or all on the same point, it resets the panel and writes a line to `/data/local/companion-clock/touch.log`. A real finger always moves a little, so normal taps and long presses aren't affected.

@@ -29,29 +29,36 @@ up && log "server up" || log "server failed to start"
 [ -f $C/watchdog.pid ] && kill "$(cat $C/watchdog.pid)" 2>/dev/null
 irq(){ grep tlsc6x /proc/interrupts | tr -s ' ' | cut -d' ' -f3; }
 (
-  prev=$(irq)
+  n=0; sus=0; prev=$(irq)
   while true; do
     # keep the local server alive; reload the page after a restart
     if ! up; then
       log "server down - restarting"; server; sleep 3
       am start -n de.ozerov.fully/.MainActivity -a android.intent.action.VIEW -d http://localhost:8080/ >/dev/null 2>&1
     fi
-    if [ ! -f $C/pause ] && ! dumpsys activity activities | grep -m1 mResumedActivity | grep -q de.ozerov.fully; then
+    n=$((n + 1))
+    # keep Fully in front (every ~6 s; dumpsys is heavy on this device)
+    if [ $((n % 3)) -eq 0 ] && [ ! -f $C/pause ] && ! dumpsys activity activities | grep -m1 mResumedActivity | grep -q de.ozerov.fully; then
       am start -n de.ozerov.fully/.MainActivity >/dev/null 2>&1
     fi
     cur=$(irq); d=$((cur - prev)); prev=$cur
-    if [ "$d" -gt 250 ]; then
+    if [ "$d" -gt 100 ]; then
       # ghost touch: the panel keeps reporting a touch with no finger on it.
       # Two shapes seen: stuck on the top edge (Y<=8), or glued to one exact point.
       last=$(dmesg | grep 'pointer report' | tail -60 | sed 's/.*X is \([0-9]*\), Y is \([0-9]*\),.*/\1 \2/')
       edge=$(echo "$last" | awk '$2>8{c++} END{print c+0}')
       pts=$(echo "$last" | sort -u | wc -l)
-      if [ "$edge" -eq 0 ] || [ "$pts" -le 1 ]; then
-        echo "$(date) ghost touch ($d irq/5s, $pts point(s)) - reset" >> $C/touch.log
+      # two stuck checks in a row (~4 s), so a finger held still on a stepper isn't mistaken for one
+      if [ "$edge" -eq 0 ] || [ "$pts" -le 1 ]; then sus=$((sus + 1)); else sus=0; fi
+      if [ "$sus" -ge 2 ]; then
+        sus=0
+        echo "$(date) ghost touch ($d irq/2s, $pts point(s)) - reset" >> $C/touch.log
         input keyevent 223; sleep 2; input keyevent 224; sleep 2; prev=$(irq)
       fi
+    else
+      sus=0
     fi
-    sleep 5
+    sleep 2
   done
 ) >/dev/null 2>&1 &
 echo $! > $C/watchdog.pid
