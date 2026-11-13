@@ -41,9 +41,11 @@ header{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-ite
 #net i{display:inline-block;width:8px;height:8px;border-radius:4px;background:var(--muted);margin-right:8px;vertical-align:1px}
 #net.on i{background:var(--ok)}
 nav{flex:1;display:flex;align-items:baseline;justify-content:center;height:64px}
-nav button{height:64px;padding:0 14px;color:var(--muted);position:relative;font-size:var(--t-ui)}
+nav button{height:64px;padding:0 14px;color:var(--muted);position:relative;font:700 25px/1 var(--sans);letter-spacing:-.02em}
 nav button.on{color:var(--fg)}
 nav{position:relative}
+#sleep-btn{height:64px;padding:0 6px 0 18px;color:var(--muted)}
+#sleep-btn svg.i{width:26px;height:26px;vertical-align:-6px}
 #nav-bar{position:absolute;left:0;bottom:10px;height:3px;width:10px;background:var(--accent);transition:transform .35s var(--ease),width .35s var(--ease);-webkit-transform-origin:0 0;transform-origin:0 0}
 #hdr-right{width:160px;text-align:right}
 #hdr-right button{height:64px;padding:0 12px;color:var(--muted)}
@@ -316,7 +318,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 
 <header>
   <button id="net" class="mono" aria-label="Settings"><i></i>JS</button>
-  <nav class="mono">
+  <nav>
     <button class="on" data-v="home">Home</button>
     <button data-v="cal">Calendar</button>
     <button data-v="timer">Timer</button>
@@ -324,7 +326,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
     <i id="nav-bar"></i>
   </nav>
   <span id="hdr-right" class="mono">
-    <button id="sleep-btn"><svg class="i"><use href="#i-moon"/></svg> Sleep</button>
+    <button id="sleep-btn" aria-label="Sleep"><svg class="i"><use href="#i-moon"/></svg></button>
   </span>
 </header>
 
