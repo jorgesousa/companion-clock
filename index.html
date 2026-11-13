@@ -135,6 +135,7 @@ nav{position:relative}
 .ev .t{width:200px;flex-shrink:0;font-size:var(--t-ui);letter-spacing:.02em}
 .ev .n{font:600 var(--t-row)/1.15 var(--sans);letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev.now .t{color:var(--accent)}
+.ev.past .t,.ev.past .n{opacity:.45}
 .ev .n{display:flex;align-items:baseline;flex:1;min-width:0}
 .ev .n .cl{position:relative;top:-2px}
 .ev .mqw{flex:1;min-width:0;overflow:hidden;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%)}
@@ -157,7 +158,6 @@ nav{position:relative}
 .ev.free.live .t{color:var(--ok)}
 .ev.free.live em{font:600 var(--t-row)/1.15 var(--sans);letter-spacing:-.015em}
 .ev.free.live .left{margin-left:12px;color:var(--muted)}
-.live-dot.ok,.live-dot.ok:after{background:var(--ok)}
 .ev.free.live .drain{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--ok);-webkit-transform-origin:100% 50%;transform-origin:100% 50%;transition:transform 1s linear}
 #cal-list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:22px}
 .empty-title{font-size:84px;line-height:.9;letter-spacing:-.045em}
@@ -505,7 +505,7 @@ function go(v){
   // calendar opens at "now": drop finished meetings, back to the top
   if(v==='home')setTimeout(marquee,50);
   if(v!=='cal')calMarqueeStop();
-  if(v==='cal'&&events){renderCal();$('cal-list').scrollTop=0}
+  if(v==='cal'&&events){renderCal();calToNow()}
 }
 function navBar(){var b=document.querySelector('nav button.on'),bar=$('nav-bar');if(!b)return;bar.style.width=(b.offsetWidth-28)+'px';bar.style.transform='translateX('+(b.offsetLeft+14)+'px)'}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){navBar();if(typeof marquee==='function')marquee()});setTimeout(navBar,300);
@@ -682,6 +682,7 @@ function weekRule(d){
   var r=mon.getMonth()===sun.getMonth()?mon.getDate()+'–'+sun.getDate()+' '+M[sun.getMonth()]:mon.getDate()+' '+M[mon.getMonth()]+' – '+sun.getDate()+' '+M[sun.getMonth()];
   return '<div class="wk-rule mono"><b>Week '+isoWeek(mon)+' · '+r+'</b></div>';
 }
+function calToNow(){var l=$('cal-list'),g=l.querySelector('.ev-group:not(.earlier)');l.scrollTop=g?g.offsetTop-l.offsetTop:0}
 function renderCal(){
   var empty=$('cal-empty'),list=$('cal-list');
   $('cal-skel').hidden=!!events||evTried;
@@ -695,7 +696,7 @@ function renderCal(){
   // the free slot you're in right now is live and drains
   function freeRow(f,t){var m=Math.round((t-f)/60000);return '<div class="ev free"><span class="t mono">'+hhmm(f)+'–'+hhmm(t)+'</span><span class="n"><i class="cl"></i><em>Free · '+dur(m)+'</em></span></div>'}
   function freeNow(f0,t){var n0=new Date(now);n0.setSeconds(0,0);var left=Math.round((t-n0)/60000),p=Math.max(0,Math.min(1,(t-now)/(t-f0)));
-    return '<div class="ev free live"><span class="t mono">'+hhmm(f0)+'–'+hhmm(t)+'</span><span class="n"><i class="live-dot ok"></i><em>Free now</em><span class="left mono">'+dur(left)+' left</span></span><i class="drain" style="-webkit-transform:scaleX('+p.toFixed(4)+');transform:scaleX('+p.toFixed(4)+')"></i></div>'}
+    return '<div class="ev free live"><span class="t mono">'+hhmm(f0)+'–'+hhmm(t)+'</span><span class="n"><i class="cl"></i><em>Free now</em><span class="left mono">'+dur(left)+' left</span></span><i class="drain" style="-webkit-transform:scaleX('+p.toFixed(4)+');transform:scaleX('+p.toFixed(4)+')"></i></div>'}
   function grp(label,a,b){
     var rows=events.filter(function(e){return (e.all?(e.s<b&&e.e>a):(e.s>=a&&e.s<b))&&e.e>now});
     var wd=a.getDay()>0&&a.getDay()<6;
@@ -724,6 +725,11 @@ function renderCal(){
     return '<div class="ev-group"><div class="mono muted">'+label+loc+(sum?'<span class="sum">'+sum+'</span>':'')+'</div>'+out+'</div>';
   }
   var html='',wk=false,hl=false;
+  // meetings that already ended today stay above "Today", muted, so you can scroll up to them
+  var past=events.filter(function(e){return !e.all&&e.e<=now&&e.s>=t0});
+  if(past.length)html+='<div class="ev-group earlier"><div class="mono muted">Earlier today<span class="sum">'+past.length+(past.length>1?' meetings':' meeting')+'</span></div>'+past.map(function(e){
+    return '<div class="ev past"><span class="t mono">'+hhmm(e.s)+'–'+hhmm(e.e)+'</span><span class="n">'+clientDot(e.t)+'<span class="mqw"><span class="mq">'+esc(e.t)+'</span></span></span></div>';
+  }).join('')+'</div>';
   for(var i=0;i<days;i++){
     var a=new Date(t0);a.setDate(a.getDate()+i);var b=new Date(a);b.setDate(b.getDate()+1);
     var lab=i===0?'Today':i===1?'Tomorrow':DN[a.getDay()]+' '+a.getDate()+' '+MN[a.getMonth()];
