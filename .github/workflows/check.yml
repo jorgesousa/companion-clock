@@ -1,0 +1,46 @@
+name: Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell scripts (shellcheck)
+        run: shellcheck --shell=sh --severity=error device/*.sh
+
+      - name: JavaScript parses
+        run: |
+          node -e '
+            const html = require("fs").readFileSync("index.html", "utf8");
+            const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+            scripts.forEach(s => new Function(s));
+            console.log("ok", scripts.length, "inline scripts");
+          '
+
+      - name: Syntax the clock's WebView 74 can run
+        run: |
+          node -e '
+            const html = require("fs").readFileSync("index.html", "utf8");
+            const js = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join("\n")
+              .replace(/\/\/[^\n]*/g, "").replace(/(["\x27`])(?:\\.|(?!\1)[^\\\n])*\1/g, "\"\"");
+            const css = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m => m[1]).join("\n");
+            const bad = [];
+            if (/\?\.[a-zA-Z_$(\[]/.test(js)) bad.push("optional chaining ?.");
+            if (/\?\?/.test(js)) bad.push("nullish coalescing ??");
+            if (/\.finished\b/.test(js)) bad.push("Animation.finished (use onfinish)");
+            if (/(^|[;{\s])inset\s*:/.test(css)) bad.push("CSS inset");
+            if (/clamp\(/.test(css)) bad.push("CSS clamp()");
+            if (/(^|[;{\s])gap\s*:/.test(css)) bad.push("CSS gap");
+            if (bad.length) { console.error("Not supported on WebView 74:", bad.join(", ")); process.exit(1); }
+            console.log("ok");
+          '
+
+      - name: No private values
+        run: |
+          ! git ls-files | grep -E '(^|/)(config\.json|m3u\.url)$'
+          ! grep -RInE 'script\.google\.com/macros/s/AKfy|ntfy\.sh/unsit-[a-z0-9]{4}-' --exclude-dir=.git .

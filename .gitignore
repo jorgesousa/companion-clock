@@ -1,0 +1,10 @@
+# Private values that live only on the clock: never commit
+config.json
+m3u.url
+events.json
+
+# Local design work (mockups can hold real calendar data)
+.impeccable/mocks/
+.impeccable/hook.cache.json
+
+.DS_Store

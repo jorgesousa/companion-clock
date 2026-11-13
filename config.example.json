@@ -1,0 +1,6 @@
+{
+  "calendarUrl": "https://script.google.com/macros/s/<deployment-id>/exec?k=<your-key>",
+  "unsitCode": "<your-ntfy-topic-code>",
+  "dayEndMinute": 1035,
+  "brandColors": { "acme": "#f06c00" }
+}
