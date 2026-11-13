@@ -11,7 +11,7 @@ A Xiaomi Mi Smart Clock turned into a work companion: the time, your next meetin
 ![WebView 74](https://img.shields.io/badge/WebView-74-555)
 [![License: Sustainable Use 1.0](https://img.shields.io/badge/license-Sustainable%20Use%201.0-8B5CF6)](LICENSE.md)
 
-<img src="docs/screenshots/home.jpg" width="800" alt="Home: the time in large type (hours solid, minutes outlined), the date, the next meeting with how long until it starts, and today's steps against a 10,000 goal">
+<img src="docs/screenshots/home.jpg" width="800" alt="Home: the time in large type (hours solid, minutes outlined), the date, the next meeting with how long until it starts, today's steps against a 10,000 goal, and a bottom strip with a running timer as a burning fuse and the next alarm">
 
 </div>
 
@@ -30,18 +30,18 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 <b>Calendar.</b> Today to the end of next week. Free time between meetings is hatched in green, and the slot you're in right now counts down.
 </td>
 <td width="50%" valign="top">
-<img src="docs/screenshots/calendar-week.jpg" alt="Calendar further down: a red rule reading Week 47 · 16–22 Nov marks where next week starts; Monday's heading says Office in red">
-<b>Next week.</b> A red rule with the week number marks where it starts. Office days stand out in the day's heading.
+<img src="docs/screenshots/calendar-week.jpg" alt="Calendar further down: a rule reading Week 47 · 16–22 Nov marks where next week starts; Monday's heading says Office">
+<b>Next week.</b> A rule with the week number marks where it starts. Office days stand out in the day's heading.
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/screenshots/timer.jpg" alt="Timer: 25:00 in large type with presets from 5 to 60 minutes, Start and Reset">
-<b>Timer and alarms.</b> One-tap presets, big steppers for alarms, the next alarm on Home.
+<img src="docs/screenshots/timer.jpg" alt="Clock: Timer and Alarms tabs, 25:00 in large type with presets from 5 to 60 minutes, Start and Reset">
+<b>Clock.</b> One timer with one-tap presets, and one alarm set with big steppers.
 </td>
 <td width="50%" valign="top">
-<img src="docs/screenshots/settings.jpg" alt="Settings: brightness from 10 to 100 percent and eight accent colours">
-<b>Settings.</b> Tap <code>JS</code>: brightness and eight accent colours.
+<img src="docs/screenshots/settings.jpg" alt="Settings: brightness from 10 to 100 percent, eight accent colours and Mute in meetings">
+<b>Settings.</b> Tap <code>JS</code>: brightness, eight accent colours, and muting the TV during meetings.
 </td>
 </tr>
 </table>
@@ -50,14 +50,17 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 
 ## What it does
 
-- **Home.** Hours solid, minutes outlined, seconds beside them. The next meeting, with "in 12 min"; 15 minutes before it the block turns into the accent colour. While a meeting runs, its start time is in the accent, a dot pulses and a line fills as it goes. Swipe or tap to see today's later meetings. Long titles glide to show the end.
+- **Home.** Hours solid, minutes outlined, seconds beside them. The next meeting, with "in 12 min"; 15 minutes before it the time turns to the accent and a line burns down to the start. While a meeting runs, a dot pulses and the same line fills as it goes. Swipe or tap to see today's later meetings. Long titles glide to show the end. With nothing left today it says Free; tap it to see when the next meeting is ("Until Mon 09:00").
+- **Bottom strip.** The timer and the alarm, always on Home. A running timer burns down as a fuse; drag its spark back to the start to cancel it. With nothing set it says so ("No timer", "No alarm set"). Tap it to open Clock.
+- **Colour has a job.** White is a value, grey is a label, colour is a state (now, soon, free, behind).
 - **Steps.** Today's count against 10,000, with the pace you should be at by now ("Expected 3,820 · 1,040 ahead").
 - **Calendar.** Grouped by day, with a summary per day ("4 meetings · 4h free"). Free time is counted inside the working day (09:00–17:00, Monday to Friday) in gaps of 15 minutes or more. Each client in `[Brackets]` gets its own colour, or its brand colour if you set one.
-- **Working location.** Google Calendar's Home / Office shows in each day's heading; Office in the accent.
-- **Timer and alarms.** Presets from 5 to 60 minutes; alarms ring full-screen until you tap.
+  A meeting's time turns to the accent only when it's on now or starts within 30 minutes.
+- **Working location.** Google Calendar's Home / Office shows in each day's heading; Office in white.
+- **Clock.** One timer (presets from 5 to 60 minutes) and one alarm. Both ring full-screen until you pull the sheet down.
 - **Sleep.** One button dims the screen to almost nothing and leaves the time drifting slowly.
 - **TV.** Plays an HLS playlist (M3U) you provide. Ships with no channels; use only playlists you're entitled to.
-- **Settings.** Brightness 10–100% and eight accent colours, remembered on the clock.
+- **Settings.** Brightness 10–100%, eight accent colours and muting the TV in meetings, remembered on the clock.
 
 ## How it works
 

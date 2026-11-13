@@ -57,6 +57,17 @@ nav{position:relative}
 .big{font-size:var(--t-big);line-height:.8;letter-spacing:-.05em}
 .big + .big{margin-top:10px}
 .mrow{display:flex;align-items:flex-end;margin-top:10px}
+/* Home: staircase, the minutes step right and up into the hours; a dark halo cuts where they cross */
+#v-home .col-l .big{font-size:196px}
+#v-home .col-l{justify-content:center;padding-bottom:14px}
+/* a single hairline separates the clock from the information; the column keeps its full width for long meeting names */
+#v-home .col-r{align-self:center;justify-content:flex-start;margin-left:26px;padding-left:20px;border-left:1px solid var(--line)}
+#h-next.free{color:var(--ok)}
+#h-next-l{transition:opacity .22s var(--ease)}
+#v-home #h-steps-l{letter-spacing:0;white-space:normal}
+#v-home .mrow{margin:-38px 0 0 60px;position:relative;z-index:1}
+#h-m .r.outline{z-index:0}
+#h-m .r.outline:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:12px var(--bg);z-index:-1}
 #h-s{font-size:var(--t-val);color:var(--muted);margin:0 0 4px 14px;letter-spacing:-.03em}
 .roller{position:relative;overflow:hidden;padding:.08em .08em .08em 0;margin:-.08em -.08em -.08em 0;flex-shrink:0}
 .roller .r{display:block;will-change:transform}
@@ -67,20 +78,87 @@ nav{position:relative}
 #t-s{font-size:var(--t-val);color:var(--muted);margin:0 0 4px 14px;letter-spacing:-.03em}
 #t-m{transition:color .4s var(--ease)}
 #t-m.hot{-webkit-text-stroke-color:var(--accent)}
+#alert{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:400;overflow:hidden}
+#al-sheet{position:absolute;left:0;right:0;top:0;height:420px;background:var(--accent);color:var(--fg);border-radius:0 0 44px 44px;box-shadow:0 16px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;padding-top:30px;text-align:center}
+#al-sheet .mono{color:var(--fg)}
+#al-what{margin-bottom:12px}
+#alert .big{font-size:150px}
+#alert .outline{color:var(--accent);-webkit-text-stroke:3px var(--fg)}
+#alert .outline:after{color:var(--accent)}
+#alert #al-m{display:block;margin-top:6px}
+#al-sheet .al-silent{margin-top:14px;background:var(--accent-ink);color:var(--accent);padding:6px 12px;border-radius:4px}
+.al-grip{position:absolute;left:50%;bottom:20px;width:80px;height:6px;margin-left:-40px;border-radius:3px;background:var(--fg);opacity:.6}
+#al-hint{position:absolute;left:0;right:0;top:446px;text-align:center;color:var(--muted)}
+#alert.armed #al-hint{color:var(--accent)}
+#alert.ringing #al-sheet{animation:al-breathe 1.4s cubic-bezier(.16,1,.3,1) infinite}
+#alert.drag #al-sheet{animation:none}
+@keyframes al-breathe{0%{-webkit-transform:translateY(16px);transform:translateY(16px)}14%{-webkit-transform:none;transform:none}32%{-webkit-transform:translateY(16px);transform:translateY(16px)}46%{-webkit-transform:none;transform:none}}
 #h-timer{color:var(--fg);display:none}
+/* Home's bottom strip: the running timer burns along a track, the next alarm sits on the right */
+#h-strip{position:absolute;left:36px;right:36px;bottom:22px;height:58px}
+#v-home.strip-on{padding-bottom:78px}
+#hs-trk{position:absolute;left:0;right:0;top:0;height:6px;border-radius:3px;background:#5c5850}
+#hs-fill{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:3px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;transition:transform 1s linear}
+#hs-dot{position:absolute;top:-6px;width:18px;height:18px;margin-left:-9px;border-radius:9px;background:var(--accent);box-shadow:0 0 0 5px rgba(232,71,58,.25);transition:left 1s linear}
+#h-strip.idle #hs-fill,#h-strip.idle #hs-dot{display:none}
+#h-strip.idle #hs-trk{height:2px;top:2px}
+#h-strip.paused #hs-fill,#h-strip.paused #hs-dot{background:var(--muted);box-shadow:none}
+#h-strip.hot #hs-dot{animation:fuse-spark .5s steps(1) infinite}
+/* drag the spark back to the start to put the timer out; let go early and it springs back */
+#h-strip{touch-action:none}
+#h-strip.drag #hs-fill,#h-strip.drag #hs-dot{transition:none;animation:none}
+#h-strip.drag #hs-dot{width:28px;height:28px;margin-left:-14px;top:-11px}
+#h-strip.armed #hs-dot{background:var(--fg);box-shadow:0 0 0 8px rgba(242,239,232,.22)}
+#h-strip.armed #hs-tm .mono{color:var(--fg)}
+#h-strip.spring #hs-fill{transition:transform .55s cubic-bezier(.34,1.56,.64,1)}
+#h-strip.spring #hs-dot{transition:left .55s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fuse-spark{50%{box-shadow:0 0 0 10px rgba(232,71,58,.4)}}
+.hs-row{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:baseline;white-space:nowrap}
+/* both sides are built the same, mirrored: value, label | label, value */
+.hs-v{font:800 28px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);font-variant-numeric:tabular-nums}
+#hs-tm .hs-v{margin-right:12px}
+#hs-al .hs-v{margin-left:12px}
+#hs-t{color:var(--accent)}
+#h-strip.paused #hs-t{color:var(--muted)}
+
+#ttab{position:fixed;top:0;left:0;z-index:250;width:124px;height:66px;color:var(--fg);text-align:center;-webkit-transform-origin:50% 0;transform-origin:50% 0}
+#ttab.sway{animation:tt-sway 5s ease-in-out infinite}
+@keyframes tt-sway{0%,100%{-webkit-transform:rotate(-1.4deg);transform:rotate(-1.4deg)}50%{-webkit-transform:rotate(1.4deg);transform:rotate(1.4deg)}}
+#ttab-in{position:absolute;left:0;top:0;width:100%;height:100%;-webkit-transform-origin:50% 0;transform-origin:50% 0}
+#ttab-bg{position:absolute;left:0;top:0;width:100%;height:100%;background:var(--accent);border-radius:0 0 30px 30px;box-shadow:0 8px 22px rgba(0,0,0,.45);-webkit-transform-origin:50% 0;transform-origin:50% 0;transition:background-color .25s}
+#ttab-c{position:absolute;left:0;right:0;top:12px}
+#ttab b{display:block;font:800 30px/1 var(--sans);letter-spacing:-.02em}
+#ttab i{display:block;width:28px;height:4px;border-radius:2px;background:currentColor;opacity:.55;margin:8px auto 0}
+#ttab .tt-stop{display:none;font:800 24px/30px var(--sans);letter-spacing:-.02em}
+#ttab.paused #ttab-bg{background:var(--muted)}
+#ttab.armed #ttab-bg{background:var(--fg)}
+#ttab.armed{color:var(--accent-ink)}
+#ttab.armed b{display:none}#ttab.armed .tt-stop{display:block}
+#ttab-veil{position:fixed;left:0;right:0;top:0;bottom:0;z-index:240;background:rgba(14,14,12,.7);opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .3s}
+#ttab-veil.drag{transition:none}
+#ttab-msg{font:500 var(--t-cap)/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#ttab-veil.armed #ttab-msg{color:var(--accent)}
 #h-timer.on{display:inline}
 #h-timer.hot{color:var(--accent)}
 #h-timer svg.i,#h-alarm svg.i{margin-right:6px;vertical-align:-3px}
 #h-timer+#h-alarm{display:none}
+#v-home #h-alarm{display:none}
 .view.enter{animation:vin .22s var(--ease)}
 @keyframes vin{from{opacity:0;-webkit-transform:translateY(6px);transform:translateY(6px)}to{opacity:1;-webkit-transform:none;transform:none}}
 .blk{transition:background-color .4s var(--ease),color .4s var(--ease),padding .4s var(--ease),margin .4s var(--ease)}
-.blk.hot{background:var(--accent);color:var(--accent-ink);padding:16px 18px;margin:10px -18px 0;border-radius:4px;border-bottom-color:transparent}
-.blk.hot .l,.blk.hot .acc{color:var(--accent-ink)}
 /* meeting in progress: accent time, a live dot, and the block's rule fills as the meeting elapses */
 #h-next-blk{position:relative}
-#h-live{position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;-webkit-transform:scaleX(0);transform:scaleX(0);opacity:0;transition:transform 1s linear,opacity .4s var(--ease)}
-.blk.live #h-live{opacity:1}
+/* lines that carry time: a 6px track on the block's bottom edge */
+.hl{position:absolute;left:0;right:0;height:6px;border-radius:3px;background:#5c5850}
+.hl i,.hl b{position:absolute;top:0;bottom:0;left:0;border-radius:3px}
+/* next meeting: burns down over its last 15 minutes, then fills while it's on */
+#h-live{bottom:-3px;opacity:0;transition:opacity .4s var(--ease)}
+.blk.live #h-live,.blk.soon #h-live{opacity:1}
+#h-lf{width:100%;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;-webkit-transform:scaleX(0);transform:scaleX(0);transition:transform 1s linear}
+#h-ld{top:-6px;bottom:auto;left:0;width:18px;height:18px;margin-left:-9px;border-radius:9px;background:var(--accent);box-shadow:0 0 0 5px rgba(232,71,58,.25);display:none;transition:left 1s linear}
+.blk.soon #h-ld{display:block}
+.blk.soon .v{color:var(--accent)}
+.blk.soon .v small{color:var(--fg)}
 .blk.live .v{color:var(--accent)}
 .blk.live .v small{color:var(--fg)}
 .live-dot{display:inline-block;position:relative;width:14px;height:14px;border-radius:7px;background:var(--accent);margin-right:12px;vertical-align:-1px}
@@ -98,15 +176,16 @@ nav{position:relative}
 #h-next .mq{display:inline-block;white-space:nowrap}
 #h-next small.mq-on{text-overflow:clip;-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%)}
 #h-next-l .pos{float:right;color:var(--muted)}
-.blk.hot #h-next-l .pos{color:var(--accent-ink)}
 .cl{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:12px;vertical-align:2px;flex-shrink:0}
 .cl.none{box-shadow:inset 0 0 0 1.5px var(--muted)}
-@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#h-steps-blk.syncing #h-sync,#h-steps-blk.syncing .v,#h-steps-blk.synced .v{animation:none}#alert.ringing:before,#alert.ringing .al-wave,#alert.ringing .al-digits,#alert.ringing .al-tap{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
+@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#ttab.sway{animation:none}#hs-fill,#hs-dot{transition:none}#h-lf,#h-ld{transition:none}#h-strip.hot #hs-dot{animation:none}#h-steps-blk.syncing #h-sync,#h-steps-blk.syncing .v,#h-steps-blk.synced .v{animation:none}#alert.ringing #al-sheet{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
 
 .cap{padding-bottom:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
 .cap-side{white-space:nowrap;flex-shrink:0;margin-left:16px}
-#h-muted{color:var(--accent);margin-left:12px}
-#h-date{font-size:var(--t-ui);letter-spacing:.04em;color:var(--fg);white-space:nowrap}
+#h-date{font-size:var(--t-ui);letter-spacing:.04em;color:var(--muted);white-space:nowrap}
+/* colour rule on Home: white = values you read, grey = labels and context, colour = state */
+.val{color:var(--fg)}
+.ok{color:var(--ok)}
 #h-alarm svg.i{margin-right:6px;vertical-align:-3px}
 .blk{padding:18px 0;border-bottom:1px solid var(--line)}
 .blk:last-child{border-bottom:0;padding-bottom:0}
@@ -162,11 +241,11 @@ nav{position:relative}
 .ev .mqw.mq-on .mq{display:inline-block}
 .ev-group>.mono .sum{float:right}
 .wk-rule{display:flex;align-items:center;margin:30px 0 -2px}
-.wk-rule:before{content:"";flex:1;height:2px;background:var(--accent);margin-right:14px}
-.wk-rule:after{content:"";width:36px;height:2px;background:var(--accent);margin-left:14px}
-.wk-rule b{font-weight:500;color:var(--accent);letter-spacing:.08em;white-space:nowrap}
+.wk-rule:before{content:"";flex:1;height:2px;background:var(--muted);margin-right:14px}
+.wk-rule:after{content:"";width:36px;height:2px;background:var(--muted);margin-left:14px}
+.wk-rule b{font-weight:500;color:var(--muted);letter-spacing:.08em;white-space:nowrap}
 .wl svg.i{width:18px;height:18px;margin-right:6px;vertical-align:-3px}
-.wl.office{color:var(--accent)}
+.wl.office{color:var(--fg)}
 .ev.free{background-image:repeating-linear-gradient(135deg,rgba(94,224,122,.18) 0,rgba(94,224,122,.18) 1.5px,transparent 1.5px,transparent 9px)}
 .ev.free .t{color:var(--muted)}
 .ev.free .n{font:600 var(--t-row)/1.15 var(--sans);color:var(--ok);letter-spacing:-.015em}
@@ -200,6 +279,12 @@ nav{position:relative}
 .btn.sec{border:1px solid var(--line);margin-left:8px}
 .btn:active{opacity:.8}
 #a-left .mono{margin-bottom:10px}
+/* the alarm reads like Home's clock: same size, minutes step right and up into the hours, a dark halo where they cross */
+#a-left .big{font-size:196px}
+#a-left{margin:auto 0;padding-bottom:14px}
+#a-left .tfill{margin:-38px 0 0 60px;position:relative;z-index:1}
+#a-left-m{position:relative;z-index:0}
+#a-left-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:12px var(--bg);z-index:-1}
 #a-left.none .num{opacity:.3}
 #t-bar{height:2px;background:var(--line);margin-top:22px;position:relative}
 #t-bar s{position:absolute;left:0;top:0;bottom:0;background:var(--fg);transition:width 1s linear}
@@ -273,6 +358,10 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 .pf-foot{margin-top:auto;text-align:right}
 .pf-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
 .pf-sw{display:flex}
+.pf-pair{display:flex;justify-content:space-between}
+.pf-pair .pf-row{width:48%}
+.pf-pair .pf-sw button{width:68px;font-size:20px}
+.pf-pair .pf-row>span{white-space:nowrap;margin-right:12px}
 .pf-sw button{width:96px;height:48px;border:1px solid var(--line);font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
 .pf-sw button:first-child{border-radius:4px 0 0 4px}.pf-sw button:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
 .pf-sw button.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg);position:relative}
@@ -287,31 +376,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 .acc-opt:active{background:var(--bg2)}
 
 /* alert (alarm / timer end) */
-#alert{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--accent);color:var(--accent-ink);z-index:400;padding:36px 56px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center}
-#alert .big{font-size:200px;color:var(--accent-ink)}
-#alert .outline{color:var(--accent);-webkit-text-stroke:4px var(--accent-ink)}
-#alert .outline:after{color:var(--accent)}
-#alert .mono{color:var(--accent-ink)}
 /* ringing: the screen beats with the beeps (two beats every 1.4 s), waves pulse out from the digits */
-#alert{overflow:hidden}
-#alert>*{position:relative;z-index:1}
-#alert:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:#fff;opacity:0;z-index:0}
-#alert .al-wave{position:absolute;z-index:0;left:50%;top:50%;width:240px;height:240px;margin:-120px 0 0 -120px;border:14px solid var(--accent-ink);border-radius:50%;opacity:0}
-#al-dur{display:flex;align-items:baseline;justify-content:center}
-#al-dur #al-u{margin-left:24px}
-#alert .al-digits{-webkit-transform-origin:50% 50%;transform-origin:50% 50%}
-#alert.ringing:before{animation:al-flash 1.4s ease-out infinite}
-#alert.ringing .al-wave{animation:al-wave 1.4s cubic-bezier(.16,1,.3,1) infinite}
-#alert.ringing .al-wave.w2{animation-delay:.45s}
-#alert.ringing .al-digits{animation:al-thump 1.4s cubic-bezier(.16,1,.3,1) infinite}
-#alert.ringing .al-tap{animation:al-blink 1.4s steps(1) infinite}
-@keyframes al-flash{0%{opacity:.22}12%{opacity:0}32%{opacity:.22}44%{opacity:0}100%{opacity:0}}
-@keyframes al-wave{0%{-webkit-transform:scale(.6);transform:scale(.6);opacity:.6}70%{opacity:.08}100%{-webkit-transform:scale(3.6);transform:scale(3.6);opacity:0}}
-@keyframes al-thump{0%{-webkit-transform:scale(1.07);transform:scale(1.07)}14%{-webkit-transform:scale(1);transform:scale(1)}32%{-webkit-transform:scale(1.07);transform:scale(1.07)}46%{-webkit-transform:scale(1);transform:scale(1)}}
-@keyframes al-blink{0%{opacity:1}50%{opacity:.35}}
-#alert .al-foot{display:flex;justify-content:center;align-items:baseline}
-#alert .al-foot>*+*{margin-left:40px}
-#alert .al-silent{background:var(--accent-ink);color:var(--accent);padding:6px 12px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -337,7 +402,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
   <nav>
     <button class="on" data-v="home">Home</button>
     <button data-v="cal">Calendar</button>
-    <button data-v="timer">Timer</button>
+    <button data-v="timer">Clock</button>
     <button data-v="tv">TV</button>
     <i id="nav-bar"></i>
   </nav>
@@ -345,6 +410,9 @@ video::-internal-media-controls-overlay-cast-button{display:none}
     <button id="sleep-btn" aria-label="Sleep"><svg class="i"><use href="#i-moon"/></svg></button>
   </span>
 </header>
+<!-- active timer: a small tab hanging from the top edge; tap opens Timer, pull it down to stop -->
+<div id="ttab-veil" hidden><span id="ttab-msg">Pull to stop</span></div>
+<div id="ttab" hidden role="button" aria-label="Timer: tap to open, pull down to stop"><div id="ttab-in"><span id="ttab-bg"></span><div id="ttab-c"><b id="ttab-t">0:00</b><span class="tt-stop">Release</span><i></i></div></div></div>
 
 <!-- HOME -->
 <section class="view" id="v-home">
@@ -353,17 +421,21 @@ video::-internal-media-controls-overlay-cast-button{display:none}
     <div class="mrow"><div class="num big roller" id="h-m"><span class="r outline">00</span></div><span class="num" id="h-s">00</span></div>
   </div>
   <div class="col-r">
-    <div class="cap mono muted"><span id="h-date">—</span><span class="cap-side"><span id="h-muted" hidden>Muted</span><span id="h-timer" role="button"></span><span id="h-alarm" class="solid"></span></span></div>
+    <div class="cap mono muted"><span id="h-date">—</span><span class="cap-side"><span id="h-timer" role="button"></span><span id="h-alarm" class="solid"></span></span></div>
     <div class="blk" id="h-next-blk">
       <div id="h-next-c"><div class="v num" id="h-next">—</div>
       <div class="l mono muted" id="h-next-l">Next meeting</div></div>
-      <i id="h-live"></i>
+      <i class="hl" id="h-live"><i id="h-lf"></i><b id="h-ld"></b></i>
     </div>
     <div class="blk" id="h-steps-blk" role="button" aria-label="Refresh steps">
       <div class="v num" id="h-steps">—</div>
       <div class="l mono muted" id="h-steps-l">Steps</div>
       <i id="h-sync"></i>
     </div>
+  </div>
+  <div id="h-strip" hidden role="button" aria-label="Open timer and alarms">
+    <div id="hs-trk"><i id="hs-fill"></i><b id="hs-dot"></b></div>
+    <div class="hs-row"><span id="hs-tm"></span><span id="hs-al" class="mono muted"></span></div>
   </div>
 </section>
 
@@ -417,7 +489,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
         <div class="stp"><button data-s="h" data-d="1" aria-label="Hour up"><svg class="i"><use href="#i-up"/></svg></button><span class="num" id="a-hh">07</span><button data-s="h" data-d="-1" aria-label="Hour down"><svg class="i"><use href="#i-down"/></svg></button></div>
         <span class="num colon">:</span>
         <div class="stp"><button data-s="m" data-d="5" aria-label="Minutes up"><svg class="i"><use href="#i-up"/></svg></button><span class="num" id="a-mm">00</span><button data-s="m" data-d="-5" aria-label="Minutes down"><svg class="i"><use href="#i-down"/></svg></button></div>
-        <button class="btn pri" id="alrm-add"><svg class="i"><use href="#i-plus"/></svg>Add</button>
+        <button class="btn pri" id="alrm-add"><svg class="i"><use href="#i-bell"/></svg>Set</button>
       </div>
       <div id="alrm-list"></div>
     </div>
@@ -454,18 +526,19 @@ video::-internal-media-controls-overlay-cast-button{display:none}
   <div class="pf-bright" id="pf-bright"></div>
   <div class="pf-sec mono muted">Accent colour</div>
   <div class="pf-grid" id="pf-grid"></div>
-  <div class="pf-row"><span class="mono muted">Mute during meetings</span><div class="pf-sw" id="pf-mute"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
+  <div class="pf-row"><span class="mono muted">Mute in meetings</span><div class="pf-sw" id="pf-mute"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
   <div class="pf-foot mono muted">Crafted by Jorge Sousa · jorgesousa.github.io</div>
 </div>
 
 <div id="alert" hidden>
-  <i class="al-wave"></i><i class="al-wave w2"></i>
-  <div class="mono" id="al-what">Alarm</div>
-  <div class="al-digits">
-    <div id="al-time"><div class="num big" id="al-h">07</div><div class="num big outline" id="al-m" style="margin-top:10px">00</div></div>
-    <div id="al-dur" hidden><span class="num big" id="al-n">5</span><span class="num big outline" id="al-u" data-t="min">min</span></div>
+  <!-- ringing: a red sheet that breathes with the beeps; pull it down to stop -->
+  <div id="al-sheet">
+    <div class="mono" id="al-what">Alarm</div>
+    <div class="al-digits"><div class="num big" id="al-h">07</div><div class="num big outline" id="al-m">00</div></div>
+    <span class="mono al-silent" id="al-silent" hidden>Silent · in a meeting</span>
+    <i class="al-grip"></i>
   </div>
-  <div class="al-foot"><span class="mono al-tap">Tap the screen to stop</span><span class="mono" id="al-ended" hidden></span><span class="mono al-silent" id="al-silent" hidden>Silent · in a meeting</span></div>
+  <div class="mono" id="al-hint">Pull down to stop</div>
 </div>
 
 <script>
@@ -502,7 +575,7 @@ $('net').addEventListener('click',function(){renderPrefs();$('prefs').hidden=fal
 $('pf-close').addEventListener('click',function(){$('prefs').hidden=true});
 $('pf-bright').addEventListener('click',function(ev){var b=ev.target.closest('button');if(b)setBright(+b.getAttribute('data-p'))});
 // mute during meetings: alarm/timer beeps stay silent and TV plays muted while a meeting is on
-var muteMtg=false;try{muteMtg=localStorage.getItem('muteMeetings')==='1'}catch(e){}
+var muteMtg=true;try{muteMtg=localStorage.getItem('muteMeetings')!=='0'}catch(e){} // on unless turned off
 function inMeeting(){if(!events)return false;var n=new Date();return events.some(function(e){return !e.all&&e.s<=n&&e.e>n})}
 function quiet(){return muteMtg&&inMeeting()}
 var tvMutedByUs=false;
@@ -536,6 +609,7 @@ function go(v){
   if(v==='tv'&&!channels.length)loadM3U();
   // calendar opens at "now": drop finished meetings, back to the top
   if(v==='home')setTimeout(marquee,50);
+  if(typeof updFuse==='function')updFuse();
   if(v!=='cal')calMarqueeStop();
   if(v==='cal'&&events){renderCal();calToNow()}
 }
@@ -556,7 +630,7 @@ function tick(){
   var now=new Date(),h=f2(now.getHours()),m=f2(now.getMinutes());
   $('h-h').textContent=h;$('a-h').textContent=h;$('h-s').textContent=f2(now.getSeconds());
   $('a-m').textContent=m;
-  applyMute();$('h-muted').hidden=!quiet();fitDate(now);
+  applyMute();fitDate(now);meetLine();
   if(now.getMinutes()!==lastMin){
     setMinute(m,lastMin!==-1);
     lastMin=now.getMinutes();
@@ -593,7 +667,10 @@ function loadEvents(){
         wloc[k]=e.title||'';return false;
       }).map(function(e){return {s:new Date(e.start),e:new Date(e.end),t:e.title||'(no title)',all:!!e.allDay}}).sort(function(a,b){return a.s-b.s});
     } // else keep the last good list if a fetch fails
+    // a refresh keeps your scroll; the first load while you're looking jumps to Today
+    var cl=$('cal-list'),first=!cl.childElementCount,y=cl.scrollTop;
     renderCal();renderNext();
+    if(cur==='cal'){if(first)calToNow();else cl.scrollTop=y}
   });
 }
 var CLIENT_COLORS_ALL=['#8fb3ff','#f2c14e','#b48cf2','#5fd0c4','#f28fb3','#c9d36a'];
@@ -630,6 +707,7 @@ function marquee(){
   var sm=$('h-next').querySelector('small'),sp=sm&&sm.firstChild;if(!sp||!sp.animate)return;
   sm.classList.remove('mq-on');
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(!sm.clientWidth)return; // hidden (not laid out): measure again when Home shows
   var d=sp.offsetWidth-sm.clientWidth;if(d<4)return;
   sm.classList.add('mq-on');
   var run=d/45*1000,hold=2500,T=hold*2+run*2,x='translateX(-'+(d+30)+'px)';
@@ -640,31 +718,50 @@ function marquee(){
 }
 function renderNext(){
   var v=$('h-next'),l=$('h-next-l'),blk=$('h-next-blk');
-  v.classList.toggle('dim',!events);
-  blk.classList.remove('hot');blk.classList.remove('live');blk.classList.remove('browse');
+  v.classList.toggle('dim',!events);v.classList.remove('free');
+  blk.classList.remove('soon');blk.classList.remove('live');blk.classList.remove('browse');blk._e=null;
   v.classList.toggle('loading',!events&&!evTried);
   if(!events){v._h=null;v.textContent=evTried?'Offline':'Loading';setL(l,evTried?'Calendar · retrying in 5 min':'Calendar');ambLine();return}
   var list=todayLeft(),now=new Date();
-  if(!list.length){nOff=0;v._h=null;v.textContent='Free';setL(l,'No more meetings today');ambLine();return}
+  // no more meetings today: "Free" stays; a tap fades the line below to when it lasts until
+  if(!list.length){nOff=0;v._h=null;v.textContent='Free';v.classList.add('free');setL(l,freeLabel());ambLine();return}
   if(nOff>list.length-1)nOff=list.length-1;
   var e=list[nOff];
   var vh=hhmm(e.s)+'<small><span class="mq">'+esc(e.t)+'</span></small>';if(v._h!==vh){v._h=vh;v.innerHTML=vh;marquee()}
   var d=Math.round((e.s-now)/60000),pos=list.length>1?'<span class="pos">'+(nOff+1)+'/'+list.length+'</span>':'';
   var txt=d<60?'in '+Math.max(1,d)+' min':'in '+Math.floor(d/60)+'h '+f2(d%60)+'m';
-  if(nOff>0){blk.classList.add('browse');setL(l,'Later · '+txt+pos)}
+  if(nOff>0){blk.classList.add('browse');setL(l,'Later · <span class="val">'+txt+'</span>'+pos)}
   else if(now>=e.s){
-    blk.classList.add('live');
-    var p=Math.max(0,Math.min(1,(now-e.s)/(e.e-e.s)));
-    $('h-live').style.transform=$('h-live').style.webkitTransform='scaleX('+p.toFixed(4)+')';
+    blk.classList.add('live');blk._e=e;meetLine();
     setL(l,'<i class="live-dot"></i>Now · <span class="acc">until '+hhmm(e.e)+'</span>'+pos);
   }else{
-    blk.classList.toggle('hot',d<=15);
-    setL(l,'Next · '+(d<=15?'<span class="acc">'+txt+'</span>':txt)+pos);
+    if(d<=15){blk.classList.add('soon');blk._e=e;meetLine()}
+    setL(l,'Next · '+(d<=15?'<span class="acc">'+txt+'</span>':'<span class="val">'+txt+'</span>')+pos);
   }
   ambLine();
 }
+// runs every second: the burn before a meeting, the fill during it
+function meetLine(){
+  var blk=$('h-next-blk'),e=blk._e;if(!e)return;
+  var now=Date.now(),p,f=$('h-lf');
+  if(blk.classList.contains('live'))p=(now-e.s)/(e.e-e.s);
+  else{p=(e.s-now)/(15*60000);if(p<=0){renderNext();return}}
+  p=Math.max(0,Math.min(1,p));
+  f.style.transform=f.style.webkitTransform='scaleX('+p.toFixed(4)+')';
+  $('h-ld').style.left=(p*100).toFixed(2)+'%';
+}
+var freeAlt=false,freeBack=null;
+function freeLabel(){var nx=freeAlt&&nextEvent();return nx?'Until <span class="val">'+DAYS[nx.s.getDay()].slice(0,3)+' '+hhmm(nx.s)+'</span>':'No more meetings today'}
+function isFreeDay(){return !!events&&!todayLeft().length&&!!nextEvent()}
+// swap the line under "Free" with a quick fade; it returns on its own after 10 s
+function flipFree(){
+  var l=$('h-next-l');freeAlt=!freeAlt;clearTimeout(freeBack);
+  if(freeAlt)freeBack=setTimeout(function(){if(freeAlt)flipFree()},10000);
+  l.style.opacity='0';setTimeout(function(){renderNext();l.style.opacity=''},220);
+}
+function nCards(){return todayLeft().length}
 function stepNext(dir){
-  var n=todayLeft().length,to=nOff+dir,blk=$('h-next-blk');
+  var n=nCards(),to=nOff+dir,blk=$('h-next-blk');
   if(to<0||to>n-1){blk.classList.remove('nudge-l','nudge-r');void blk.offsetWidth;blk.classList.add(dir>0?'nudge-l':'nudge-r');return}
   var c=$('h-next-c');
   c.className='out'+(dir>0?'l':'r');
@@ -680,11 +777,12 @@ function stepBackHome(){var c=$('h-next-c');c.className='outr';setTimeout(functi
   blk.addEventListener('touchstart',function(ev){x0=ev.touches[0].clientX;y0=ev.touches[0].clientY},{passive:true});
   blk.addEventListener('touchend',function(ev){
     if(x0===null)return;var t=ev.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+    if(isFreeDay()&&(Math.abs(dx)>40||(Math.abs(dx)<10&&Math.abs(dy)<10))){flipFree();x0=null;return}
     if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))stepNext(dx<0?1:-1);
-    else if(Math.abs(dx)<10&&Math.abs(dy)<10)stepNext(nOff<todayLeft().length-1?1:-nOff);
+    else if(Math.abs(dx)<10&&Math.abs(dy)<10)stepNext(nOff<nCards()-1?1:-nOff);
     ev.preventDefault();
   });
-  blk.addEventListener('click',function(){if(!('ontouchstart' in window))stepNext(nOff<todayLeft().length-1?1:-nOff)});
+  blk.addEventListener('click',function(){if(!('ontouchstart' in window)){if(isFreeDay())flipFree();else stepNext(nOff<nCards()-1?1:-nOff)}});
 })();
 // Calendar: tap a row with a cut-off title to glide it once and reveal the end
 var cmq={anim:null,el:null};
@@ -746,7 +844,7 @@ function renderCal(){
     rows.forEach(function(e){
       if(!e.all){gap(e.s);if(e.e>cur)cur=e.e;n++}
       // highlight the meeting happening now, or else the next one
-      var isNow=!e.all&&!hl&&(hl=true);
+      var isNow=!e.all&&!hl&&(hl=true)&&e.s-Date.now()<=30*60000; // red only when on now or starting within 30 min
       out+='<div class="ev'+(isNow?' now':'')+'"><span class="t mono">'+(e.all?'All day':hhmm(e.s)+'–'+hhmm(e.e))+'</span><span class="n">'+clientDot(e.t)+'<span class="mqw"><span class="mq">'+esc(e.t)+'</span></span></span></div>';
     });
     if(cur<we)gap(we);
@@ -794,8 +892,8 @@ function renderSteps(steps,upd){
   var exp=Math.round(GOAL*frac);
   if(steps>=GOAL)l.innerHTML='<span style="color:var(--ok)">Goal reached</span>';
   else if(exp===0)l.innerHTML='Pace starts at '+f2(Math.floor(DAY_START/60))+':'+f2(DAY_START%60);
-  else if(steps>=exp)l.innerHTML='Expected '+fmtN(exp)+' · '+fmtN(steps-exp)+' ahead';
-  else l.innerHTML='Expected '+fmtN(exp)+' · <span class="acc">'+fmtN(exp-steps)+' behind</span>';
+  else if(steps>=exp)l.innerHTML='Expected <span class="val">'+fmtN(exp)+'</span> · <span class="ok">'+fmtN(steps-exp)+' ahead</span>';
+  else l.innerHTML='Expected <span class="val">'+fmtN(exp)+'</span> · <span class="acc">'+fmtN(exp-steps)+' behind</span>';
 }
 var stepsAt=null;
 function fetchSteps(){
@@ -832,13 +930,11 @@ document.addEventListener('touchstart',function(){try{ctx()}catch(e){}},{once:tr
 
 // ---------- alerta (alarme / fim do timer) ----------
 var ringI=null,ringT=null;
-// ring(what,h,m) for an alarm (shows its time); ring(what,null,null,mins) for a timer (shows what ended)
+// ring(what,h,m) for an alarm (its time); ring(what,null,null,mins) for a timer (the time it ended)
 function ring(what,h,m,mins){
-  $('al-what').textContent=what;
-  var isT=mins!=null;$('al-time').hidden=isT;$('al-dur').hidden=!isT;$('al-ended').hidden=!isT;
-  if(isT){var n=mins%60===0&&mins>=60?mins/60:mins,u=mins%60===0&&mins>=60?(n>1?'hours':'hour'):'min';
-    $('al-n').textContent=n;$('al-u').textContent=u;$('al-u').setAttribute('data-t',u);$('al-ended').textContent='Ended '+hhmm(new Date())}
-  else{$('al-h').textContent=h;$('al-m').textContent=m}
+  if(mins!=null){var n=new Date();what=mins+' min timer · done';h=f2(n.getHours());m=f2(n.getMinutes())}
+  $('al-what').textContent=what;$('al-h').textContent=h;$('al-m').textContent=m;
+  var sh=$('al-sheet');sh.style.transform=sh.style.webkitTransform='';$('alert').style.opacity='';$('alert').classList.remove('armed','drag');$('al-hint').textContent='Pull down to stop';
   $('al-silent').hidden=!quiet();
   var al=$('alert');al.classList.remove('ringing');al.hidden=false;void al.offsetWidth;al.classList.add('ringing');
   $('amb').hidden=true;bright(cfg.brightDay);
@@ -847,8 +943,34 @@ function ring(what,h,m,mins){
   clearInterval(ringI);dbl();ringI=setInterval(dbl,1400);
   clearTimeout(ringT);ringT=setTimeout(stopRing,90*1000);
 }
-function stopRing(){clearInterval(ringI);clearTimeout(ringT);$('alert').classList.remove('ringing');$('alert').hidden=true;awake();checkSleep(new Date())}
-$('alert').addEventListener('click',stopRing);
+function stopRing(){clearInterval(ringI);clearTimeout(ringT);$('alert').classList.remove('ringing','armed','drag');$('alert').hidden=true;$('alert').style.opacity='';$('al-sheet').style.transform=$('al-sheet').style.webkitTransform='';awake();checkSleep(new Date())}
+// pull the sheet down to stop: follows the finger, springs back if let go early, falls away when stopped
+(function(){
+  var al=$('alert'),sh=$('al-sheet'),y0=null,dy=0,lastY=0,lastT=0,vel=0,raf=0,PULL=110;
+  function draw(d){var shown=d<PULL?d:PULL+(d-PULL)*.3;sh.style.transform=sh.style.webkitTransform='translateY('+shown.toFixed(1)+'px)'}
+  function start(y){cancelAnimationFrame(raf);y0=y;dy=0;lastY=y;lastT=Date.now();vel=0}
+  function move(y){if(y0===null)return;var n=Date.now();vel=(y-lastY)/Math.max(1,n-lastT);lastY=y;lastT=n;dy=Math.max(0,y-y0);
+    if(dy>4)al.classList.add('drag');draw(dy);var armed=dy>PULL;al.classList.toggle('armed',armed);$('al-hint').textContent=armed?'Release to stop':'Pull down to stop'}
+  function end(){if(y0===null)return;y0=null;
+    if(dy>PULL||(dy>40&&vel>.7)){ // fall away with gravity, then stop
+      var y=Math.min(dy,PULL+(dy-PULL)*.3),vy=Math.max(vel*1000,400),prev=Date.now();
+      (function step(){var n=Date.now(),dt=Math.min(.032,(n-prev)/1000);prev=n;vy+=2800*dt;y+=vy*dt;
+        sh.style.transform=sh.style.webkitTransform='translateY('+y.toFixed(1)+'px)';al.style.opacity=Math.max(0,1-y/700);
+        if(y<620){raf=requestAnimationFrame(step);return}stopRing()})();return}
+    if(dy<4){return}
+    al.classList.remove('armed');$('al-hint').textContent='Pull down to stop';
+    var x=dy<PULL?dy:PULL,vx=0,prev=Date.now(); // spring back
+    (function step(){var n=Date.now(),dt=Math.min(.032,(n-prev)/1000);prev=n;var a=-240*x-12*vx;vx+=a*dt;x+=vx*dt;draw(x);
+      if(Math.abs(x)<.4&&Math.abs(vx)<5){sh.style.transform=sh.style.webkitTransform='';al.classList.remove('drag');return}
+      raf=requestAnimationFrame(step)})();
+  }
+  al.addEventListener('touchstart',function(e){start(e.touches[0].clientY)},{passive:true});
+  al.addEventListener('touchmove',function(e){move(e.touches[0].clientY);e.preventDefault()});
+  al.addEventListener('touchend',function(e){end();e.preventDefault()});
+  al.addEventListener('mousedown',function(e){start(e.clientY);
+    function mv(ev){move(ev.clientY)}function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);end()}
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)});
+})();
 
 // ---------- timer ----------
 var PRESETS=[5,10,15,25,30,60],tTot=25*60,tLeft=25*60,tRun=false,tI=null;
@@ -861,9 +983,66 @@ function tUI(){
   var bar=$('t-bar');bar.firstChild.style.width=(tLeft/Math.max(tTot,1)*100)+'%';bar.classList.toggle('low',tRun&&tLeft<60);
   document.querySelectorAll('#presets button').forEach(function(b){b.classList.toggle('on',+b.getAttribute('data-m')*60===tTot)});
   $('t-go').innerHTML=tRun?'<svg class="i"><use href="#i-pause"/></svg>Pause':'<svg class="i"><use href="#i-play"/></svg>'+(tLeft<tTot&&tLeft>0?'Resume':'Start');
-  var ht=$('h-timer'),showT=tRun||(tLeft>0&&tLeft<tTot);ht.classList.toggle('on',showT);ht.classList.toggle('hot',tRun&&tLeft<60);
-  if(showT)ht.innerHTML='<svg class="i"><use href="#i-timer"/></svg>'+f2(Math.floor(tLeft/60))+':'+f2(tLeft%60)+(tRun?'':' · paused');
+  updFuse();
 }
+// running timer outside the Timer screen: Home shows it in the bottom strip, every other screen gets the hanging tab
+function updFuse(){
+  var active=(tRun||(tLeft>0&&tLeft<tTot))&&cur!=='timer',t=$('ttab');
+  var onHome=cur==='home'&&$('player').hidden;
+  t.hidden=!active||onHome;
+  var txt=Math.floor(tLeft/60)+':'+f2(tLeft%60);
+  if(!t.hidden){var was=t._shown;$('ttab-t').textContent=txt;t.classList.toggle('paused',!tRun);if(!was&&window.placeTab)placeTab()}
+  t._shown=!t.hidden;
+  renderStrip(active);
+}
+function alarmWhen(t){return t>hhmm(new Date())?'today':'tomorrow'}
+function renderStrip(active){
+  if(active===undefined)active=(tRun||(tLeft>0&&tLeft<tTot));
+  var st=$('h-strip'),na=nextAlarm();
+  // the strip always holds its place: timer on the left, alarm on the right
+  st.hidden=false;$('v-home').classList.add('strip-on');
+  st.classList.toggle('idle',!active);st.classList.toggle('paused',active&&!tRun);st.classList.toggle('hot',active&&tRun&&tLeft<60);
+  if(active){
+    if(st.classList.contains('drag'))return; // the finger owns the fuse
+    var frac=tLeft/Math.max(tTot,1),end=new Date(Date.now()+tLeft*1000);
+    $('hs-fill').style.transform=$('hs-fill').style.webkitTransform='scaleX('+frac.toFixed(4)+')';
+    $('hs-dot').style.left=(frac*100).toFixed(2)+'%';
+    $('hs-tm').innerHTML='<b class="hs-v" id="hs-t">'+Math.floor(tLeft/60)+':'+f2(tLeft%60)+'</b><span class="mono muted">Timer · '+(tRun?'ends '+hhmm(end):'paused')+'</span>';
+  }else $('hs-tm').innerHTML='<span class="mono muted">No timer</span>';
+  $('hs-al').innerHTML=na?'<span class="mono muted">Alarm · '+alarmWhen(na)+'</span><b class="hs-v">'+na+'</b>':'<span class="mono muted">No alarm set</span>';
+}
+(function(){
+  var st=$('h-strip'),drag=null,ARM=.05,noClick=false;
+  function show(p){$('hs-fill').style.transform=$('hs-fill').style.webkitTransform='scaleX('+p.toFixed(4)+')';$('hs-dot').style.left=(p*100).toFixed(2)+'%'}
+  function say(t){var m=st.querySelector('#hs-tm .mono');if(m)m.textContent=t}
+  // touch events (the clock's WebView handles these reliably), mouse for testing on a computer
+  function start(x){
+    if(!(tRun||(tLeft>0&&tLeft<tTot)))return false;
+    var r=$('hs-trk').getBoundingClientRect(),frac=tLeft/Math.max(tTot,1);
+    if(Math.abs(x-(r.left+r.width*frac))>80)return false; // away from the spark: a tap opens Clock
+    drag={r:r,frac:frac,p:frac,moved:false};st.classList.remove('spring');st.classList.add('drag');return true;
+  }
+  function move(x){
+    if(!drag)return;
+    var p=Math.max(0,Math.min(drag.frac,(x-drag.r.left)/drag.r.width));
+    if(drag.frac-p>.01&&!drag.moved){drag.moved=true;say('Drag to the start to cancel')}
+    drag.p=p;show(p);
+    var armed=p<=ARM;if(armed!==st.classList.contains('armed')){st.classList.toggle('armed',armed);say(armed?'Release to cancel':'Drag to the start to cancel')}
+  }
+  function end(){
+    if(!drag)return;var d=drag;drag=null;
+    st.classList.remove('drag');
+    if(!d.moved){st.classList.remove('armed');return}
+    noClick=true;setTimeout(function(){noClick=false},350);
+    if(st.classList.contains('armed')){st.classList.remove('armed');setTimer(tTot);return} // put out
+    st.classList.add('spring');renderStrip();setTimeout(function(){st.classList.remove('spring')},600);
+  }
+  st.addEventListener('touchstart',function(ev){start(ev.touches[0].clientX)},{passive:true});
+  st.addEventListener('touchmove',function(ev){if(drag){ev.preventDefault();move(ev.touches[0].clientX)}},{passive:false});
+  st.addEventListener('touchend',end);st.addEventListener('touchcancel',end);
+  st.addEventListener('mousedown',function(ev){if(start(ev.clientX)){var mm=function(e){move(e.clientX)},mu=function(){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);end()};document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu)}});
+  st.addEventListener('click',function(){if(!noClick)go('timer')});
+})();
 $('t-go').addEventListener('click',function(){
   if(tLeft===0)tLeft=tTot;
   tRun=!tRun;clearInterval(tI);
@@ -875,7 +1054,70 @@ $('t-go').addEventListener('click',function(){
   tUI();
 });
 $('t-reset').addEventListener('click',function(){setTimer(tTot)});
-$('h-timer').addEventListener('click',function(){go('timer')});
+// tab gesture: tap = open Timer; pull down ~70px (or flick) and release = stop.
+// The red body stretches like a drop while the time follows the finger; let go early and a
+// real spring pulls it back with a wobble; stopping lets the drop come loose and fall.
+(function(){
+  var t=$('ttab'),bg=$('ttab-bg'),c=$('ttab-c'),v=$('ttab-veil'),H=66,PULL=70;
+  var y0=null,dy=0,lastY=0,lastT=0,vel=0,raf=0;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function place(){
+    var nb=document.querySelectorAll('nav button'),last=nb[nb.length-1].getBoundingClientRect(),sl=$('sleep-btn').getBoundingClientRect();
+    t.style.left=Math.round((last.right+sl.left)/2-t.offsetWidth/2)+'px';
+  }
+  function draw(d){ // d = pull distance in px (can be negative briefly while springing)
+    var shown=d<PULL?d:PULL+(d-PULL)*.3;
+    bg.style.transform=bg.style.webkitTransform='scaleY('+Math.max(.6,(H+shown)/H).toFixed(4)+')';
+    c.style.transform=c.style.webkitTransform='translateY('+(shown*.92).toFixed(1)+'px)';
+  }
+  function veil(d){var armed=d>PULL;v.hidden=d<4;v.style.opacity=Math.max(0,Math.min(1,d/PULL));
+    t.classList.toggle('armed',armed);v.classList.toggle('armed',armed);
+    $('ttab-msg').textContent=armed?'Release to stop the timer':'Pull to stop';}
+  function spring(from,v0,done){ // damped spring back to 0
+    cancelAnimationFrame(raf);if(reduce){draw(0);done&&done();return}
+    var x=from,vx=v0*16,prev=Date.now();
+    (function step(){var n=Date.now(),dt=Math.min(.032,(n-prev)/1000);prev=n;
+      var a=-260*x-11*vx;vx+=a*dt;x+=vx*dt;draw(x);
+      if(Math.abs(x)<.3&&Math.abs(vx)<4){draw(0);done&&done();return}
+      raf=requestAnimationFrame(step)})();
+  }
+  function drop(){ // the drop comes loose and falls with gravity
+    cancelAnimationFrame(raf);var y=dy,vy=Math.max(vel*1000,300),rot=0,op=1,prev=Date.now(),dir=Math.random()<.5?-1:1;
+    v.style.opacity=0;
+    (function step(){var n=Date.now(),dt=Math.min(.032,(n-prev)/1000);prev=n;
+      vy+=2600*dt;y+=vy*dt;rot+=dir*40*dt;op-=1.8*dt;
+      t.style.transform=t.style.webkitTransform='translateY('+y.toFixed(1)+'px) rotate('+rot.toFixed(2)+'deg)';t.style.opacity=Math.max(0,op);
+      if(y<560&&op>0){raf=requestAnimationFrame(step);return}
+      setTimer(tTot);t.style.transform=t.style.webkitTransform='';t.style.opacity='';draw(0);
+      t.classList.remove('armed');v.classList.remove('armed');v.hidden=true;t.classList.add('sway')})();
+  }
+  function arrive(){ // falls in from above and settles
+    if(reduce)return;cancelAnimationFrame(raf);var y=-90,vy=0,prev=Date.now();t.classList.remove('sway');
+    (function step(){var n=Date.now(),dt=Math.min(.032,(n-prev)/1000);prev=n;
+      var a=-180*y-10*vy;vy+=a*dt;y+=vy*dt;t.style.transform=t.style.webkitTransform='translateY('+y.toFixed(1)+'px)';
+      if(Math.abs(y)<.4&&Math.abs(vy)<5){t.style.transform=t.style.webkitTransform='';t.classList.add('sway');return}
+      raf=requestAnimationFrame(step)})();
+  }
+  window.placeTab=function(){place();arrive()};
+  function start(y){cancelAnimationFrame(raf);t.classList.remove('sway');t.style.transform=t.style.webkitTransform='';
+    y0=y;dy=0;lastY=y;lastT=Date.now();vel=0;v.classList.add('drag')}
+  function move(y){if(y0===null)return;var n=Date.now();vel=(y-lastY)/Math.max(1,n-lastT);lastY=y;lastT=n;
+    dy=Math.max(0,y-y0);draw(dy);veil(dy)}
+  function end(){
+    if(y0===null)return;y0=null;v.classList.remove('drag');
+    if(dy>PULL||(dy>24&&vel>.6)){drop();return}
+    if(dy<8&&$('player').hidden){draw(0);v.hidden=true;t.classList.add('sway');go('timer');return}
+    v.style.opacity=0;t.classList.remove('armed');v.classList.remove('armed');
+    spring(Math.min(dy,PULL),-Math.max(0,vel),function(){v.hidden=true;t.classList.add('sway')});
+  }
+  t.addEventListener('touchstart',function(e){start(e.touches[0].clientY)},{passive:true});
+  t.addEventListener('touchmove',function(e){move(e.touches[0].clientY);e.preventDefault()});
+  t.addEventListener('touchend',function(e){end();e.preventDefault()});
+  t.addEventListener('mousedown',function(e){start(e.clientY);
+    function mv(ev){move(ev.clientY)}function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);end()}
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)});
+  window.addEventListener('resize',place);
+})();
 document.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){
   var p=b.getAttribute('data-p');
   document.querySelectorAll('.seg button').forEach(function(x){x.classList.toggle('on',x===b)});
@@ -885,6 +1127,8 @@ document.querySelectorAll('.seg button').forEach(function(b){b.addEventListener(
 
 // ---------- alarmes ----------
 var alarms=[];try{alarms=JSON.parse(localStorage.getItem('alarms')||'[]')}catch(e){}
+// one alarm only: keep the first switched-on one from older saves
+if(alarms.length>1){alarms=[alarms.filter(function(a){return a.on})[0]||alarms[0]];try{localStorage.setItem('alarms',JSON.stringify(alarms))}catch(e){}}
 function saveA(){try{localStorage.setItem('alarms',JSON.stringify(alarms))}catch(e){}}
 function renderALeft(){
   var na=nextAlarm(),l=$('a-left');
@@ -916,7 +1160,7 @@ document.querySelectorAll('.stp button').forEach(function(b){
   b.addEventListener('touchend',stop);b.addEventListener('touchcancel',stop);
   b.addEventListener('click',function(){if(repeated){repeated=false;return}aStep(b)});
 });
-$('alrm-add').addEventListener('click',function(){var v=f2(aH)+':'+f2(aM);alarms.push({t:v,on:true,id:Date.now()});saveA();renderA();renderALeft();ambLine()});
+$('alrm-add').addEventListener('click',function(){var v=f2(aH)+':'+f2(aM);alarms=[{t:v,on:true,id:Date.now()}];saveA();renderA();renderALeft();ambLine()});
 function checkAlarms(now){var s=hhmm(now);alarms.forEach(function(a){if(a.on&&a.t===s){var p=s.split(':');ring('Alarm',p[0],p[1])}})}
 renderA();
 
@@ -924,7 +1168,7 @@ renderA();
 var idleT=null,sleeping=false,manualSleep=false,lastTouch=Date.now();
 function inSleepWindow(now){var m=mins(now),a=hm(cfg.sleepStart),b=hm(cfg.sleepEnd);return a>b?(m>=a||m<b):(m>=a&&m<b)}
 function nextAlarm(){var on=alarms.filter(function(a){return a.on}).map(function(a){return a.t}).sort();if(!on.length)return null;var n=hhmm(new Date());for(var i=0;i<on.length;i++)if(on[i]>n)return on[i];return on[0]}
-function renderHomeAlarm(){var na=nextAlarm();$('h-alarm').innerHTML=na?'<svg class="i"><use href="#i-bell"/></svg>'+na:''}
+function renderHomeAlarm(){var na=nextAlarm();$('h-alarm').innerHTML=na?'<svg class="i"><use href="#i-bell"/></svg>'+na:'';if(typeof renderStrip==='function')renderStrip()}
 function ambLine(){
   renderHomeAlarm();
   var l=$('a-l');
