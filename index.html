@@ -62,9 +62,11 @@ nav{position:relative}
 .roller .r{display:block;will-change:transform}
 .roller .r.in{position:absolute;left:0;top:.08em}
 .tfill{position:relative;overflow:hidden}
-#t-s{display:block}
+#a-left-m{display:block}
+#t-m{display:block}
+#t-s{font-size:var(--t-val);color:var(--muted);margin:0 0 4px 14px;letter-spacing:-.03em}
 #t-m{transition:color .4s var(--ease)}
-#t-m.hot{color:var(--accent)}
+#t-m.hot{-webkit-text-stroke-color:var(--accent)}
 #h-timer{color:var(--fg);display:none}
 #h-timer.on{display:inline}
 #h-timer.hot{color:var(--accent)}
@@ -197,6 +199,8 @@ nav{position:relative}
 .btn.pri svg.i{stroke:var(--bg)}
 .btn.sec{border:1px solid var(--line);margin-left:8px}
 .btn:active{opacity:.8}
+#a-left .mono{margin-bottom:10px}
+#a-left.none .num{opacity:.3}
 #t-bar{height:2px;background:var(--line);margin-top:22px;position:relative}
 #t-bar s{position:absolute;left:0;top:0;bottom:0;background:var(--fg);transition:width 1s linear}
 #t-bar.low s{background:var(--accent)}
@@ -283,7 +287,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 .acc-opt:active{background:var(--bg2)}
 
 /* alert (alarm / timer end) */
-#alert{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--accent);color:var(--accent-ink);z-index:400;padding:36px 56px;display:flex;flex-direction:column;justify-content:space-between}
+#alert{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--accent);color:var(--accent-ink);z-index:400;padding:36px 56px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center}
 #alert .big{font-size:200px;color:var(--accent-ink)}
 #alert .outline{color:var(--accent);-webkit-text-stroke:4px var(--accent-ink)}
 #alert .outline:after{color:var(--accent)}
@@ -292,18 +296,21 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #alert{overflow:hidden}
 #alert>*{position:relative;z-index:1}
 #alert:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:#fff;opacity:0;z-index:0}
-#alert .al-wave{position:absolute;z-index:0;left:120px;top:50%;width:240px;height:240px;margin-top:-120px;border:8px solid var(--accent-ink);border-radius:50%;opacity:0}
-#alert .al-digits{-webkit-transform-origin:0 50%;transform-origin:0 50%}
+#alert .al-wave{position:absolute;z-index:0;left:50%;top:50%;width:240px;height:240px;margin:-120px 0 0 -120px;border:14px solid var(--accent-ink);border-radius:50%;opacity:0}
+#al-dur{display:flex;align-items:baseline;justify-content:center}
+#al-dur #al-u{margin-left:24px}
+#alert .al-digits{-webkit-transform-origin:50% 50%;transform-origin:50% 50%}
 #alert.ringing:before{animation:al-flash 1.4s ease-out infinite}
 #alert.ringing .al-wave{animation:al-wave 1.4s cubic-bezier(.16,1,.3,1) infinite}
 #alert.ringing .al-wave.w2{animation-delay:.45s}
 #alert.ringing .al-digits{animation:al-thump 1.4s cubic-bezier(.16,1,.3,1) infinite}
 #alert.ringing .al-tap{animation:al-blink 1.4s steps(1) infinite}
 @keyframes al-flash{0%{opacity:.22}12%{opacity:0}32%{opacity:.22}44%{opacity:0}100%{opacity:0}}
-@keyframes al-wave{0%{-webkit-transform:scale(.6);transform:scale(.6);opacity:.55}60%{opacity:0}100%{-webkit-transform:scale(3.6);transform:scale(3.6);opacity:0}}
+@keyframes al-wave{0%{-webkit-transform:scale(.6);transform:scale(.6);opacity:.6}70%{opacity:.08}100%{-webkit-transform:scale(3.6);transform:scale(3.6);opacity:0}}
 @keyframes al-thump{0%{-webkit-transform:scale(1.07);transform:scale(1.07)}14%{-webkit-transform:scale(1);transform:scale(1)}32%{-webkit-transform:scale(1.07);transform:scale(1.07)}46%{-webkit-transform:scale(1);transform:scale(1)}}
 @keyframes al-blink{0%{opacity:1}50%{opacity:.35}}
-#alert .al-foot{display:flex;justify-content:space-between;align-items:baseline}
+#alert .al-foot{display:flex;justify-content:center;align-items:baseline}
+#alert .al-foot>*+*{margin-left:40px}
 #alert .al-silent{background:var(--accent-ink);color:var(--accent);padding:6px 12px;border-radius:4px}
 </style>
 </head>
@@ -381,9 +388,17 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 <!-- TIMER -->
 <section class="view" id="v-timer" hidden>
   <div class="col-l">
-    <div class="num big solid" id="t-m">25</div>
-    <div class="num big tfill"><span class="outline" id="t-s">00</span></div>
+    <div id="t-left">
+    <!-- same rule as Home: outlined = minutes, small grey = seconds -->
+    <div class="mrow tmrow"><span class="num big outline" id="t-m">25</span><span class="num" id="t-s">00</span></div>
     <div id="t-bar"><s style="width:100%"></s></div>
+    </div>
+    <!-- Alarms tab: the left column shows the next alarm instead of the timer -->
+    <div id="a-left" hidden>
+      <div class="mono muted" id="a-left-l">Next alarm</div>
+      <div class="num big solid" id="a-left-h">07</div>
+      <div class="num big tfill"><span class="outline" id="a-left-m" data-t="00">00</span></div>
+    </div>
   </div>
   <div class="col-r" style="justify-content:flex-start">
     <div class="seg mono">
@@ -447,10 +462,10 @@ video::-internal-media-controls-overlay-cast-button{display:none}
   <i class="al-wave"></i><i class="al-wave w2"></i>
   <div class="mono" id="al-what">Alarm</div>
   <div class="al-digits">
-    <div class="num big" id="al-h">07</div>
-    <div class="num big outline" id="al-m" style="margin-top:10px">00</div>
+    <div id="al-time"><div class="num big" id="al-h">07</div><div class="num big outline" id="al-m" style="margin-top:10px">00</div></div>
+    <div id="al-dur" hidden><span class="num big" id="al-n">5</span><span class="num big outline" id="al-u" data-t="min">min</span></div>
   </div>
-  <div class="al-foot"><span class="mono al-tap">Tap the screen to stop</span><span class="mono al-silent" id="al-silent" hidden>Silent · in a meeting</span></div>
+  <div class="al-foot"><span class="mono al-tap">Tap the screen to stop</span><span class="mono" id="al-ended" hidden></span><span class="mono al-silent" id="al-silent" hidden>Silent · in a meeting</span></div>
 </div>
 
 <script>
@@ -767,7 +782,7 @@ function setNet(ok){online=ok;$('net').classList.toggle('on',ok)}
 var stepsShown=null,stepsAnim=null;
 function countSteps(n){
   var v=$('h-steps'),from=stepsShown==null?n:stepsShown,t0=Date.now(),dur=900;stepsShown=n;cancelAnimationFrame(stepsAnim);
-  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+'<span class="of">/ '+fmtN(GOAL)+'</span>';if(k<1)stepsAnim=requestAnimationFrame(f)}
+  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+'<span class="of">/ '+fmtN(GOAL)+' steps</span>';if(k<1)stepsAnim=requestAnimationFrame(f)}
   f();
 }
 function renderSteps(steps,upd){
@@ -817,8 +832,13 @@ document.addEventListener('touchstart',function(){try{ctx()}catch(e){}},{once:tr
 
 // ---------- alerta (alarme / fim do timer) ----------
 var ringI=null,ringT=null;
-function ring(what,h,m){
-  $('al-what').textContent=what;$('al-h').textContent=h;$('al-m').textContent=m;
+// ring(what,h,m) for an alarm (shows its time); ring(what,null,null,mins) for a timer (shows what ended)
+function ring(what,h,m,mins){
+  $('al-what').textContent=what;
+  var isT=mins!=null;$('al-time').hidden=isT;$('al-dur').hidden=!isT;$('al-ended').hidden=!isT;
+  if(isT){var n=mins%60===0&&mins>=60?mins/60:mins,u=mins%60===0&&mins>=60?(n>1?'hours':'hour'):'min';
+    $('al-n').textContent=n;$('al-u').textContent=u;$('al-u').setAttribute('data-t',u);$('al-ended').textContent='Ended '+hhmm(new Date())}
+  else{$('al-h').textContent=h;$('al-m').textContent=m}
   $('al-silent').hidden=!quiet();
   var al=$('alert');al.classList.remove('ringing');al.hidden=false;void al.offsetWidth;al.classList.add('ringing');
   $('amb').hidden=true;bright(cfg.brightDay);
@@ -849,7 +869,7 @@ $('t-go').addEventListener('click',function(){
   tRun=!tRun;clearInterval(tI);
   if(tRun)tI=setInterval(function(){
     tLeft--;
-    if(tLeft<=0){tLeft=0;clearInterval(tI);tRun=false;ring(Math.round(tTot/60)+' min timer done','00','00')}
+    if(tLeft<=0){tLeft=0;clearInterval(tI);tRun=false;ring('Timer done',null,null,Math.round(tTot/60))}
     tUI();
   },1000);
   tUI();
@@ -860,11 +880,18 @@ document.querySelectorAll('.seg button').forEach(function(b){b.addEventListener(
   var p=b.getAttribute('data-p');
   document.querySelectorAll('.seg button').forEach(function(x){x.classList.toggle('on',x===b)});
   $('p-t').hidden=p!=='t';$('p-a').hidden=p!=='a';
+  $('t-left').hidden=p!=='t';$('a-left').hidden=p!=='a';renderALeft();
 })});
 
 // ---------- alarmes ----------
 var alarms=[];try{alarms=JSON.parse(localStorage.getItem('alarms')||'[]')}catch(e){}
 function saveA(){try{localStorage.setItem('alarms',JSON.stringify(alarms))}catch(e){}}
+function renderALeft(){
+  var na=nextAlarm(),l=$('a-left');
+  l.classList.toggle('none',!na);
+  if(na){var p=na.split(':');$('a-left-l').textContent='Next alarm';$('a-left-h').textContent=p[0];$('a-left-m').textContent=p[1];$('a-left-m').setAttribute('data-t',p[1])}
+  else{$('a-left-l').textContent='No alarm set';$('a-left-h').textContent='00';$('a-left-m').textContent='00';$('a-left-m').setAttribute('data-t','00')}
+}
 function renderA(){
   var el=$('alrm-list');
   if(!alarms.length){el.innerHTML='<div class="mono muted" style="padding:18px 0">No alarms</div>';return}
@@ -877,7 +904,7 @@ $('alrm-list').addEventListener('click',function(ev){
   var tog=b.getAttribute('data-tog'),del=b.getAttribute('data-del');
   if(tog){alarms.forEach(function(a){if(String(a.id)===tog)a.on=!a.on})}
   if(del){alarms=alarms.filter(function(a){return String(a.id)!==del})}
-  saveA();renderA();ambLine();
+  saveA();renderA();renderALeft();ambLine();
 });
 var aH=7,aM=0;
 function aUI(){$('a-hh').textContent=f2(aH);$('a-mm').textContent=f2(aM)}
@@ -889,7 +916,7 @@ document.querySelectorAll('.stp button').forEach(function(b){
   b.addEventListener('touchend',stop);b.addEventListener('touchcancel',stop);
   b.addEventListener('click',function(){if(repeated){repeated=false;return}aStep(b)});
 });
-$('alrm-add').addEventListener('click',function(){var v=f2(aH)+':'+f2(aM);alarms.push({t:v,on:true,id:Date.now()});saveA();renderA();ambLine()});
+$('alrm-add').addEventListener('click',function(){var v=f2(aH)+':'+f2(aM);alarms.push({t:v,on:true,id:Date.now()});saveA();renderA();renderALeft();ambLine()});
 function checkAlarms(now){var s=hhmm(now);alarms.forEach(function(a){if(a.on&&a.t===s){var p=s.split(':');ring('Alarm',p[0],p[1])}})}
 renderA();
 
