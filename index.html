@@ -342,12 +342,15 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 /* ambient: screensaver + sleep */
 #amb{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;opacity:0;transition:opacity .8s var(--ease)}
 #amb.on{opacity:1}
-#amb-in{position:absolute;left:60px;top:28px;transition:transform 2s var(--ease)}
+/* the same staircase as Home, centred on the screen */
+#amb-in{position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}
 #amb .big{font-size:230px}
-#amb .mono{margin-top:18px}
-#amb.night .solid{color:#5a574f}
-#amb.night .outline{-webkit-text-stroke-color:#5a574f}
-#amb.night .mono{color:#4a473f}
+#a-m{margin:-45px 0 0 70px;z-index:1}
+#a-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:14px var(--bg);z-index:-1}
+#amb .mono{margin:16px 0 0 74px}
+#amb.night .solid{color:#a29e94}
+#amb.night .outline{-webkit-text-stroke-color:#a29e94}
+#amb.night .mono{color:#7a766c}
 
 /* preferences */
 #prefs{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:350;padding:22px 36px 34px;display:flex;flex-direction:column}
@@ -515,7 +518,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 <div id="amb" hidden>
   <div id="amb-in">
     <div class="num big solid" id="a-h">00</div>
-    <div class="num big outline" id="a-m" style="margin-top:10px">00</div>
+    <div class="num big outline" id="a-m">00</div>
     <div class="mono muted" id="a-l"></div>
   </div>
 </div>
@@ -586,7 +589,7 @@ renderMute();
 $('pf-grid').addEventListener('click',function(ev){var b=ev.target.closest('.acc-opt');if(b)setAccent(b.getAttribute('data-c'))});
 
 // ---------- config (só no relógio) ----------
-var cfg={sleepStart:'00:00',sleepEnd:'00:00',brightDay:160,brightNight:4,dayEndMinute:1035};
+var cfg={sleepStart:'00:00',sleepEnd:'00:00',brightDay:160,brightNight:14,dayEndMinute:1035};
 var cfgReady=fetch('config.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}}).then(function(c){
   for(var k in c)cfg[k]=c[k];
 });
@@ -629,7 +632,7 @@ var lastMin=-1;
 function tick(){
   var now=new Date(),h=f2(now.getHours()),m=f2(now.getMinutes());
   $('h-h').textContent=h;$('a-h').textContent=h;$('h-s').textContent=f2(now.getSeconds());
-  $('a-m').textContent=m;
+  $('a-m').textContent=m;$('a-m').setAttribute('data-t',m);
   applyMute();fitDate(now);meetLine();
   if(now.getMinutes()!==lastMin){
     setMinute(m,lastMin!==-1);
@@ -1177,7 +1180,7 @@ function ambLine(){
   if(e&&e.s.toDateString()===new Date().toDateString())txt+=' — '+hhmm(e.s)+' '+e.t;
   l.textContent=txt;
 }
-function drift(){var x=Math.round(Math.random()*140),y=Math.round(Math.random()*6);$('amb-in').style.transform='translate('+x+'px,'+y+'px)'}
+function drift(){} // Sleep stays centred, like the rest of the app
 function showAmb(night){
   if(!$('player').hidden||!$('alert').hidden)return;
   var amb=$('amb');clearTimeout(ambHideT);amb.classList.toggle('night',night);amb.hidden=false;ambLine();requestAnimationFrame(function(){requestAnimationFrame(function(){amb.classList.add('on')})});

@@ -21,6 +21,12 @@ A Xiaomi Mi Smart Clock turned into a work companion: the time, your next meetin
 
 A desk clock sees you all day, and all it knew was the time. Companion Clock answers the next three questions at a glance, from a metre away: **what time is it, what's next, am I moving enough.** Everything else (a timer, an alarm, a channel) is one tap away.
 
+## In 20 seconds
+
+<a href="docs/video/companion-clock.mp4"><img src="docs/video/companion-clock.jpg" width="800" alt="Video: Companion Clock in 20 seconds. The meeting line burning down, the timer cancelled by dragging the fuse back, and the calendar's free time. Click to play."></a>
+
+<sub>Click to play (with sound). Fictional data.</sub>
+
 ## A look around
 
 <table>

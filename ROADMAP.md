@@ -2,6 +2,7 @@
 
 ## Next
 
+- **Weather support.** Today's weather on the clock (source and where it shows to decide).
 - **Snooze on the ringing sheet.** Push the sheet up to snooze: a timer restarts with a few more minutes, an alarm rings again later (duration to decide: +1, +5 or +10 min).
 - **Football fixtures.** Next games for chosen teams (ESPN's public API for the top league and cup; a second source for lower leagues, fetched through the Apps Script because it has no CORS).
 - **Reminders.** Two routes to decide between:
