@@ -2,11 +2,24 @@
   "calendarUrl": "https://script.google.com/macros/s/<deployment-id>/exec?k=<your-key>",
   "unsitCode": "<your-ntfy-topic-code>",
   "dayEndMinute": 1035,
-  "brandColors": { "acme": "#f06c00" },
+  "brandColors": {
+    "acme": "#f06c00"
+  },
   "lat": 38.722,
   "lon": -9.139,
   "lat2": 51.507,
   "lon2": -0.128,
   "place2": "UK",
-  "brandAccent": { "name": "Mindera", "color": "#ffc500" }
+  "brandAccent": {
+    "name": "Mindera",
+    "color": "#ffc500"
+  },
+  "brandAccentPersonal": {
+    "name": "Sporting",
+    "color": "#00a651"
+  },
+  "footballUrl": "https://script.google.com/macros/s/<personal-deployment-id>/exec",
+  "footballToken": "<your-football-data.org-token>",
+  "footballTeam": 498,
+  "personalCalUrl": "https://script.google.com/macros/s/<personal-deployment-id>/exec?f=calendar&k=<key>"
 }

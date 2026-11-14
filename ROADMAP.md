@@ -3,7 +3,6 @@
 ## Next
 
 - **Snooze on the ringing sheet.** Push the sheet up to snooze: a timer restarts with a few more minutes, an alarm rings again later (duration to decide: +1, +5 or +10 min).
-- **Football fixtures.** Next games for chosen teams (ESPN's public API for the top league and cup; a second source for lower leagues, fetched through the Apps Script because it has no CORS).
 - **Reminders.** Two routes to decide between:
   - *Google Tasks*: add Tasks to the existing Apps Script and return today's tasks with the events; no new sign-in.
   - *Apple Reminders*: an iOS Shortcut posts due reminders to a private ntfy topic, the same path the steps use.

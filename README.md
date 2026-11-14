@@ -60,6 +60,7 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **Bottom strip.** The timer and the alarm, always on Home. A running timer burns down as a fuse; drag its spark back to the start to cancel it. With nothing set it says so ("No timer", "No alarm set"). Tap it to open Clock.
 - **Weather in the digits.** Rain runs inside the outlined minutes, lightning lights the digits, snow drifts, the hours warm up in the sun, stars twinkle on a clear night. The temperature sits in the header; tap it to switch to a second place (the UK by default). Each calendar day shows its forecast high. Data from [Open-Meteo](https://open-meteo.com), no key needed. Settings has Weather Live / Off; Sleep always shows it.
 - **A friend.** Tap the seconds and the Minder (Mindera's mascot) peeks out from a hiding place, leaning or lying down, looks around, blinks and hides again. Tap "Weekend" and fireworks go off inside the card.
+- **Work and Personal.** Tap "JS" to switch. The board turns over like a split-flap display while the new accent washes out from "JS". WORK shows your work calendar and meetings (TV hidden); PERSONAL shows your personal calendar, TV, and a Sporting card instead of the meeting: the next match (live score while it's on, the line burning down 15 minutes before kick-off), the league position, the last result. Each mode keeps its own accent; the brand slot is Mindera in WORK and Sporting in PERSONAL.
 - **Colour has a job.** White is a value, grey is a label, colour is a state (now, soon, free, behind).
 - **Steps.** Today's count against 10,000, with the pace you should be at by now ("Expected 3,820 · 1,040 ahead").
 - **Calendar.** Grouped by day, with a summary per day ("4 meetings · 4h free"). Free time is counted inside the working day (09:00–17:00, Monday to Friday) in gaps of 15 minutes or more. Each client in `[Brackets]` gets its own colour, or its brand colour if you set one.
@@ -77,6 +78,7 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **Starts itself.** [`device/boot.sh`](device/boot.sh) runs at boot: it starts the server, restarts it if it ever stops, keeps the kiosk browser in front, and resets the touch panel if it gets stuck.
 - **Calendar.** A Google Apps Script web app in your own account ([`calendar/Code.gs`](calendar/Code.gs)) returns your events as JSON, guarded by a random key. The clock asks for it every 5 minutes.
 - **Steps.** Read from an [ntfy.sh](https://ntfy.sh) topic that your phone posts to (for example with [Unsit](https://github.com/jorgesousa/Unsit)).
+- **Personal side.** A second Apps Script in a personal Google account ([`personal/Code.gs`](personal/Code.gs)) serves the personal calendar and football fixtures and the league table from [football-data.org](https://www.football-data.org).
 - **Private values stay on the clock.** The calendar URL and key, the steps topic, your coordinates and the playlist URL live only in the clock's `config.json` and `m3u.url`, never in this repo. See [`config.example.json`](config.example.json).
 
 ## Install

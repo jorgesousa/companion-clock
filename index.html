@@ -37,7 +37,14 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;str
 
 /* header */
 header{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-items:baseline;padding:4px 24px 0 36px;z-index:10}
-#net{width:160px;color:var(--fg);text-align:left;height:64px;pointer-events:none} /* identity + connection, not a button */
+#net{width:160px;color:var(--fg);text-align:left;height:64px;white-space:nowrap} /* identity + connection; tap switches WORK / PERSONAL */
+#mode-w{display:inline-block;overflow:hidden;vertical-align:bottom;height:1.3em;margin-left:10px;padding-left:10px;border-left:2px solid var(--rule)}
+#mode-l{display:inline-block;color:var(--muted);font-size:15px;letter-spacing:.1em;transition:transform .32s var(--ease),opacity .32s var(--ease)}
+#mode-l.out{-webkit-transform:translateY(-110%);transform:translateY(-110%);opacity:0}
+#mode-l.in{transition:none;-webkit-transform:translateY(110%);transform:translateY(110%);opacity:0}
+/* TV only in PERSONAL: the other tabs slide to close the gap */
+nav button[data-v="tv"]{max-width:90px;overflow:hidden;transition:max-width .45s var(--ease),padding .45s var(--ease),opacity .3s var(--ease)}
+body.work nav button[data-v="tv"]{max-width:0;padding-left:0;padding-right:0;opacity:0;pointer-events:none}
 #net i{display:inline-block;width:8px;height:8px;border-radius:4px;background:var(--muted);margin-right:8px;vertical-align:1px}
 #net.on i{background:var(--ok)}
 nav{flex:1;display:flex;align-items:baseline;justify-content:center;height:64px}
@@ -391,6 +398,9 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #amb.night .outline{-webkit-text-stroke-color:#e2ded5}
 #amb.night .mono{color:var(--muted)}
 
+/* mode switch: spark, wash */
+.mode-spark{position:fixed;left:36px;right:36px;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:400;pointer-events:none}
+.mode-wash{position:fixed;width:1900px;height:1900px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0,rgba(0,0,0,0) 62%);z-index:390;pointer-events:none;mix-blend-mode:screen}
 /* the temperature sits in the header beside Sleep, on every screen; tap to switch home / UK */
 #hdr-temp{display:inline-block;transition:opacity .18s var(--ease),transform .18s var(--ease);height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 #hdr-temp b{font:700 26px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
@@ -481,7 +491,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 </svg>
 
 <header>
-  <button id="net" class="mono" aria-label="Connection" tabindex="-1"><i></i>JS</button>
+  <button id="net" class="mono" aria-label="Switch between work and personal"><i></i>JS<span id="mode-w"><span id="mode-l">WORK</span></span></button>
   <nav>
     <button class="on" data-v="home">Home</button>
     <button data-v="cal">Calendar</button>
@@ -635,18 +645,25 @@ var MONTHS=['January','February','March','April','May','June','July','August','S
 function hm(s){var p=s.split(':');return +p[0]*60+ +p[1]}
 function mins(d){return d.getHours()*60+d.getMinutes()}
 
-// ---------- accent colour (escolhido no relógio, guardado localmente) ----------
+// ---------- WORK / PERSONAL (tap "JS"; remembered on the clock) ----------
+var mode='work';try{if(localStorage.getItem('mode')==='personal')mode='personal'}catch(e){}
+document.body.classList.add(mode);
+function accentKey(){return mode==='personal'?'accentPersonal':'accent'}
+// ---------- accent colour (escolhido no relógio, guardado localmente; one choice per mode) ----------
 var ACCENTS=[['Warm red','#e8473a'],['Signal red','#ef3b33'],['Cyan','#22c3e6'],['Amber','#f5b83d'],['Lime','#c8f04b'],['Cobalt','#5b7cff'],['Violet','#9b7bff'],['Pink','#ff6b9a']];
 var ACCENT_CLASH={'#22c3e6':'#5fd0c4','#f5b83d':'#f2c14e','#5b7cff':'#8fb3ff','#9b7bff':'#b48cf2','#ff6b9a':'#f28fb3'};
-var accent='#e8473a',savedAccent=null;try{savedAccent=localStorage.getItem('accent')}catch(e){}
-function pickAccent(){ // a removed accent falls back to the default
-  accent=savedAccent&&ACCENTS.some(function(a){return a[1]===savedAccent})?savedAccent:'#e8473a';
+var accent='#e8473a',savedAccent=null;try{savedAccent=localStorage.getItem(accentKey())}catch(e){}
+function pickAccent(){ // a removed accent falls back to the default (PERSONAL: the brand colour, if any)
+  var def=mode==='personal'&&cfg.brandAccentPersonal&&cfg.brandAccentPersonal.color?cfg.brandAccentPersonal.color.toLowerCase():'#e8473a';
+  accent=savedAccent&&ACCENTS.some(function(a){return a[1]===savedAccent})?savedAccent:def;
   document.documentElement.style.setProperty('--accent',accent);
 }
-pickAccent();
+if(typeof cfg!=='undefined')pickAccent();else document.documentElement.style.setProperty('--accent',savedAccent||'#e8473a');
 // a brand colour can come from the clock's config.json ({"brandAccent":{"name":"…","color":"#…"}}); it takes Amber's place
-function brandAccent(){ // runs once config.json is loaded
-  var b=cfg.brandAccent;if(!b||!/^#[0-9a-f]{6}$/i.test(b.color||''))return;
+var AMBER=['Amber','#f5b83d'];
+function brandAccent(){ // runs once config.json is loaded, and on every mode switch (WORK: brandAccent, PERSONAL: brandAccentPersonal)
+  var b=mode==='personal'?cfg.brandAccentPersonal:cfg.brandAccent;
+  if(!b||!/^#[0-9a-f]{6}$/i.test(b.color||'')){ACCENTS[3]=AMBER;pickAccent();return}
   ACCENTS[3]=[String(b.name||'Brand').slice(0,14),b.color.toLowerCase()];ACCENT_CLASH[b.color.toLowerCase()]='#f2c14e';
   pickAccent();
 }
@@ -658,7 +675,7 @@ function renderPrefs(){
   $('pf-grid').innerHTML=ACCENTS.map(function(a){return '<button class="acc-opt'+(a[1]===accent?' on':'')+'" data-c="'+a[1]+'" style="background-image:linear-gradient('+a[1]+','+a[1]+')"><b>'+esc(a[0])+'</b></button>'}).join('');
 }
 function setAccent(c){
-  accent=savedAccent=c;document.documentElement.style.setProperty('--accent',c);try{localStorage.setItem('accent',c)}catch(e){}
+  accent=savedAccent=c;document.documentElement.style.setProperty('--accent',c);try{localStorage.setItem(accentKey(),c)}catch(e){}
   clientMap={};renderPrefs();if(events)renderCal();
 }
 function openPrefs(){var p=$('prefs');renderPrefs();p.hidden=false;void p.offsetWidth;p.classList.add('in')}
@@ -708,6 +725,52 @@ function go(v){
 function navBar(){var b=document.querySelector('nav button.on'),bar=$('nav-bar');if(!b)return;bar.style.width=(b.offsetWidth-28)+'px';bar.style.transform='translateX('+(b.offsetLeft+14)+'px)'}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){navBar();if(typeof marquee==='function')marquee()});setTimeout(navBar,300);
 document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){go(b.getAttribute('data-v'))})});
+// switching mode: label, accent, TV tab, calendar source and the Home card change together
+$('mode-l').textContent=mode==='personal'?'PERSONAL':'WORK';
+function applyMode(m){
+  if(typeof events!=='undefined')evCache[mode]={events:events,wloc:wloc};
+  var b=document.body;b.classList.remove(mode);mode=m;b.classList.add(mode);
+  try{localStorage.setItem('mode',m)}catch(e){}
+  var l=$('mode-l');l.classList.add('out');
+  setTimeout(function(){l.textContent=m==='personal'?'PERSONAL':'WORK';l.classList.remove('out');l.classList.add('in');void l.offsetWidth;l.classList.remove('in')},320);
+  try{savedAccent=localStorage.getItem(accentKey())}catch(e){savedAccent=null}
+  brandAccent();clientMap={};
+  if(m==='work'&&!$('player').hidden)$('pl-close').click();
+  if(m==='work'&&cur==='tv')go('home');
+  var t0=Date.now();(function nb(){navBar();if(Date.now()-t0<500)requestAnimationFrame(nb)})();
+  var c=evCache[m];events=c?c.events:null;wloc=c?c.wloc:{};evTried=!!c;nOff=0;freeAlt=false;
+  renderCal();renderNext();loadEvents();
+  if(typeof renderModeCard==='function')renderModeCard();
+}
+// the switch is a moment: a spark leaves "JS", the board turns over flap by flap, the new colour washes out from "JS"
+var flipping=false;
+function modeFlip(m){
+  if(flipping)return;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce||cur!=='home'||!Element.prototype.animate){applyMode(m);return}
+  flipping=true;
+  var js=$('net').getBoundingClientRect(),cx=js.left+22,cy=js.top+js.height/2;
+  // 1 · spark across the header
+  var sp=document.createElement('i');sp.className='mode-spark';sp.style.top=(js.bottom-6)+'px';document.body.appendChild(sp);
+  sp.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.7},{transform:'scaleX(1)',opacity:0}],{duration:520,easing:'cubic-bezier(.2,.7,.2,1)'}).onfinish=function(){sp.remove()};
+  // 2 · the flaps fold down one after another, the content changes, they fall back into place
+  var flaps=[$('h-h'),document.querySelector('#v-home .mrow'),document.querySelector('#v-home .col-r .cap'),$('h-next-blk'),$('h-steps-blk')].filter(Boolean);
+  var down=[{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'},{transform:'perspective(700px) rotateX(-90deg)',filter:'brightness(.35)'}];
+  var up=[{transform:'perspective(700px) rotateX(90deg)',filter:'brightness(.35)'},{transform:'perspective(700px) rotateX(-12deg)',filter:'brightness(1.1)',offset:.75},{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'}];
+  var downs=[];flaps.forEach(function(el,i){el.style.transformOrigin='50% 50%';downs[i]=el.animate(down,{duration:200,delay:120+i*70,easing:'cubic-bezier(.5,0,.9,.4)',fill:'forwards'})});
+  var folded=120+(flaps.length-1)*70+200;
+  setTimeout(function(){
+    applyMode(m);
+    // 3 · the new colour washes out from "JS"
+    var w=document.createElement('i');w.className='mode-wash';w.style.left=cx+'px';w.style.top=cy+'px';document.body.appendChild(w);
+    w.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.55},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:900,easing:'cubic-bezier(.2,.7,.2,1)'}).onfinish=function(){w.remove()};
+    flaps.forEach(function(el,i){var a=el.animate(up,{duration:380,delay:i*80,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'});
+      a.onfinish=function(){a.cancel();downs[i].cancel();el.style.transformOrigin='';if(i===flaps.length-1)flipping=false}});
+    setTimeout(function(){flipping=false},1400);
+  },folded);
+}
+function setMode(m){if(m===mode)return;if(typeof modeFlip==='function')modeFlip(m);else applyMode(m)}
+$('net').addEventListener('click',function(){setMode(mode==='work'?'personal':'work')});
 
 // ---------- clock ----------
 function fitDate(now){
@@ -748,8 +811,12 @@ function setMinute(m,animate){
 // ---------- agenda (events.json do servidor local, quando existir) ----------
 var events=null,evTried=false,wloc={};
 setInterval(function(){if(cur==='cal'&&events){var cl=$('cal-list'),y=cl.scrollTop;renderCal();cl.scrollTop=y}},60000);
+function calUrl(){return mode==='personal'?(cfg.personalCalUrl||'events-personal.json'):(cfg.calendarUrl||'events.json')}
+var evCache={}; // last good list per mode, so switching back is instant
 function loadEvents(){
-  fetch(cfg.calendarUrl||'events.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}).then(function(list){
+  var forMode=mode;
+  fetch(calUrl(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}).then(function(list){
+    if(forMode!==mode)return; // switched while this was on its way
     evTried=true;
     if(!Array.isArray(list)){$('ce-b').textContent='offline';$('ce-b').setAttribute('data-t','offline');$('ce-c').textContent='Could not reach Google Calendar. Trying again in 5 minutes.'}
     if(Array.isArray(list)){
@@ -760,6 +827,7 @@ function loadEvents(){
         var d=new Date(e.start),k=d.getFullYear()+'-'+f2(d.getMonth()+1)+'-'+f2(d.getDate());
         wloc[k]=e.title||'';return false;
       }).map(function(e){return {s:new Date(e.start),e:new Date(e.end),t:e.title||'(no title)',all:!!e.allDay}}).sort(function(a,b){return a.s-b.s});
+      evCache[mode]={events:events,wloc:wloc};
     } // else keep the last good list if a fetch fails
     // a refresh keeps your scroll; the first load while you're looking jumps to Today
     var cl=$('cal-list'),first=!cl.childElementCount,y=cl.scrollTop;
@@ -796,6 +864,58 @@ function nextWorkEvent(){ // first meeting on a weekday from now on
   return null;
 }
 function setL(l,h){if(l._h!==h){l._h=h;l.innerHTML=h}} // rewrite only on change, so the live dot keeps animating
+// ---------- Sporting (PERSONAL): matches and league table from the personal script ----------
+var fb={matches:null,me:null,at:0,off:0},fbT=null,fbBack=null;
+function fbTeam(){return +(cfg.footballTeam||498)}
+function fbGet(q){var u=cfg.footballUrl;return fetch(u+(u.indexOf('?')<0?'?':'&')+q+'&ft='+encodeURIComponent(cfg.footballToken),{cache:'no-store'}).then(function(r){return r.json()})}
+function loadFootball(){
+  clearTimeout(fbT);if(!cfg.footballUrl||!cfg.footballToken)return;
+  var team=fbTeam();
+  Promise.all([fbGet('f=football&teams='+team).catch(function(){return null}),fbGet('f=table&comp=PPL').catch(function(){return null})]).then(function(r){
+    var t=r[0]&&r[0][0];
+    if(t&&t.matches){fb.matches=t.matches.map(function(m){m.d=new Date(m.utc);return m}).sort(function(a,b){return a.d-b.d});fb.at=Date.now()}
+    if(Array.isArray(r[1]))fb.me=r[1].filter(function(x){return x.teamId===team})[0]||fb.me;
+    if(mode==='personal')renderNext();
+  }).then(function(){fbT=setTimeout(loadFootball,fbLive()?60000:600000)});
+}
+// live: the API says so, or kick-off has passed and it isn't finished yet (the free tier can lag)
+function fbLive(){if(!fb.matches)return null;var n=Date.now();for(var i=0;i<fb.matches.length;i++){var m=fb.matches[i];
+  if(m.status==='IN_PLAY'||m.status==='PAUSED')return m;
+  if(m.status!=='FINISHED'&&m.status!=='POSTPONED'&&m.status!=='CANCELLED'&&m.d<=n&&n-m.d<120*60000)return m}return null}
+function fbUpcoming(){if(!fb.matches)return [];var n=Date.now();return fb.matches.filter(function(m){return m.d>n&&m.status!=='FINISHED'&&m.status!=='CANCELLED'})}
+function fbLast(){if(!fb.matches)return null;var n=Date.now(),f=fb.matches.filter(function(m){return m.status==='FINISHED'&&n-m.d<26*3600000});return f[f.length-1]||null}
+function ordinal(n){var s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
+function renderSporting(v,l,blk){
+  var team=fbTeam();
+  v.classList.remove('dim','free','wknd');v.classList.toggle('loading',!fb.matches);
+  if(!fb.matches){v._h=null;v.textContent=cfg.footballUrl?'Sporting':'No football set';setL(l,cfg.footballUrl?'Football · loading':'Add footballUrl to config.json');return}
+  var live=fbLive(),up=fbUpcoming(),last=fbLast(),cards=[];
+  function teams(m){return '<small><span class="mq">'+esc(m.home)+' – '+esc(m.away)+'</span></small>'}
+  function when(m){var t=new Date(),dd=Math.round((new Date(m.d).setHours(0,0,0,0)-t.setHours(0,0,0,0))/864e5);return dd===0?'Today':dd===1?'Tomorrow':DAYS[m.d.getDay()].slice(0,3)+' '+m.d.getDate()}
+  function comp(m){var c=m.comp||'';if(/primeira liga/i.test(c)||!c)return '';return ' · '+esc({'UEFA Champions League':'UCL','UEFA Europa League':'UEL','UEFA Conference League':'UECL','Taça de Portugal':'Taça'}[c]||c)}
+  function result(m){var us=m.homeId===team?0:1,g=m.score||[0,0],a=g[us],o=g[1-us];return (a>o?'Won ':a<o?'Lost ':'Draw ')+a+'–'+o}
+  // card 1 · the match: live, or the next one (just-finished takes its place until the next one is close)
+  if(live){var sc=live.score&&live.score[0]!=null?live.score:[0,0];cards.push({v:sc[0]+'–'+sc[1]+teams(live),l:'<span class="acc">Live</span>'+comp(live),live:live})}
+  else if(last&&!(up[0]&&up[0].d-Date.now()<3*3600000))cards.push({v:result(last)+teams(last),l:'Final'+comp(last),fin:true});
+  else if(up[0])cards.push({v:hhmm(up[0].d)+teams(up[0]),l:'Next · <span class="val">'+when(up[0])+'</span>'+comp(up[0]),soon:up[0]});
+  else cards.push({v:'No match',l:'Nothing scheduled'});
+  // card 2 · the table
+  if(fb.me)cards.push({v:ordinal(fb.me.pos)+'<small><span class="mq">'+fb.me.pts+' points · '+fb.me.played+' played</span></small>',l:'Primeira Liga'});
+  // card 3 · the last result (when card 1 isn't already it)
+  var prev=fb.matches.filter(function(m){return m.status==='FINISHED'}).pop();
+  if(prev&&!(cards[0]&&cards[0].fin))cards.push({v:result(prev)+teams(prev),l:'Last · <span class="val">'+when(prev)+'</span>'+comp(prev)});
+  if(fb.off>=cards.length)fb.off=0;
+  var c=cards[fb.off],pos=cards.length>1?'<span class="pos">'+(fb.off+1)+'/'+cards.length+'</span>':'';
+  if(fb.off===0&&c.live){blk.classList.add('live');blk._e={s:c.live.d,e:new Date(+c.live.d+105*60000)}}
+  if(fb.off===0&&c.soon&&(c.soon.d-Date.now())/60000<=15){blk.classList.add('soon');blk._e={s:c.soon.d}}
+  if(v._h!==c.v){v._h=c.v;v.innerHTML=c.v;setTimeout(marquee,30)}
+  setL(l,c.l+pos);if(blk._e)meetLine();
+  fb.n=cards.length;
+}
+// tap or swipe the card in PERSONAL: match → table → last result; back to the match after 10 s
+function fbStep(){var n=fb.n||1;if(n<2)return;fb.off=(fb.off+1)%n;clearTimeout(fbBack);if(fb.off)fbBack=setTimeout(function(){fb.off=0;renderNext()},10000);
+  var c=$('h-next-c');c.style.opacity='0';setTimeout(function(){renderNext();c.style.opacity=''},180)}
+function renderModeCard(){fb.off=0;if(mode==='personal'&&!fb.matches)loadFootball()}
 // Home meeting block: swipe left/right (or tap) to browse today's later meetings; snaps back after 10 s
 var nOff=0,nBack=null;
 function todayLeft(){
@@ -822,6 +942,7 @@ function renderNext(){
   var v=$('h-next'),l=$('h-next-l'),blk=$('h-next-blk');
   v.classList.toggle('dim',!events);v.classList.remove('free');v.classList.remove('wknd');
   blk.classList.remove('soon');blk.classList.remove('live');blk.classList.remove('browse');blk._e=null;
+  if(mode==='personal'){renderSporting(v,l,blk);ambLine();return}
   v.classList.toggle('loading',!events&&!evTried);
   if(!events){v._h=null;v.textContent=evTried?'Offline':'Loading';setL(l,evTried?'Calendar · retrying in 5 min':'Calendar');ambLine();return}
   var list=todayLeft(),now=new Date();
@@ -886,13 +1007,14 @@ function stepBackHome(){var c=$('h-next-c');c.className='outr';setTimeout(functi
   blk.addEventListener('touchstart',function(ev){x0=ev.touches[0].clientX;y0=ev.touches[0].clientY},{passive:true});
   blk.addEventListener('touchend',function(ev){
     if(x0===null)return;var t=ev.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+    if(mode==='personal'){if(Math.abs(dx)<10&&Math.abs(dy)<10||Math.abs(dx)>40)fbStep();ev.preventDefault();return}
     if($('h-next').classList.contains('wknd')&&Math.abs(dx)<10&&Math.abs(dy)<10){fireworks();ev.preventDefault();return}
     if(isFreeDay()&&(Math.abs(dx)>40||(Math.abs(dx)<10&&Math.abs(dy)<10))){flipFree();x0=null;return}
     if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))stepNext(dx<0?1:-1);
     else if(Math.abs(dx)<10&&Math.abs(dy)<10)stepNext(nOff<nCards()-1?1:-nOff);
     ev.preventDefault();
   });
-  blk.addEventListener('click',function(){if(!('ontouchstart' in window)){if($('h-next').classList.contains('wknd'))fireworks();else if(isFreeDay())flipFree();else stepNext(nOff<nCards()-1?1:-nOff)}});
+  blk.addEventListener('click',function(){if(!('ontouchstart' in window)){if(mode==='personal')fbStep();else if($('h-next').classList.contains('wknd'))fireworks();else if(isFreeDay())flipFree();else stepNext(nOff<nCards()-1?1:-nOff)}});
 })();
 // Calendar: tap a row with a cut-off title to glide it once and reveal the end
 var cmq={anim:null,el:null};
@@ -943,7 +1065,7 @@ function renderCal(){
     var ws=new Date(a.getTime()+WS*60000),we=new Date(a.getTime()+WE*60000);
     var nm=new Date(now);nm.setSeconds(0,0);var cur=nm>ws?nm:ws,out='',freeMin=0,n=0;
     function gap(t){
-      if(!wd)return;var to=t<we?t:we;
+      if(!wd||mode==='personal')return;var to=t<we?t:we; // free time is a work idea: PERSONAL lists only what you have
       if(to-cur>=MINGAP*60000){
         if(cur.getTime()===nm.getTime()){ // free right now: the slot began when the last meeting ended (or at 09:00)
           var f0=ws;events.forEach(function(x){if(!x.all&&x.e<=nm&&x.e>f0&&x.e.toDateString()===nm.toDateString())f0=x.e});
@@ -980,7 +1102,7 @@ function renderCal(){
     if(nw&&g){wk=true;g=weekRule(a)+g}
     html+=g;
   }
-  list.innerHTML=html||'<div class="num empty-title solid">Free</div><div class="num empty-title outline" data-t="until later">until later</div>';
+  list.innerHTML=html||(mode==='personal'?'<div class="num empty-title solid">Nothing</div><div class="num empty-title outline" data-t="planned">planned</div>':'<div class="num empty-title solid">Free</div><div class="num empty-title outline" data-t="until later">until later</div>');
   empty.hidden=true;list.hidden=false;
   calMarquee();
 }
@@ -1481,7 +1603,7 @@ $('h-s').addEventListener('click',minderPeek);
 // ---------- arranque ----------
 setTimer(25*60);
 cfgReady.then(function(){
-  brandAccent();
+  brandAccent();loadFootball();
   try{var sb=+localStorage.getItem('brightDay');if(sb)cfg.brightDay=sb}catch(e){}
   tick();setInterval(tick,1000);
   fetchSteps();setInterval(fetchSteps,60*1000);
