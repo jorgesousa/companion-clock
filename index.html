@@ -1648,6 +1648,31 @@ $('hdr-temp').addEventListener('click',function(){
   b.style.opacity='0';b.style.transform='translateY(-8px)';
   setTimeout(function(){wxAway=!wxAway;showTemp();b.style.transition='none';b.style.transform='translateY(8px)';void b.offsetWidth;b.style.transition='';b.style.opacity='';b.style.transform=''},180);
 });
+// Open-Meteo's "rain now" is a model forecast; in Portugal the nearest IPMA station says whether it actually rained in the last hour.
+// When the model says rain, storm or snow and the station measured nothing, the digits show an overcast sky instead.
+var wxModel=null,obsWet=null,obsSt=null;
+function wxApply(){var k=wxModel;if(!k)return;if((k==='rain'||k==='storm'||k==='snow')&&obsWet===false)k='haze';setWx(k)}
+function nearStation(){
+  if(obsSt)return Promise.resolve(obsSt);
+  if(cfg.ipmaStation){obsSt=String(cfg.ipmaStation);return Promise.resolve(obsSt)}
+  return fetch('https://api.ipma.pt/open-data/observation/meteorology/stations/stations.json').then(function(r){return r.json()}).then(function(list){
+    var best=null,bd=1e9,k=Math.cos(cfg.lat*Math.PI/180);
+    list.forEach(function(x){var c=x.geometry.coordinates,dx=(c[0]-cfg.lon)*k,dy=c[1]-cfg.lat,dd=dx*dx+dy*dy;if(dd<bd){bd=dd;best=x}});
+    obsSt=best&&Math.sqrt(bd)*111<30?String(best.properties.idEstacao):''; // within 30 km, or none
+    return obsSt;
+  });
+}
+function loadObs(){
+  if(cfg.lat==null||/wx=/.test(location.search))return;
+  nearStation().then(function(id){
+    if(!id)return null;
+    return fetch('https://api.ipma.pt/open-data/observation/meteorology/stations/observations.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+      var ks=Object.keys(d).sort().reverse(),wet=null;
+      for(var i=0;i<ks.length&&i<3;i++){var o=d[ks[i]]&&d[ks[i]][id];if(o&&o.precAcumulada>=0){wet=o.precAcumulada>0;break}} // latest hour with a valid reading
+      obsWet=wet;wxApply();
+    });
+  }).catch(function(){});
+}
 function loadWx(){
   var o=(location.search.match(/wx=(\w+)/)||[])[1];if(o){setWx(o);return}
   if(cfg.lat==null)return;
@@ -1655,14 +1680,14 @@ function loadWx(){
     .then(function(r){return r.json()}).then(function(d){
       var days={};(d.daily&&d.daily.time||[]).forEach(function(k,i){var v=d.daily.temperature_2m_max[i];if(v!=null)days[k]=Math.round(v)});
       wxDays=days;if(events){var cl=$('cal-list'),y=cl.scrollTop;renderCal();cl.scrollTop=y}
-      setWx(wxKind(d.current.weather_code,d.current.is_day,d.current.cape));
+      wxModel=wxKind(d.current.weather_code,d.current.is_day,d.current.cape);wxApply();
       wxT.home=Math.round(d.current.temperature_2m)+'°';showTemp();
     }).catch(function(){});
   // the second place you work for (UK by default): tap the temperature on Home to switch
   fetch('https://api.open-meteo.com/v1/forecast?latitude='+(cfg.lat2!=null?cfg.lat2:51.5072)+'&longitude='+(cfg.lon2!=null?cfg.lon2:-0.1276)+'&current=temperature_2m',{cache:'no-store'})
     .then(function(r){return r.json()}).then(function(d){wxT.away=Math.round(d.current.temperature_2m)+'°';showTemp()}).catch(function(){});
 }
-cfgReady.then(function(){loadWx();loadWarn();setInterval(function(){loadWx();loadWarn()},15*60*1000)});
+cfgReady.then(function(){loadWx();loadWarn();loadObs();setInterval(function(){loadWx();loadWarn()},15*60*1000);setInterval(loadObs,30*60*1000)});
 
 // ---------- a friend peeks in now and then (spike, clock only) ----------
 
