@@ -47,7 +47,7 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 </td>
 <td width="50%" valign="top">
 <img src="docs/screenshots/settings.jpg" alt="Settings: brightness from 10 to 100 percent, eight accent colours and Mute in meetings">
-<b>Settings.</b> Tap <code>JS</code>: brightness, eight accent colours, and muting the TV during meetings.
+<b>Settings.</b> The sliders icon next to Sleep: brightness, eight accent colours, muting the TV during meetings, and Weather Live / Off.
 </td>
 </tr>
 </table>
