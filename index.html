@@ -1205,7 +1205,7 @@ var GOAL=10000,DAY_START=8*60,online=false;
 // Health (Settings): steps a day and glasses of water a work day, remembered on the clock
 var STEP_OPTS=[6000,8000,10000,12000,15000],GLASS_OPTS=[6,8,9,10,12],GLASSES=9;
 try{var sg=+localStorage.getItem('stepGoal');if(STEP_OPTS.indexOf(sg)>=0)GOAL=sg;var gg=+localStorage.getItem('glassGoal');if(GLASS_OPTS.indexOf(gg)>=0)GLASSES=gg}catch(e){}
-function litres(n){return (n*.25).toString().replace(/\.?0+$/,'')+' L'}
+function litres(n){return (+(n*.25).toFixed(2))+' L'}
 function renderHealthPrefs(){
   $('pf-steps').innerHTML=STEP_OPTS.map(function(v){return '<button data-v="'+v+'"'+(v===GOAL?' class="on"':'')+'>'+fmtN(v)+'</button>'}).join('');
   $('pf-glass').innerHTML=GLASS_OPTS.map(function(v){return '<button data-v="'+v+'"'+(v===GLASSES?' class="on"':'')+'>'+v+' · '+litres(v)+'</button>'}).join('');
@@ -1294,29 +1294,41 @@ function renderWater(){
 }
 function ripple(x,y,d){var hw=$('hw'),r=document.createElement('i');r.className='rp';r.style.left=x+'px';r.style.top=y+'px';hw.appendChild(r);
   r.animate([{opacity:.9,transform:'scale(.2)'},{opacity:0,transform:'scale(1.6)'}],{duration:700,delay:d,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'}).onfinish=function(){r.remove()}}
+// tap: +1 glass. A second tap within 2.6 s takes it back (once: the tap after that adds again).
+// Hold for 0.6 s: take one glass off, any time (a glass counted by mistake earlier).
+var drinkSeq=0,undoneT=null;
+function waterSave(s){try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}}
+function waterOff(label){
+  var s=waterGet(),n=$('hw-n'),t=$('hw-t');drinkSeq++;
+  clearTimeout(waterUndo);waterUndo=null;clearTimeout(undoneT);
+  var cv=$('hw').querySelector('canvas');if(cv)cv.remove();n.parentNode.style.opacity='';t.style.opacity='';
+  if(s.n>0){s.n--;waterSave(s)}
+  n.textContent=s.n;t.textContent=label;
+  if(n.animate)n.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-14px)',opacity:0,offset:.4},{transform:'translateY(10px)',opacity:0,offset:.41},{transform:'translateY(0)',opacity:1}],{duration:520,easing:'cubic-bezier(.3,0,.2,1)'});
+  undoneT=setTimeout(function(){undoneT=null;wasDue=false;renderWater()},1400); // still behind? the reminder floods back
+}
 function drink(){
-  var s=waterGet(),hw=$('hw'),n=$('hw-n'),t=$('hw-t');
-  if(waterUndo){clearTimeout(waterUndo);waterUndo=null;s.n=Math.max(0,s.n-1);try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
-    n.textContent=s.n;t.textContent='Undone';
-    if(n.animate)n.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-14px)',opacity:0,offset:.4},{transform:'translateY(10px)',opacity:0,offset:.41},{transform:'translateY(0)',opacity:1}],{duration:520,easing:'cubic-bezier(.3,0,.2,1)'});
-    waterUndo=setTimeout(function(){waterUndo=null;renderWater()},1400);return}
-  s.n++;try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
-  if(!n.animate){renderWater();return}
+  if(waterUndo){waterOff('Undone');return}
+  clearTimeout(undoneT);undoneT=null;
+  var s=waterGet(),hw=$('hw');s.n++;waterSave(s);drinkSeq++;
+  if(!$('hw-n').animate){renderWater();return}
   if(hw.classList.contains('due')&&window.requestAnimationFrame)crumble(s);else syncTick(s);
   waterUndo=setTimeout(function(){waterUndo=null;renderWater()},2600);
 }
+// what the number shows once an animation lands: the stored count now, and the label only if nothing happened since
+function waterReveal(seq){var n=$('hw-n'),t=$('hw-t'),c=waterGet().n;n.textContent=c;if(seq===drinkSeq)t.textContent=litres(c)}
 // no reminder: the same answer the steps give when you tap them: a line runs along the top, the number pops to the new one
 function syncTick(s){
-  var hw=$('hw'),n=$('hw-n'),t=$('hw-t'),ln=document.createElement('i');
+  var hw=$('hw'),n=$('hw-n'),t=$('hw-t'),ln=document.createElement('i'),seq=drinkSeq;
   ln.style.cssText='position:absolute;left:0;top:0;height:2px;width:30%;background:var(--accent);z-index:2;pointer-events:none';hw.appendChild(ln);
   ln.animate([{transform:'translateX(-100%)'},{transform:'translateX(340%)'}],{duration:800,easing:'cubic-bezier(.65,0,.35,1)'}).onfinish=function(){ln.remove()};
-  setTimeout(function(){n.textContent=s.n;t.textContent=litres(s.n);
+  setTimeout(function(){if(seq!==drinkSeq)return;waterReveal(seq);
     n.parentNode.animate([{transform:'scale(.94)'},{transform:'none'}],{duration:500,easing:'cubic-bezier(.16,1,.3,1)'})},380);
 }
 // the reminder answered: what's in the yellow is redrawn as grain, loosens outward from your finger, then bursts and falls
 var hwTap=null;
 function crumble(s){
-  var hw=$('hw'),n=$('hw-n'),t=$('hw-t'),of=$('hw-of'),fl=hw.querySelector('.fl'),row=n.parentNode;
+  var hw=$('hw'),n=$('hw-n'),t=$('hw-t'),of=$('hw-of'),fl=hw.querySelector('.fl'),row=n.parentNode,seq=drinkSeq;
   var hr=hw.getBoundingClientRect(),fr=fl.getBoundingClientRect(),W=Math.round(hr.width),H=Math.round(fr.bottom-hr.top);
   var src=document.createElement('canvas');src.width=W;src.height=H;var g=src.getContext('2d');
   g.fillStyle=getComputedStyle(fl).backgroundColor;g.fillRect(0,0,W,H);g.textBaseline='top';
@@ -1336,14 +1348,18 @@ function crumble(s){
         else{var e=(lt-LOOSE)/1000;x+=p.ux*4+p.ux*p.sp*e+Math.sin(p.j)*20*e;y+=p.uy*4+p.uy*p.sp*e*.8-40*e+260*e*e;a=Math.max(0,1-e/.9)} // burst, fall
       }
       if(a<=0)continue;alive++;ctx.globalAlpha=a;ctx.fillStyle=p.c;ctx.fillRect(x,y,S-.5,S-.5)}
-    if(tt>500&&!shown){shown=true;n.textContent=s.n;t.textContent=litres(s.n);row.style.opacity='';t.style.opacity='';
+    if(!cv.parentNode)return; // taken back mid-way
+    if(tt>500&&!shown){shown=true;waterReveal(seq);row.style.opacity='';t.style.opacity='';
       [row,t].forEach(function(q,i){q.animate([{opacity:0,filter:'blur(5px)',transform:'scale(.92)'},{opacity:1,filter:'blur(0)',transform:'scale(1.05)',offset:.6},{opacity:1,filter:'blur(0)',transform:'none'}],{duration:620,delay:i*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})})}
     if(alive||tt<600)requestAnimationFrame(frame);else cv.remove();
   })();
 }
 function hwAt(x,y){var r=$('hw').getBoundingClientRect();hwTap={x:x-r.left,y:y-r.top}}
+var hwHold=null,hwHeld=false;
 $('hw').addEventListener('click',function(ev){ev.stopPropagation();hwAt(ev.clientX,ev.clientY);drink()});
-$('hw').addEventListener('touchend',function(ev){ev.stopPropagation();ev.preventDefault();var t=ev.changedTouches[0];hwAt(t.clientX,t.clientY);drink()});
+$('hw').addEventListener('touchstart',function(ev){ev.stopPropagation();hwHeld=false;clearTimeout(hwHold);hwHold=setTimeout(function(){hwHeld=true;waterOff('Removed')},600)});
+$('hw').addEventListener('touchmove',function(){clearTimeout(hwHold)});
+$('hw').addEventListener('touchend',function(ev){ev.stopPropagation();ev.preventDefault();clearTimeout(hwHold);if(hwHeld){hwHeld=false;return}var t=ev.changedTouches[0];hwAt(t.clientX,t.clientY);drink()});
 $('h-steps-blk').addEventListener('click',function(){stepsSync()});
 
 // ---------- som ----------
