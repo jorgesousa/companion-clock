@@ -1283,7 +1283,6 @@ function renderWater(){
   if(!due)chimed=false;
   else if(!chimed&&!inMeeting()&&!quiet()){chimed=true;beep(880,.14);setTimeout(function(){beep(1320,.22)},180)}
   clearInterval(ringT);
-  if(due)ringT=setInterval(function(){if(cur!=='home'||!$('hw').classList.contains('due'))return;var n=$('hw-n'),hr=$('hw').getBoundingClientRect(),nr=n.getBoundingClientRect();ripple(nr.left-hr.left+nr.width/2,nr.top-hr.top+nr.height*.92,0)},2000);
 }
 function ripple(x,y,d){var hw=$('hw'),r=document.createElement('i');r.className='rp';r.style.left=x+'px';r.style.top=y+'px';hw.appendChild(r);
   r.animate([{opacity:.9,transform:'scale(.2)'},{opacity:0,transform:'scale(1.6)'}],{duration:700,delay:d,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'}).onfinish=function(){r.remove()}}
