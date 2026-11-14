@@ -32,6 +32,6 @@
 - Calendar via an Apps Script web app: today to the end of next week, declined events hidden, working location per day (Office highlighted), a red rule with the week number where next week starts.
 - Free time: gaps of 15+ min inside 09:00–17:00 shown as hatched Free rows; the slot you are in stands out as "Free now · Xh left".
 - Home: current meeting is live (dot, accent time, filling rule); swipe or tap to browse today's later meetings; long titles glide.
-- Steps (ntfy) against a 10,000 goal.
+- Steps (ntfy) against a 10,000 goal; hourly water reminders on work days (tap to count the glass).
 - TV player for your own HLS playlist, through a local playlist proxy.
 - Settings (tap "JS"): brightness 10–100% and 8 accent colours.
