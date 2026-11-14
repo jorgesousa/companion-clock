@@ -72,6 +72,10 @@ nav{position:relative}
 #v-home .col-l .big{font-size:196px}
 /* the colour travels: it rests on the hours, and moves to whatever needs you (meeting soon or on, timer's last minute) */
 #v-home #h-h{color:var(--accent);transition:color .8s var(--ease)}
+/* mode switch: the hours hold the old colour until the wash from "JS" reaches them, then take the new one with a brief glow */
+#v-home #h-h.hit{transition:color .55s cubic-bezier(.2,.7,.2,1);-webkit-animation:hourHit .7s cubic-bezier(.2,.7,.2,1);animation:hourHit .7s cubic-bezier(.2,.7,.2,1)}
+@-webkit-keyframes hourHit{0%{-webkit-filter:brightness(1)}25%{-webkit-filter:brightness(1.6)}100%{-webkit-filter:brightness(1)}}
+@keyframes hourHit{0%{filter:brightness(1)}25%{filter:brightness(1.6)}100%{filter:brightness(1)}}
 .attn #v-home #h-h{color:var(--fg)}
 #v-home .col-l{justify-content:center;padding-bottom:14px}
 /* a single hairline separates the clock from the information; the column keeps its full width for long meeting names */
@@ -757,13 +761,15 @@ function modeFlip(m){
   var sp=document.createElement('i');sp.className='mode-spark';sp.style.top=(js.bottom-6)+'px';document.body.appendChild(sp);
   sp.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.7},{transform:'scaleX(1)',opacity:0}],{duration:520,easing:'cubic-bezier(.2,.7,.2,1)'}).onfinish=function(){sp.remove()};
   // 2 · the flaps fold down one after another, the content changes, they fall back into place
-  var flaps=[$('h-h'),$('h-next-blk')]; // only what changes turns over: the hours (new colour) and the card
+  var flaps=[$('h-next-blk')]; // the card turns over; the hours take the new colour when the wash reaches them
   var down=[{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'},{transform:'perspective(700px) rotateX(-90deg)',filter:'brightness(.35)'}];
   var up=[{transform:'perspective(700px) rotateX(90deg)',filter:'brightness(.35)'},{transform:'perspective(700px) rotateX(-12deg)',filter:'brightness(1.1)',offset:.75},{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'}];
   var downs=[];flaps.forEach(function(el,i){el.style.transformOrigin='50% 50%';downs[i]=el.animate(down,{duration:200,delay:120+i*70,easing:'cubic-bezier(.5,0,.9,.4)',fill:'forwards'})});
   var folded=120+(flaps.length-1)*70+200;
   setTimeout(function(){
+    var hh=$('h-h');hh.style.color=getComputedStyle(hh).color; // hold the old colour
     applyMode(m);
+    setTimeout(function(){hh.classList.add('hit');hh.style.color='';setTimeout(function(){hh.classList.remove('hit')},700)},90);
     // the line above the card lights up in the new colour and runs across, then settles back to grey
     var cap=document.querySelector('#v-home .col-r .cap');
     if(cap){var cr=cap.getBoundingClientRect(),ln=document.createElement('i');ln.className='mode-line';
