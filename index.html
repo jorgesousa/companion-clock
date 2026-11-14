@@ -224,6 +224,7 @@ nav{position:relative}
 #h-steps-l{letter-spacing:.02em;white-space:nowrap}
 /* tap steps to refresh: the number breathes and a light runs along the block while it syncs */
 #h-steps-blk{position:relative;overflow:hidden}
+body.work #h-steps-blk{overflow:visible;-webkit-clip-path:inset(0 0 -40px 0);clip-path:inset(0 0 -40px 0)} /* sides clipped (the sync sweep), open below so the water reminder reaches the line */
 /* Health: the steps card in two: steps on the left, glasses of water on the right (a fixed column).
    Tap the water: a drop falls into the number, it squashes and ticks up, ripples spread. Behind: it drips, in the accent */
 body.personal #hw{display:none}
@@ -1275,6 +1276,8 @@ function renderWater(){
     hw.classList.add('due');var fl=hw.querySelector('.fl');
     if(fl.animate)fl.animate([{transform:'scaleY(0)'},{transform:'scaleY(1.04)',offset:.7},{transform:'scaleY(1)'}],{duration:700,easing:'cubic-bezier(.2,.8,.3,1)'});
   }else hw.classList.toggle('due',due);
+  // the block sits with the same space above it as below it (the card's last row has none of its own below)
+  var st=$('h-strip');if(st&&!st.hidden){var gap=Math.round(st.getBoundingClientRect().top+2-hw.getBoundingClientRect().bottom),fl=hw.querySelector('.fl');if(gap>0){fl.style.top='0';fl.style.bottom=-gap+'px'}} // from the line above to the line below: the whole cell
   wasDue=due;
   // the chime: once each time you fall behind, never during a meeting; if a meeting is on, it plays as soon as it ends (if you're still behind)
   if(!due)chimed=false;
