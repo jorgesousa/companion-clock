@@ -203,7 +203,7 @@ nav{position:relative}
 @keyframes nudgeR{40%{transform:translateX(10px)}}
 #h-next .mq{display:inline-block;white-space:nowrap}
 #h-next small.mq-on{text-overflow:clip;-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%);mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 28px),transparent 100%)}
-#h-next-l .pos{float:right;color:var(--muted)}
+#h-next-l .pos,#h-steps-l .pos,#wa-l .pos{float:right;color:var(--muted)}
 .cl{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:12px;vertical-align:2px;flex-shrink:0}
 .cl.none{box-shadow:inset 0 0 0 1.5px var(--muted)}
 @media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#ttab.sway{animation:none}#hs-fill,#hs-dot{transition:none}#h-lf,#h-ld{transition:none}#h-strip.hot #hs-dot{animation:none}#h-steps-blk.syncing #h-sync,#h-steps-blk.syncing .v,#h-steps-blk.synced .v{animation:none}#alert.ringing #al-sheet{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
@@ -224,19 +224,18 @@ nav{position:relative}
 #h-steps-l{letter-spacing:.02em;white-space:nowrap}
 /* tap steps to refresh: the number breathes and a light runs along the block while it syncs */
 #h-steps-blk{position:relative;overflow:hidden}
-/* Health: on work days the steps card splits: steps on the left, the day's glasses of water on the right */
-#h-water{position:absolute;right:0;top:18px;bottom:18px;display:none;text-align:right;padding-left:18px}
-#h-steps-blk.health #h-water{display:block}
-#hw-gl{position:relative;display:flex;justify-content:flex-end;height:44px;align-items:flex-end;margin-bottom:6px}
-#hw-gl .g{position:relative;width:13px;height:34px;margin-left:6px;border:2px solid var(--rule);border-radius:2px 2px 4px 4px;overflow:hidden;transition:border-color .5s var(--ease)}
-#hw-gl .g b{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--water);transition:height .75s cubic-bezier(.34,1.35,.5,1)}
-#hw-gl .g.full{border-color:var(--water)}
-#hw-gl .g.full b{height:100%}
-#hw-gl .g.due{border-color:var(--accent)}
-#hw-gl .g.due:after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;background:var(--accent);opacity:0;animation:g-breathe 1.8s ease-in-out infinite}
-@keyframes g-breathe{0%,100%{opacity:0}50%{opacity:.4}}
-#hw-gl .sp{position:absolute;width:24px;height:7px;margin-left:-12px;border:2px solid var(--water);border-radius:50%;pointer-events:none;opacity:0}
-#hw-lab .wv{color:var(--water)}
+/* Health: pages in the steps card. Steps by default; the water page comes in when you're behind on water,
+   as a level rising inside the card with a wave on top; drinking drains it */
+#wa-pg{position:absolute;left:0;right:0;top:0;bottom:0;padding:18px 0;display:none;pointer-events:none}
+#h-steps-blk.water #wa-pg,#wa-pg.leaving{display:block}
+#h-steps-blk.water #h-steps,#h-steps-blk.water #h-steps-l{opacity:0}
+#wa-pg .wl{position:absolute;left:0;right:0;bottom:0;height:100%;color:var(--water);-webkit-transform:translateY(100%);transform:translateY(100%)}
+#wa-pg .wl:before{content:'';position:absolute;left:0;right:0;top:0;bottom:0;background:currentColor;opacity:.16}
+#wa-pg .wv{position:absolute;left:0;top:-11px;width:200%;height:12px;fill:currentColor;opacity:.16}
+#h-steps-blk.water .wv{animation:wa-wave 2.6s linear infinite}
+@keyframes wa-wave{to{-webkit-transform:translateX(-50%);transform:translateX(-50%)}}
+#wa-v,#wa-l{position:relative}
+#wa-v.acc{color:var(--accent)}
 #h-sync{position:absolute;left:0;top:0;height:2px;width:30%;background:var(--accent);opacity:0}
 #h-steps-blk.syncing #h-sync{opacity:1;animation:sync-sweep .9s cubic-bezier(.65,0,.35,1) infinite}
 #h-steps-blk.syncing .v{animation:sync-breathe .9s ease-in-out infinite}
@@ -561,7 +560,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
       <div class="v num" id="h-steps">—</div>
       <div class="l mono muted" id="h-steps-l">Steps</div>
       <i id="h-sync"></i>
-      <div id="h-water" role="button" aria-label="Count a glass of water"><div id="hw-gl"></div><div class="l mono muted" id="hw-lab"></div></div>
+      <div id="wa-pg" aria-live="polite"><i class="wl"><svg class="wv" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M0 6 Q12.5 0 25 6 T50 6 T75 6 T100 6 T125 6 T150 6 T175 6 T200 6 V12 H0Z"/></svg></i><div class="v num" id="wa-v"></div><div class="l mono muted" id="wa-l"></div></div>
     </div>
   </div>
   <div id="minder" aria-hidden="true"><svg viewBox="0 0 48 56" width="48" height="56"><path d="M24 2C36.5 2 46 11 46 23.5C46 37 37.5 51.5 26.5 54C14.5 56.5 4.5 47 3 33C1.5 16.5 10.5 2 24 2Z" fill="#ffc500"/><g id="mi-eye"><path d="M12.5 19.5C16 14.8 20 13.2 24 13.2C28 13.2 32 14.8 35.5 19.5C32 24.2 28 25.8 24 25.8C20 25.8 16 24.2 12.5 19.5Z" fill="#fff"/><circle id="mi-p" cx="24" cy="19.5" r="4.4" fill="#111"/></g></svg></div>
@@ -844,7 +843,7 @@ function tick(){
   $('a-m').textContent=m;$('a-m').setAttribute('data-t',m);$('a-s').textContent=f2(now.getSeconds());
   if($('h-wx').textContent!==m){$('h-wx').textContent=m;$('a-wx').textContent=m}
   applyMute();fitDate(now);meetLine();
-  var nb=$('h-next-blk').classList;document.body.classList.toggle('attn',nb.contains('soon')||nb.contains('live')||(tRun&&tLeft<60));
+  var nb=$('h-next-blk').classList;document.body.classList.toggle('attn',nb.contains('soon')||nb.contains('live')||(tRun&&tLeft<60)||(typeof hPage!=='undefined'&&hPage==='water'&&waterDue()));
   if(now.getMinutes()!==lastMin){
     setMinute(m,lastMin!==-1);
     lastMin=now.getMinutes();
@@ -1203,7 +1202,7 @@ function setNet(ok){online=ok;$('net').classList.toggle('on',ok)}
 var stepsShown=null,stepsAnim=null;
 function countSteps(n){
   var v=$('h-steps'),from=stepsShown==null?n:stepsShown,t0=Date.now(),dur=900;stepsShown=n;cancelAnimationFrame(stepsAnim);
-  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+'<span class="of">'+($('h-steps-blk').classList.contains('health')?'steps':'/ '+fmtN(GOAL)+' steps')+'</span>';if(k<1)stepsAnim=requestAnimationFrame(f)}
+  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+'<span class="of">steps</span>';if(k<1)stepsAnim=requestAnimationFrame(f)}
   f();
 }
 // water: on work days, the glasses you set in Settings (250 ml each), spread evenly from 09:00 to 17:00; tap the steps card whenever you drink one
@@ -1216,24 +1215,15 @@ function waterNow(){
   var w=waterGet(),T=waterTimes(),due=T.filter(function(t){return t<=m}).length;
   return {n:w.n,due:w.n<due,next:T[w.n]!=null?T[w.n]:null,total:T.length};
 }
-function renderWater(){
-  var w=waterNow(),blk=$('h-steps-blk');blk.classList.toggle('health',!!w);if(!w)return;
-  var gl=$('hw-gl'),N=w.total;
-  var G=gl.querySelectorAll('.g');if(G.length!==N){gl.innerHTML='';for(var i=0;i<N;i++){var g=document.createElement('i');g.className='g';g.appendChild(document.createElement('b'));gl.appendChild(g)}}
-  var rg=document.createRange();rg.selectNodeContents($('h-steps'));var room=blk.clientWidth-rg.getBoundingClientRect().width-40,gw=Math.max(5,Math.min(13,Math.floor(room/N)-6));
-  [].forEach.call(gl.querySelectorAll('.g'),function(g,i){g.style.width=gw+'px';g.classList.toggle('full',i<w.n);g.classList.toggle('due',w.due&&i===w.n)});
-  if(!waterUndo)$('hw-lab').innerHTML=w.n>=N?'Water <span class="wv">'+litres(w.n)+'</span>':'Water <span class="val">'+w.n+'/'+N+'</span>';
-}
 var stepsLast,stepsUpd;
 function renderSteps(steps,upd){
   var v=$('h-steps'),l=$('h-steps-l');stepsLast=steps;stepsUpd=upd;
-  renderWater();
   v.classList.toggle('dim',steps==null);
-  if(steps==null){v.textContent='No data';l.textContent=upd?'Steps · last sync '+hhmm(upd):'Steps · waiting for phone';return}
-  countSteps(steps);renderWater();setTimeout(renderWater,950); // the glasses take the room the number leaves, once it has counted up
+  if(steps==null){v.textContent='No data';l.innerHTML=(upd?'Steps · last sync '+hhmm(upd):'Steps · waiting for phone')+healthPos();return}
+  countSteps(steps);
   // the expected pace ("Expected X · N ahead/behind") is off for now, in both modes: see the roadmap
-  if(steps>=GOAL)l.innerHTML='<span style="color:var(--ok)">Goal reached</span>';
-  else l.innerHTML='<span class="val">'+fmtN(GOAL-steps)+'</span> '+'to go';
+  if(steps>=GOAL)l.innerHTML='<span style="color:var(--ok)">Goal reached</span>'+healthPos();
+  else l.innerHTML='<span class="val">'+fmtN(GOAL-steps)+'</span> to go'+healthPos();
 }
 var stepsAt=null;
 function fetchSteps(){
@@ -1249,31 +1239,10 @@ function fetchSteps(){
   }).catch(function(){setNet(false)});
 }
 
-// tap the steps block: fetch now, then say when the phone last sent steps
+// tap the steps page: fetch now, then say when the phone last sent steps
 var syncBusy=false;
-// a tap counts a glass; a second tap while it says "Glass N" takes it back (a mistaken tap)
-// tap the glasses whenever you drink: the next glass fills from the bottom, with a splash at the brim;
-// a second tap straight away drains it again (a mistaken tap)
-var waterUndo=null;
-function waterTap(){
-  var s=waterGet(),lab=$('hw-lab'),gl=$('hw-gl');
-  if(waterUndo){clearTimeout(waterUndo);waterUndo=null;s.n=Math.max(0,s.n-1);try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
-    lab.textContent='Taken back';renderWater();waterUndo=setTimeout(function(){waterUndo=null;renderWater()},1400);return}
-  s.n++;try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
-  renderWater();
-  var G=gl.querySelectorAll('.g'),g=G[s.n-1];
-  if(g&&g.animate){
-    var sp=document.createElement('i');sp.className='sp';sp.style.left=(g.offsetLeft+g.offsetWidth/2)+'px';sp.style.top=(g.offsetTop-4)+'px';gl.appendChild(sp);
-    sp.animate([{opacity:1,transform:'scale(.3)'},{opacity:0,transform:'scale(1.5)'}],{duration:520,delay:430,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'}).onfinish=function(){sp.remove()};
-  }
-  lab.innerHTML='<span class="wv">+1</span> · '+litres(s.n);
-  if(lab.animate)lab.animate([{opacity:0,transform:'translateY(8px)',filter:'blur(3px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
-  waterUndo=setTimeout(function(){waterUndo=null;renderWater()},3000);
-}
-$('h-water').addEventListener('click',function(ev){ev.stopPropagation();waterTap()});
-$('h-steps-blk').addEventListener('click',function(){
-  if(syncBusy)return;
-  syncBusy=true;
+function stepsSync(){
+  if(syncBusy)return;syncBusy=true;
   var b=$('h-steps-blk'),l=$('h-steps-l'),t0=Date.now();
   b.classList.remove('synced');b.classList.add('syncing');l.textContent='Syncing…';
   fetchSteps().then(function(){return new Promise(function(r){setTimeout(r,Math.max(0,900-(Date.now()-t0)))})}).then(function(){
@@ -1281,7 +1250,78 @@ $('h-steps-blk').addEventListener('click',function(){
     l.textContent=stepsAt?'From phone at '+hhmm(stepsAt):'Waiting for phone';
     setTimeout(function(){syncBusy=false;fetchSteps()},3500);
   });
-});
+}
+
+// ---------- Health pages: steps, and water when you need reminding ----------
+// The water page turns up on its own when you're behind (a level rises inside the card, the accent travels to it);
+// tap when you drink: "+1", the level drains, and the card goes back to steps. Swipe to look at it any time;
+// swiping away from "Time for water" snoozes it for 15 minutes. A second tap straight after takes the glass back.
+var hPage='steps',hBack=null,hSnooze=0,hBusy=false,waterUndo=null;
+function hm(m){return f2(Math.floor(m/60))+':'+f2(m%60)}
+function healthPos(){return waterNow()?'<span class="pos">1/2</span>':''}
+function waterDue(){var w=waterNow();return !!(w&&w.due)}
+function waterLevel(w){return w.due?.62:Math.max(.1,Math.min(1,w.n/w.total))*.8} // share of the card the water fills
+function renderWaterPage(){
+  var w=waterNow();if(!w)return;var v=$('wa-v'),l=$('wa-l'),lv=$('wa-pg').querySelector('.wl');
+  lv.style.color=w.due?'var(--accent)':'var(--water)';
+  if(w.due){v.textContent='Time for water';v.classList.add('acc');l.innerHTML='Tap when you drink<span class="pos">2/2</span>'}
+  else{v.classList.remove('acc');v.innerHTML=litres(w.n).replace(' L','')+'<span class="of">L</span>';l.innerHTML='<span class="val">'+w.n+'/'+w.total+'</span> glasses'+(w.next!=null?' · next '+hm(w.next):'')+'<span class="pos">2/2</span>'}
+  lv.style.transform=lv.style.webkitTransform='translateY('+((1-waterLevel(w))*100).toFixed(1)+'%)';
+}
+function rowsOut(rows){rows.forEach(function(r,i){if(r.animate)r.animate([{opacity:1,transform:'translateY(0)',filter:'blur(0)'},{opacity:0,transform:'translateY(-10px)',filter:'blur(4px)'}],{duration:200,delay:i*40,easing:'cubic-bezier(.4,0,1,1)'})})}
+function rowsIn(rows,d){rows.forEach(function(r,i){if(r.animate)r.animate([{opacity:0,transform:'translateY(14px)',filter:'blur(5px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:640,delay:d+i*90,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})})}
+function healthGo(p){
+  if(p===hPage||hBusy||(p==='water'&&!waterNow()))return;
+  var blk=$('h-steps-blk'),wp=$('wa-pg'),lv=wp.querySelector('.wl'),toW=p==='water';
+  hBusy=true;setTimeout(function(){hBusy=false},800);hPage=p;clearTimeout(hBack);
+  if(toW){
+    renderWaterPage();var to=lv.style.transform;
+    rowsOut([$('h-steps'),$('h-steps-l')]);blk.classList.add('water');
+    if(lv.animate)lv.animate([{transform:'translateY(100%)'},{transform:to}],{duration:900,easing:'cubic-bezier(.3,1.25,.5,1)'}); // the water rises, a little overshoot, settles
+    rowsIn([$('wa-v'),$('wa-l')],260);
+    if(!waterDue())hBack=setTimeout(function(){healthGo('steps')},10000);
+  }else{
+    rowsOut([$('wa-v'),$('wa-l')]);wp.classList.add('leaving');blk.classList.remove('water');
+    if(lv.animate)lv.animate([{transform:lv.style.transform},{transform:'translateY(100%)'}],{duration:520,easing:'cubic-bezier(.5,0,.75,0)'});
+    setTimeout(function(){wp.classList.remove('leaving')},520);
+    renderSteps(stepsLast,stepsUpd);rowsIn([$('h-steps'),$('h-steps-l')],220);
+  }
+}
+function drink(){
+  var s=waterGet(),v=$('wa-v'),l=$('wa-l'),lv=$('wa-pg').querySelector('.wl');clearTimeout(hBack);
+  if(waterUndo){ // a second tap: take the glass back, the water comes back up
+    clearTimeout(waterUndo);waterUndo=null;s.n=Math.max(0,s.n-1);try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
+    renderWaterPage();v.textContent='Undone';v.classList.remove('acc');
+    hBack=setTimeout(function(){renderWaterPage();if(!waterDue())healthGo('steps')},1600);return;
+  }
+  s.n++;try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
+  var from=lv.style.transform;
+  v.classList.remove('acc');v.innerHTML='+1';l.innerHTML='<span class="val">'+litres(s.n)+'</span> today<span class="pos">2/2</span>';
+  if(v.animate)v.animate([{transform:'scale(.6)',opacity:0},{transform:'scale(1.12)',opacity:1,offset:.55},{transform:'scale(1)',opacity:1}],{duration:520,easing:'cubic-bezier(.2,.9,.3,1)'});
+  if(lv.animate)lv.animate([{transform:from},{transform:'translateY(100%)'}],{duration:760,easing:'cubic-bezier(.55,0,.35,1)',fill:'forwards'}).onfinish=function(a){this.cancel&&this.cancel()}; // glug: drunk
+  lv.style.transform=lv.style.webkitTransform='translateY(100%)';
+  waterUndo=setTimeout(function(){waterUndo=null;
+    if(waterDue()){var t=lv.style.transform;renderWaterPage();var to=lv.style.transform;if(lv.animate)lv.animate([{transform:t},{transform:to}],{duration:800,easing:'cubic-bezier(.3,1.25,.5,1)'});rowsIn([$('wa-v')],0)}
+    else healthGo('steps');
+  },2400);
+}
+function healthTap(){if(hPage==='water')drink();else stepsSync()}
+function healthSwipe(){
+  if(!waterNow())return;
+  if(hPage==='water'){if(waterDue())hSnooze=Date.now()+15*60000;clearTimeout(waterUndo);waterUndo=null;healthGo('steps')}else healthGo('water');
+}
+// when you fall behind, the card turns to the water by itself (on Home, not while a warning card is open)
+function healthCheck(){if(cur==='home'&&hPage!=='water'&&!syncBusy&&waterDue()&&Date.now()>=hSnooze&&!(typeof warnOpen!=='undefined'&&warnOpen))healthGo('water')}
+(function(){
+  var blk=$('h-steps-blk'),x0=null,y0=0;
+  blk.addEventListener('touchstart',function(ev){x0=ev.touches[0].clientX;y0=ev.touches[0].clientY},{passive:true});
+  blk.addEventListener('touchend',function(ev){
+    if(x0===null)return;var t=ev.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+    if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))healthSwipe();else if(Math.abs(dx)<10&&Math.abs(dy)<10)healthTap();
+    ev.preventDefault();
+  });
+  blk.addEventListener('click',function(){if(!('ontouchstart' in window))healthTap()});
+})();
 
 // ---------- som ----------
 var actx=null;
@@ -1891,7 +1931,7 @@ cfgReady.then(function(){
   brandAccent();loadFootball();
   try{var sb=+localStorage.getItem('brightDay');if(sb)cfg.brightDay=sb}catch(e){}
   tick();setInterval(tick,1000);
-  fetchSteps();setInterval(fetchSteps,60*1000);setInterval(function(){if(!syncBusy&&!waterUndo&&stepsLast!==undefined)renderSteps(stepsLast,stepsUpd)},30*1000);
+  fetchSteps();setInterval(fetchSteps,60*1000);setInterval(function(){if(!syncBusy&&!waterUndo&&stepsLast!==undefined){if(hPage==='water'&&!waterNow())healthGo('steps');else if(hPage==='water')renderWaterPage();else renderSteps(stepsLast,stepsUpd)}healthCheck()},30*1000);setTimeout(healthCheck,4000);
   var c0=evCache[mode];if(c0){events=c0.events;wloc=c0.wloc;evTried=true;evShow()} // last known list, at once
   loadAllEvents();setInterval(loadAllEvents,5*60*1000);
   lastTouch=0;checkSleep(new Date());resetIdle();if(!sleeping)bright(cfg.brightDay);
