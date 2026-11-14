@@ -8,6 +8,14 @@
   - *Apple Reminders*: a Shortcut on the Mac or iPhone posts due reminders to a private ntfy topic, the same path the steps use; works across accounts, but only for what lands in Reminders.
   - *Microsoft To Do / Outlook flagged email* (client's Microsoft 365): Microsoft Graph needs an app consent the client's tenant may not allow; a Power Automate flow posting to ntfy may be the realistic path, if the tenant permits it.
   - On the clock: today's to-dos on Home (a card like the meeting, or a count), ticked off on the phone or Mac, never on the clock.
+- **One pattern for everything that needs you.** The water reminder set it: the cell floods with the accent (the colour travels to it), pulses with rings, a short chime (never during a meeting: it waits for it to end), and tapping it to say "done" crumbles it into grain that bursts and falls (effect G). List every case where the clock should call for attention and give each the same rule and effect, so the app speaks one language. Candidates:
+  - a meeting about to start (today: the time turns to the accent and a line burns down) and the "Ready for it?" prompt below;
+  - an orange or red IPMA weather warning starting;
+  - reminders and to-dos falling due;
+  - "Claude is waiting for you" (Claude Code hooks);
+  - an important unread email;
+  - steps far behind late in the work day, once the steps pace is revisited.
+  Decide for each: what floods (which cell), whether it chimes, and what "done" means (dismiss, snooze, open).
 - **"Ready for it?" before a meeting.** Ahead of a meeting, the clock asks whether you're ready for it. If not, it suggests using the free time before it to prepare (e.g. "40 min free before Sprint review: prepare now?"), pointing at that Free slot. To decide: how far ahead to ask, which meetings (all, or only some), and what "prepare" turns into (a focus block, a timer).
 - **Claude Code → clock.** `Notification` / `Stop` hooks post to a private ntfy topic; the clock shows "Claude is waiting for you".
 - **Unread email** via the same Apps Script: unread count and the last important sender on Home.
