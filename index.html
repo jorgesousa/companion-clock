@@ -404,6 +404,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #amb.night .mono{color:var(--muted)}
 
 /* mode switch: spark, wash */
+#h-next-blk .card-old{position:absolute;background:var(--bg);z-index:2;pointer-events:none;overflow:hidden}
 .mode-line{position:fixed;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:395;pointer-events:none}
 .mode-spark{position:fixed;left:36px;right:36px;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:400;pointer-events:none}
 .mode-wash{position:fixed;width:1900px;height:1900px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0,rgba(0,0,0,0) 62%);z-index:390;pointer-events:none;mix-blend-mode:screen}
@@ -760,28 +761,28 @@ function modeFlip(m){
   // 1 · spark across the header
   var sp=document.createElement('i');sp.className='mode-spark';sp.style.top=(js.bottom-6)+'px';document.body.appendChild(sp);
   sp.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.7},{transform:'scaleX(1)',opacity:0}],{duration:520,easing:'cubic-bezier(.2,.7,.2,1)'}).onfinish=function(){sp.remove()};
-  // 2 · the flaps fold down one after another, the content changes, they fall back into place
-  var flaps=[$('h-next-blk')]; // the card turns over; the hours take the new colour when the wash reaches them
-  var down=[{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'},{transform:'perspective(700px) rotateX(-90deg)',filter:'brightness(.35)'}];
-  var up=[{transform:'perspective(700px) rotateX(90deg)',filter:'brightness(.35)'},{transform:'perspective(700px) rotateX(-12deg)',filter:'brightness(1.1)',offset:.75},{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'}];
-  var downs=[];flaps.forEach(function(el,i){el.style.transformOrigin='50% 50%';downs[i]=el.animate(down,{duration:200,delay:120+i*70,easing:'cubic-bezier(.5,0,.9,.4)',fill:'forwards'})});
-  var folded=120+(flaps.length-1)*70+200;
+  // 2 · the hours hold their colour until the wash reaches them; the line above the card runs across and wipes the old card away
   setTimeout(function(){
     var hh=$('h-h');hh.style.color=getComputedStyle(hh).color; // hold the old colour
+    var blk=$('h-next-blk'),oc=$('h-next-c'),old=oc.cloneNode(true);
+    [old].concat([].slice.call(old.querySelectorAll('[id]'))).forEach(function(n){n.removeAttribute('id')});
+    old.className='card-old';old.style.top=oc.offsetTop+'px';old.style.left=oc.offsetLeft+'px';old.style.width=oc.offsetWidth+'px';old.style.height=oc.offsetHeight+'px';
+    blk.appendChild(old);
     applyMode(m);
     setTimeout(function(){hh.classList.add('hit');hh.style.color='';setTimeout(function(){hh.classList.remove('hit')},700)},90);
-    // the line above the card lights up in the new colour and runs across, then settles back to grey
-    var cap=document.querySelector('#v-home .col-r .cap');
-    if(cap){var cr=cap.getBoundingClientRect(),ln=document.createElement('i');ln.className='mode-line';
-      ln.style.left=cr.left+'px';ln.style.width=cr.width+'px';ln.style.top=(cr.bottom-2)+'px';document.body.appendChild(ln);
-      ln.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.55},{transform:'scaleX(1)',opacity:0}],{duration:760,easing:'cubic-bezier(.2,.7,.2,1)'}).onfinish=function(){ln.remove()}}
+    var cap=document.querySelector('#v-home .col-r .cap'),ease='cubic-bezier(.2,.7,.2,1)';
+    // the lines above and below the card light up together and run across
+    if(cap){var cr=cap.getBoundingClientRect(),br=blk.getBoundingClientRect();
+      [cr.bottom-2,br.bottom-2].forEach(function(y){var ln=document.createElement('i');ln.className='mode-line';
+        ln.style.left=cr.left+'px';ln.style.width=cr.width+'px';ln.style.top=y+'px';document.body.appendChild(ln);
+        ln.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.55},{transform:'scaleX(1)',opacity:0}],{duration:760,easing:ease}).onfinish=function(){ln.remove()}})}
+    // the old card is erased behind the running line (same timing), revealing the new one
+    old.animate([{clipPath:'inset(0 0 0 0)',webkitClipPath:'inset(0 0 0 0)'},{clipPath:'inset(0 0 0 100%)',webkitClipPath:'inset(0 0 0 100%)'}],{duration:418,easing:ease,fill:'forwards'}).onfinish=function(){old.remove();flipping=false};
     // 3 · the new colour washes out from "JS"
     var w=document.createElement('i');w.className='mode-wash';w.style.left=cx+'px';w.style.top=cy+'px';document.body.appendChild(w);
-    w.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.55},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:900,easing:'cubic-bezier(.2,.7,.2,1)'}).onfinish=function(){w.remove()};
-    flaps.forEach(function(el,i){var a=el.animate(up,{duration:380,delay:i*80,easing:'cubic-bezier(.2,.8,.3,1)',fill:'forwards'});
-      a.onfinish=function(){a.cancel();downs[i].cancel();el.style.transformOrigin='';if(i===flaps.length-1)flipping=false}});
-    setTimeout(function(){flipping=false},1400);
-  },folded);
+    w.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.55},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:900,easing:ease}).onfinish=function(){w.remove()};
+    setTimeout(function(){flipping=false;if(old.parentNode)old.remove()},1400);
+  },160);
 }
 function setMode(m){if(m===mode)return;if(typeof modeFlip==='function')modeFlip(m);else applyMode(m)}
 $('net').addEventListener('click',function(){setMode(mode==='work'?'personal':'work')});
