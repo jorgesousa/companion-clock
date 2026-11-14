@@ -36,7 +36,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;str
 .outline:after{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:0;pointer-events:none}
 
 /* header */
-header{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-items:baseline;padding:4px 24px 0 36px;z-index:10;-webkit-transform:translateZ(0);transform:translateZ(0)}
+header{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-items:baseline;padding:4px 24px 0 36px;z-index:10}
 #net{width:160px;color:var(--fg);text-align:left;height:64px;white-space:nowrap} /* identity + connection; tap switches WORK / PERSONAL */
 #mode-w{display:inline-block;overflow:hidden;vertical-align:bottom;height:1.3em;margin-left:10px;padding-left:10px;border-left:2px solid var(--rule)}
 #mode-l{display:inline-block;color:var(--muted);transition:transform .32s var(--ease),opacity .32s var(--ease)}
@@ -407,7 +407,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #h-next-blk .card-old{position:absolute;z-index:2;pointer-events:none;overflow:hidden}
 .mode-line{position:fixed;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:395;pointer-events:none}
 .mode-spark{position:fixed;left:36px;right:36px;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:400;pointer-events:none}
-.mode-wash{position:fixed;width:1900px;height:1900px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0,rgba(0,0,0,0) 62%);z-index:390;pointer-events:none}
+.mode-wash{position:fixed;width:1900px;height:1900px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0,rgba(0,0,0,0) 62%);z-index:390;pointer-events:none;opacity:0;-webkit-transform:translate(-50%,-50%) scale(0);transform:translate(-50%,-50%) scale(0);will-change:transform,opacity}
 canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 /* the temperature sits in the header beside Sleep, on every screen; tap to switch home / UK */
 #hdr-temp{display:inline-block;transition:opacity .18s var(--ease),transform .18s var(--ease);height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
@@ -783,13 +783,15 @@ function modeFlip(m){
     rows(oc).forEach(function(r,i){r.animate([{opacity:0,transform:'translateY(12px)',filter:'blur(5px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:620,delay:190+i*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})});
     setTimeout(function(){old.remove()},420);setTimeout(function(){flipping=false},900);
     // 3 · the new colour washes out from "JS"
-    var w=document.createElement('i');w.className='mode-wash';w.style.left=cx+'px';w.style.top=cy+'px';document.body.appendChild(w);
-    w.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.35},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:900,easing:ease}).onfinish=function(){w.remove()};
+    var w=$('mode-wash'); // stays on the page: removing a layer this big makes the clock's WebView blank the header for a frame
+    if(!w){w=document.createElement('i');w.id='mode-wash';w.className='mode-wash';document.body.appendChild(w)}w.style.left=cx+'px';w.style.top=cy+'px';
+    w.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.35},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:900,easing:ease});
     setTimeout(function(){flipping=false;if(old.parentNode)old.remove()},1400);
   },160);
 }
 function setMode(m){if(m===mode)return;if(typeof modeFlip==='function')modeFlip(m);else applyMode(m)}
 $('net').addEventListener('click',function(){setMode(mode==='work'?'personal':'work')});
+(function(){var w=document.createElement('i');w.id='mode-wash';w.className='mode-wash';document.body.appendChild(w)})();
 
 // ---------- clock ----------
 function fitDate(now){
