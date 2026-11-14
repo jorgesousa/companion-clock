@@ -846,30 +846,35 @@ function setMinute(m,animate){
 // ---------- agenda (events.json do servidor local, quando existir) ----------
 var events=null,evTried=false,wloc={};
 setInterval(function(){if(cur==='cal'&&events){var cl=$('cal-list'),y=cl.scrollTop;renderCal();cl.scrollTop=y}},60000);
-function calUrl(){return mode==='personal'?(cfg.personalCalUrl||'events-personal.json'):(cfg.calendarUrl||'events.json')}
+function calUrl(m){m=m||mode;return m==='personal'?(cfg.personalCalUrl||'events-personal.json'):(cfg.calendarUrl||'events.json')}
 var evCache={}; // last good list per mode, so switching back is instant
-function loadEvents(){
-  var forMode=mode;
-  fetch(calUrl(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}).then(function(list){
-    if(forMode!==mode)return; // switched while this was on its way
+// the work feed can take 15 s to answer: the last good list is kept on the clock and shown at once,
+// and both modes are fetched in the background, so neither a reload nor a switch waits for Google
+function evParse(list){
+  var wl={},ev=list.filter(function(e){
+    if(e.type!=='WORKING_LOCATION')return true; // working location (Home / Office) is not a meeting: keep it per day for the headings
+    var d=new Date(e.start),k=d.getFullYear()+'-'+f2(d.getMonth()+1)+'-'+f2(d.getDate());
+    wl[k]=e.title||'';return false;
+  }).map(function(e){return {s:new Date(e.start),e:new Date(e.end),t:e.title||'(no title)',all:!!e.allDay}}).sort(function(a,b){return a.s-b.s});
+  return {events:ev,wloc:wl};
+}
+function evShow(){
+  var cl=$('cal-list'),first=!cl.childElementCount,y=cl.scrollTop;
+  renderCal();renderNext();
+  if(cur==='cal'){if(first)calToNow();else cl.scrollTop=y} // a refresh keeps your scroll; the first load while you're looking jumps to Today
+}
+(function(){['work','personal'].forEach(function(m){try{var r=JSON.parse(localStorage.getItem('ev-'+m)||'null');if(r&&Array.isArray(r.list)&&Date.now()-r.t<36*36e5)evCache[m]=evParse(r.list)}catch(e){}})})();
+function loadEvents(forMode){
+  forMode=typeof forMode==='string'?forMode:mode;
+  fetch(calUrl(forMode),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null}).then(function(list){
+    if(Array.isArray(list)){evCache[forMode]=evParse(list);try{localStorage.setItem('ev-'+forMode,JSON.stringify({t:Date.now(),list:list}))}catch(e){}}
+    if(forMode!==mode)return; // the other mode: kept for when you switch
     evTried=true;
-    if(!Array.isArray(list)){$('ce-b').textContent='offline';$('ce-b').setAttribute('data-t','offline');$('ce-c').textContent='Could not reach Google Calendar. Trying again in 5 minutes.'}
-    if(Array.isArray(list)){
-      // working location (Home / Office) is not a meeting: keep it per day for the headings
-      wloc={};
-      events=list.filter(function(e){
-        if(e.type!=='WORKING_LOCATION')return true;
-        var d=new Date(e.start),k=d.getFullYear()+'-'+f2(d.getMonth()+1)+'-'+f2(d.getDate());
-        wloc[k]=e.title||'';return false;
-      }).map(function(e){return {s:new Date(e.start),e:new Date(e.end),t:e.title||'(no title)',all:!!e.allDay}}).sort(function(a,b){return a.s-b.s});
-      evCache[mode]={events:events,wloc:wloc};
-    } // else keep the last good list if a fetch fails
-    // a refresh keeps your scroll; the first load while you're looking jumps to Today
-    var cl=$('cal-list'),first=!cl.childElementCount,y=cl.scrollTop;
-    renderCal();renderNext();
-    if(cur==='cal'){if(first)calToNow();else cl.scrollTop=y}
+    if(!Array.isArray(list)){$('ce-b').textContent='offline';$('ce-b').setAttribute('data-t','offline');$('ce-c').textContent='Could not reach Google Calendar. Trying again in 5 minutes.';if(!events)evShow();return} // else keep the last good list
+    events=evCache[forMode].events;wloc=evCache[forMode].wloc;evShow();
   });
 }
+function loadAllEvents(){loadEvents(mode);if(cfg.personalCalUrl||cfg.calendarUrl)loadEvents(mode==='work'?'personal':'work')}
 var CLIENT_COLORS_ALL=['#8fb3ff','#f2c14e','#b48cf2','#5fd0c4','#f28fb3','#c9d36a'];
 function clientColors(){return CLIENT_COLORS_ALL.filter(function(c){return c!==ACCENT_CLASH[accent]})}
 var clientMap={};
@@ -1771,7 +1776,8 @@ cfgReady.then(function(){
   try{var sb=+localStorage.getItem('brightDay');if(sb)cfg.brightDay=sb}catch(e){}
   tick();setInterval(tick,1000);
   fetchSteps();setInterval(fetchSteps,60*1000);
-  loadEvents();setInterval(loadEvents,5*60*1000);
+  var c0=evCache[mode];if(c0){events=c0.events;wloc=c0.wloc;evTried=true;evShow()} // last known list, at once
+  loadAllEvents();setInterval(loadAllEvents,5*60*1000);
   lastTouch=0;checkSleep(new Date());resetIdle();if(!sleeping)bright(cfg.brightDay);
   setInterval(function(){checkSleep(new Date())},5000);
   var h=location.hash.slice(1);if($('v-'+h))go(h);
