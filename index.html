@@ -413,7 +413,9 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 #hdr-temp{display:inline-block;transition:opacity .18s var(--ease),transform .18s var(--ease);height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 #hdr-temp b{font:700 25px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
 #hdr-temp i{font-style:normal;margin-left:6px}
-#hdr-temp i.warn{margin-left:10px}
+#hdr-temp i.warn{margin-left:0}
+#hdr-temp i.warn.dot{margin-left:10px}
+#hdr-temp i.warn.dot:before{margin-right:0}
 #hdr-temp i.warn:before{content:'';display:inline-block;width:8px;height:8px;border-radius:4px;background:currentColor;margin-right:6px;vertical-align:1px}
 #a-h{position:relative;display:inline-block;vertical-align:top}
 /* a small friend peeks up from the bottom edge, in the empty middle of the strip (spike, clock only) */
@@ -1560,16 +1562,20 @@ function nextFlash(){flashT=setTimeout(function(){
 },4000+Math.random()*8000)}
 var wxT={home:null,away:null},wxAway=false;
 function showTemp(){
-  var away=wxAway&&wxT.away,t=away?wxT.away:wxT.home;if(!t)return;
-  var w=!away&&wxWarn,b=$('hdr-temp');b.hidden=false;
-  b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'')+(w?'<i class="warn" style="color:'+WARN_C[w.level]+'">'+w.label+'</i>':'');
-  b.setAttribute('aria-label','Temperature'+(w?', '+w.level+' warning: '+w.label:'')+': tap to switch place');
+  // tap the temperature: with a warning on, it shows the warning (what, until when); otherwise the second place
+  var b=$('hdr-temp'),w=wxWarn;
+  if(wxAway&&w){b.hidden=false;b.innerHTML='<i class="warn" style="color:'+WARN_C[w.level]+'">'+w.label+'</i>';
+    b.setAttribute('aria-label',w.level+' weather warning: '+w.label+(w.until?' until '+w.until:'')+'. Tap for the temperature');return}
+  var away=wxAway&&!w&&wxT.away,t=away?wxT.away:wxT.home;if(!t)return;b.hidden=false;
+  b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'')+(w?'<i class="warn dot" style="color:'+WARN_C[w.level]+'"></i>':'');
+  b.setAttribute('aria-label','Temperature'+(w?', '+w.level+' weather warning: tap to see it':': tap to switch place'));
 }
+function untilTxt(d){var n=new Date(),hm=hhmm(d);return d.toDateString()===n.toDateString()?hm:DAYS[d.getDay()].slice(0,3)+' '+hm}
 // IPMA weather warnings (yellow, orange, red) for your district: the worst one active now sits next to the temperature
 var wxWarn=null,WARN_C={yellow:'#ffd23f',orange:'#ff8c2e',red:'#ff4a3d'},WARN_N={yellow:1,orange:2,red:3};
 var WARN_T={'Precipitação':'Rain','Vento':'Wind','Trovoada':'Thunder','Nevoeiro':'Fog','Neve':'Snow','Tempo Quente':'Heat','Tempo Frio':'Cold'}; // sea warnings left out: the district's coast isn't where the clock is
 function loadWarn(){
-  var o=(location.search.match(/warn=(\w+):([^&]+)/)||[]);if(o[1]){wxWarn={level:o[1],label:WARN_T[decodeURIComponent(o[2])]||decodeURIComponent(o[2])};showTemp();return}
+  var o=(location.search.match(/warn=(\w+):([^&]+)/)||[]);if(o[1]){wxWarn={level:o[1],label:WARN_T[decodeURIComponent(o[2])]||decodeURIComponent(o[2]),until:untilTxt(new Date(Date.now()+5*36e5))};showTemp();return}
   var area=cfg.ipmaArea;if(!area)return; // district code, e.g. LSB, CBR, PTO
   fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(list){
     var now=Date.now(),best=null;
@@ -1578,11 +1584,11 @@ function loadWarn(){
       if(new Date(x.startTime).getTime()>now||new Date(x.endTime).getTime()<now)return;
       if(!best||WARN_N[x.awarenessLevelID]>WARN_N[best.awarenessLevelID])best=x;
     });
-    wxWarn=best?{level:best.awarenessLevelID,label:WARN_T[best.awarenessTypeName]||best.awarenessTypeName}:null;showTemp();
+    wxWarn=best?{level:best.awarenessLevelID,label:WARN_T[best.awarenessTypeName]||best.awarenessTypeName,until:untilTxt(new Date(best.endTime))}:null;showTemp();
   }).catch(function(){});
 }
 $('hdr-temp').addEventListener('click',function(){
-  if(!wxT.away)return;var b=this;
+  if(!wxT.away&&!wxWarn)return;var b=this;
   b.style.opacity='0';b.style.transform='translateY(-8px)';
   setTimeout(function(){wxAway=!wxAway;showTemp();b.style.transition='none';b.style.transform='translateY(8px)';void b.offsetWidth;b.style.transition='';b.style.opacity='';b.style.transform=''},180);
 });
