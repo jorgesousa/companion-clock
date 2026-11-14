@@ -175,6 +175,10 @@ nav{position:relative}
 .blk{transition:background-color .4s var(--ease),color .4s var(--ease),padding .4s var(--ease),margin .4s var(--ease)}
 /* meeting in progress: accent time, a live dot, and the block's rule fills as the meeting elapses */
 #h-next-blk{position:relative}
+/* PERSONAL: the club's crest, a quiet monochrome watermark in the card's top-right */
+#h-crest{position:absolute;right:0;top:4px;width:104px;height:104px;background:no-repeat center/contain;-webkit-filter:grayscale(1) brightness(1.4);filter:grayscale(1) brightness(1.4);opacity:0;pointer-events:none;transition:opacity .8s var(--ease)}
+body.personal #h-crest.on{opacity:.13}
+#h-next-c{position:relative;z-index:1}
 /* lines that carry time: a 6px track on the block's bottom edge */
 .hl{position:absolute;left:0;right:0;height:6px;border-radius:3px;background:var(--rule)}
 .hl i,.hl b{position:absolute;top:0;bottom:0;left:0;border-radius:3px}
@@ -558,6 +562,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
     <div class="blk" id="h-next-blk">
       <div id="h-next-c"><div class="v num" id="h-next">—</div>
       <div class="l mono muted" id="h-next-l">Next meeting</div></div>
+      <i id="h-crest" aria-hidden="true"></i>
       <i class="hl" id="h-live"><i id="h-lf"></i><b id="h-ld"></b></i>
       <div id="h-warn" role="status" aria-live="polite"><i class="wh"></i><div class="v num" id="hw-v"></div><div class="l mono muted" id="hw-l"></div><div class="l mono" id="hw-q"><span class="mq"></span></div></div>
     </div>
@@ -968,7 +973,8 @@ function fbUpcoming(){if(!fb.matches)return [];var n=Date.now();return fb.matche
 function fbLast(){if(!fb.matches)return null;var n=Date.now(),f=fb.matches.filter(function(m){return m.status==='FINISHED'&&n-m.d<26*3600000});return f[f.length-1]||null}
 function ordinal(n){var s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])}
 function renderSporting(v,l,blk){
-  var team=fbTeam();
+  var team=fbTeam(),cr=$('h-crest');
+  if(cr._t!==team){cr._t=team;cr.classList.remove('on');var im=new Image();im.onload=function(){cr.style.backgroundImage='url('+im.src+')';cr.classList.add('on')};im.src='https://a.espncdn.com/i/teamlogos/soccer/500/'+team+'.png'}
   v.classList.remove('dim','free','wknd');v.classList.toggle('loading',!fb.matches);
   if(!fb.matches){v._h=null;v.textContent='Sporting';setL(l,'Football · loading');return}
   var live=fbLive(),up=fbUpcoming(),last=fbLast(),cards=[];
