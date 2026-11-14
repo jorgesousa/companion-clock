@@ -8,6 +8,7 @@
   - *Apple Reminders*: a Shortcut on the Mac or iPhone posts due reminders to a private ntfy topic, the same path the steps use; works across accounts, but only for what lands in Reminders.
   - *Microsoft To Do / Outlook flagged email* (client's Microsoft 365): Microsoft Graph needs an app consent the client's tenant may not allow; a Power Automate flow posting to ntfy may be the realistic path, if the tenant permits it.
   - On the clock: today's to-dos on Home (a card like the meeting, or a count), ticked off on the phone or Mac, never on the clock.
+- **"Ready for it?" before a meeting.** Ahead of a meeting, the clock asks whether you're ready for it. If not, it suggests using the free time before it to prepare (e.g. "40 min free before Sprint review: prepare now?"), pointing at that Free slot. To decide: how far ahead to ask, which meetings (all, or only some), and what "prepare" turns into (a focus block, a timer).
 - **Claude Code → clock.** `Notification` / `Stop` hooks post to a private ntfy topic; the clock shows "Claude is waiting for you".
 - **Unread email** via the same Apps Script: unread count and the last important sender on Home.
 - **Steps pace, revisited.** "Expected X · N ahead/behind" is switched off for now: it paced 10,000 steps over the working day (08:00 to `dayEndMinute`) every day, weekends too. Decide a pace that fits (work days vs weekends, a different window) or keep just the count.
