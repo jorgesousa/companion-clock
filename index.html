@@ -460,7 +460,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 .flash .wx{opacity:1;-webkit-filter:brightness(2.2);filter:brightness(2.2)}
 
 /* preferences */
-#prefs{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:350;padding:22px 36px 34px;display:flex;flex-direction:column;opacity:0;-webkit-transform:translateY(18px);transform:translateY(18px);transition:opacity .24s var(--ease),transform .3s var(--ease)}
+#prefs{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:350;padding:22px 36px 34px;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch;opacity:0;-webkit-transform:translateY(18px);transform:translateY(18px);transition:opacity .24s var(--ease),transform .3s var(--ease)}
 #prefs.in{opacity:1;-webkit-transform:none;transform:none}
 .pf-head{display:flex;justify-content:space-between;align-items:center;height:56px;margin-bottom:6px}
 #pf-close{height:56px;padding:0 4px 0 16px;color:var(--fg)}
@@ -472,6 +472,9 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 .pf-pair{display:flex;justify-content:space-between}
 .pf-pair .pf-row{width:48%}
 .pf-pair .pf-sw button{width:68px;font-size:20px}
+#pf-tap button{width:112px}
+#prefs>*{flex-shrink:0} /* more rows than fit: Settings scrolls instead of squeezing */
+#pf-tap-row{margin-bottom:22px}
 .pf-pair .pf-row>span{white-space:nowrap;margin-right:12px}
 .pf-sw button{width:96px;height:48px;border:2px solid var(--rule);font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
 .pf-sw button:first-child{border-radius:4px 0 0 4px}.pf-sw button:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
@@ -638,6 +641,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
     <div class="pf-row"><span class="mono muted">Mute in meetings</span><div class="pf-sw" id="pf-mute"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
     <div class="pf-row"><span class="mono muted">Weather</span><div class="pf-sw" id="pf-wx"><button data-v="0">Off</button><button data-v="1">Live</button></div></div>
   </div>
+  <div class="pf-row" id="pf-tap-row"><span class="mono muted">Tap the temperature</span><div class="pf-sw" id="pf-tap"><button data-v="details">Details</button><button data-v="away" id="pf-tap-away">UK</button></div></div>
   <div class="pf-foot mono muted">Crafted by Jorge Sousa · jorgesousa.github.io</div>
 </div>
 
@@ -1555,6 +1559,11 @@ var wxLive=true;try{wxLive=localStorage.getItem('wxLive')!=='0'}catch(e){}
 function renderWxPref(){[].forEach.call($('pf-wx').children,function(b){b.classList.toggle('on',(b.getAttribute('data-v')==='1')===wxLive)})}
 $('pf-wx').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;wxLive=b.getAttribute('data-v')==='1';try{localStorage.setItem('wxLive',wxLive?'1':'0')}catch(e){}renderWxPref();setWx(wxSeen)});
 renderWxPref();
+// Tap temperature: Details (the weather, or the warning, as a card) or the second place (UK by default)
+var tapPref='details';try{tapPref=localStorage.getItem('tapTemp')||'details'}catch(e){}
+function renderTapPref(){$('pf-tap-away').textContent=cfg.place2||'UK';[].forEach.call($('pf-tap').children,function(b){b.classList.toggle('on',b.getAttribute('data-v')===tapPref)})}
+$('pf-tap').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;tapPref=b.getAttribute('data-v');try{localStorage.setItem('tapTemp',tapPref)}catch(e){}if(tapPref==='details'&&wxAway){wxAway=false;showTemp()}renderTapPref()});
+renderTapPref();cfgReady.then(renderTapPref);
 function wxKind(c,day,cape){
   // models call "thunderstorm" too easily; without real convective energy (CAPE) it's just rain
   if(c>=95)return cape==null||cape>=400?'storm':'rain';
@@ -1584,7 +1593,7 @@ function showTemp(){
   // a warning colours the temperature: solid while it's on, outlined (like the minutes) while it's still to come
   b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'');
   if(w&&!away){var tb=b.querySelector('b'),c=WARN_C[w.level];if(w.soon){tb.style.color='var(--bg)';tb.style.webkitTextStroke='1.5px '+c}else tb.style.color=c}
-  b.setAttribute('aria-label','Temperature'+(w&&!away?', '+w.level+' weather warning'+(w.soon?' coming':'')+': tap to see it':': tap to switch place'));
+  b.setAttribute('aria-label','Temperature'+(w&&!away?', '+w.level+' weather warning'+(w.soon?' coming':'')+': tap to see it':(typeof tapPref!=='undefined'&&tapPref==='away'?': tap to switch place':': tap for details')));
 }
 function untilTxt(d){var n=new Date(),hm=hhmm(d);var t=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);return d.toDateString()===n.toDateString()?hm:(d.toDateString()===t.toDateString()?'tomorrow ':DAYS[d.getDay()].slice(0,3)+' ')+hm}
 // IPMA weather warnings (yellow, orange, red) for your district: the worst one active now sits next to the temperature
@@ -1613,18 +1622,30 @@ function rgba(h,a){var n=parseInt(h.slice(1),16);return 'rgba('+(n>>16)+','+(n>>
 var warnOpen=false,warnT=null,warnBusy=false,warnOut=[];
 var WEASE='cubic-bezier(.2,.7,.2,1)';
 function warnRows(){return [$('h-next'),$('h-next-l')]} // not the meeting line: animating it would show it even when it's meant to be hidden
+// with no warning, the same card tells the weather: what it's like now, today's range and chance of rain, and what the IPMA station measured
+var WX_W={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Fog',51:'Drizzle',53:'Drizzle',55:'Drizzle',56:'Drizzle',57:'Drizzle',61:'Rain',63:'Rain',65:'Heavy rain',66:'Rain',67:'Rain',71:'Snow',73:'Snow',75:'Snow',77:'Snow',80:'Showers',81:'Showers',82:'Heavy showers',85:'Snow showers',86:'Snow showers',95:'Thunder',96:'Thunder',99:'Thunder'};
+function wxCard(){
+  var w=wxWarn;
+  if(w)return {title:w.label,c:WARN_C[w.level],line:w.level+' · <span class="val">'+w.when+'</span>',text:w.text||''}; // IPMA's own sentence, in Portuguese, when it gives one
+  if(!wxCur)return null;
+  var t=WX_W[wxCur.code]||'Weather';if((wxCur.code===0||wxCur.code===1)&&wxCur.day)t=wxCur.code?'Mostly sunny':'Sunny';
+  if(obsWet===false&&/Rain|Showers|Drizzle|Thunder|Snow/.test(t))t='Overcast'; // the station measured no rain
+  var line='High <span class="val">'+wxCur.max+'°</span> · low '+wxCur.min+'°';
+  var text=(wxCur.pop!=null?wxCur.pop+'% chance of rain today':'')+(obsName&&obsMm!=null?(wxCur.pop!=null?' · ':'')+(obsMm>0?obsMm.toFixed(1)+' mm':'no rain')+' in the last hour, IPMA '+obsName:'');
+  return {title:t,c:'#f2efe8',line:line,text:text,calm:true};
+}
 function warnShow(){
-  var w=wxWarn,el=$('h-warn'),cap=document.querySelector('#v-home .col-r .cap');if(!w||warnBusy||warnOpen||cur!=='home')return;
-  var c=WARN_C[w.level];el.style.setProperty('--wh',rgba(c,.34));el.style.setProperty('--wt',rgba(c,.08));
-  var v=$('hw-v');v.textContent=w.label;v.style.color=c;
-  $('hw-l').innerHTML=w.level+' · <span class="val">'+w.when+'</span>';
-  var q=$('hw-q'),mq=q.firstChild;mq.textContent=w.text||'';q.style.display=w.text?'':'none'; // IPMA's own sentence, in Portuguese, when it gives one
+  var w=wxCard(),el=$('h-warn'),cap=document.querySelector('#v-home .col-r .cap');if(!w||warnBusy||warnOpen||cur!=='home')return;
+  var c=w.c;el.style.setProperty('--wh',rgba(c,w.calm?.12:.34));el.style.setProperty('--wt',rgba(c,w.calm?.03:.08));
+  var v=$('hw-v');v.textContent=w.title;v.style.color=w.calm?'':c;
+  $('hw-l').innerHTML=w.line;
+  var q=$('hw-q'),mq=q.firstChild;mq.textContent=w.text;q.style.display=w.text?'':'none';
   el.classList.add('on');$('h-next-blk').classList.add('warned');warnOpen=true;clearTimeout(warnT);warnT=setTimeout(warnHide,w.text?15000:9000);
   if(!Element.prototype.animate)return;
   warnBusy=true;setTimeout(function(){warnBusy=false},700);
   warnOut.forEach(function(a){a.cancel()});
   warnOut=warnRows().map(function(r,i){return r.animate([{opacity:1,transform:'translateX(0)',filter:'blur(0)'},{opacity:0,transform:'translateX(-14px)',filter:'blur(3px)'}],{duration:170,delay:i*35,easing:'cubic-bezier(.2,.6,.4,1)',fill:'forwards'})});
-  if(cap){var cr=cap.getBoundingClientRect(),ln=document.createElement('i');ln.className='mode-line';ln.style.background=c;
+  if(cap){var cr=cap.getBoundingClientRect(),ln=document.createElement('i');ln.className='mode-line';ln.style.background=w.calm?'var(--fg)':c;
     ln.style.left=cr.left+'px';ln.style.width=cr.width+'px';ln.style.top=(cr.bottom-2)+'px';document.body.appendChild(ln);
     ln.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.55},{transform:'scaleX(1)',opacity:0}],{duration:760,easing:WEASE}).onfinish=function(){ln.remove()}}
   el.querySelector('.wh').animate([{clipPath:'inset(0 100% 0 0)',webkitClipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)',webkitClipPath:'inset(0 0 0 0)'}],{duration:418,easing:WEASE,fill:'backwards'});
@@ -1643,14 +1664,15 @@ function warnHide(now){
   setTimeout(function(){back();warnRows().forEach(function(r,i){r.animate([{opacity:0,transform:'translateY(12px)',filter:'blur(5px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:620,delay:i*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})})},240);
 }
 $('hdr-temp').addEventListener('click',function(){
-  if(wxWarn&&!wxAway){if(warnOpen)warnHide();else warnShow();return}
+  if(warnOpen){warnHide();return}
+  if(wxWarn&&!wxAway||tapPref==='details'){warnShow();return} // a warning always opens; otherwise Settings decides: details or the second place
   if(!wxT.away)return;var b=this;
   b.style.opacity='0';b.style.transform='translateY(-8px)';
   setTimeout(function(){wxAway=!wxAway;showTemp();b.style.transition='none';b.style.transform='translateY(8px)';void b.offsetWidth;b.style.transition='';b.style.opacity='';b.style.transform=''},180);
 });
 // Open-Meteo's "rain now" is a model forecast; in Portugal the nearest IPMA station says whether it actually rained in the last hour.
 // When the model says rain, storm or snow and the station measured nothing, the digits show an overcast sky instead.
-var wxModel=null,obsWet=null,obsSt=null;
+var wxModel=null,obsWet=null,obsSt=null,obsName='',obsMm=null,wxCur=null;
 function wxApply(){var k=wxModel;if(!k)return;if((k==='rain'||k==='storm'||k==='snow')&&obsWet===false)k='haze';setWx(k)}
 function nearStation(){
   if(obsSt)return Promise.resolve(obsSt);
@@ -1659,6 +1681,7 @@ function nearStation(){
     var best=null,bd=1e9,k=Math.cos(cfg.lat*Math.PI/180);
     list.forEach(function(x){var c=x.geometry.coordinates,dx=(c[0]-cfg.lon)*k,dy=c[1]-cfg.lat,dd=dx*dx+dy*dy;if(dd<bd){bd=dd;best=x}});
     obsSt=best&&Math.sqrt(bd)*111<30?String(best.properties.idEstacao):''; // within 30 km, or none
+    obsName=obsSt?best.properties.localEstacao.replace(/\s*\(.*\)\s*$/,''):'';
     return obsSt;
   });
 }
@@ -1668,7 +1691,7 @@ function loadObs(){
     if(!id)return null;
     return fetch('https://api.ipma.pt/open-data/observation/meteorology/stations/observations.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
       var ks=Object.keys(d).sort().reverse(),wet=null;
-      for(var i=0;i<ks.length&&i<3;i++){var o=d[ks[i]]&&d[ks[i]][id];if(o&&o.precAcumulada>=0){wet=o.precAcumulada>0;break}} // latest hour with a valid reading
+      for(var i=0;i<ks.length&&i<3;i++){var o=d[ks[i]]&&d[ks[i]][id];if(o&&o.precAcumulada>=0){wet=o.precAcumulada>0;obsMm=o.precAcumulada;break}} // latest hour with a valid reading
       obsWet=wet;wxApply();
     });
   }).catch(function(){});
@@ -1676,10 +1699,11 @@ function loadObs(){
 function loadWx(){
   var o=(location.search.match(/wx=(\w+)/)||[])[1];if(o){setWx(o);return}
   if(cfg.lat==null)return;
-  fetch('https://api.open-meteo.com/v1/forecast?latitude='+cfg.lat+'&longitude='+cfg.lon+'&current=weather_code,is_day,temperature_2m,cape&daily=temperature_2m_max&forecast_days=16&timezone=auto',{cache:'no-store'})
+  fetch('https://api.open-meteo.com/v1/forecast?latitude='+cfg.lat+'&longitude='+cfg.lon+'&current=weather_code,is_day,temperature_2m,cape&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=16&timezone=auto',{cache:'no-store'})
     .then(function(r){return r.json()}).then(function(d){
       var days={};(d.daily&&d.daily.time||[]).forEach(function(k,i){var v=d.daily.temperature_2m_max[i];if(v!=null)days[k]=Math.round(v)});
       wxDays=days;if(events){var cl=$('cal-list'),y=cl.scrollTop;renderCal();cl.scrollTop=y}
+      wxCur={code:d.current.weather_code,day:d.current.is_day,max:Math.round(d.daily.temperature_2m_max[0]),min:Math.round(d.daily.temperature_2m_min[0]),pop:d.daily.precipitation_probability_max?d.daily.precipitation_probability_max[0]:null};
       wxModel=wxKind(d.current.weather_code,d.current.is_day,d.current.cape);wxApply();
       wxT.home=Math.round(d.current.temperature_2m)+'°';showTemp();
     }).catch(function(){});
