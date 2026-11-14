@@ -1180,15 +1180,16 @@ function countSteps(n){
 var WATER_H=[9,10,11,12,13,14,15,16,17],GLASS=.25;
 function waterGet(){var k=new Date().toDateString(),w=null;try{w=JSON.parse(localStorage.getItem('water')||'null')}catch(e){}return w&&w.d===k?w:{d:k,n:0}}
 function waterNow(){
-  var now=new Date(),d=now.getDay(),m=mins(now);if(d===0||d===6||m<8*60+30||m>=19*60)return null;
+  var now=new Date(),d=now.getDay(),m=mins(now);if(/water=1/.test(location.search))d=3; // ?water=1 previews it on a weekend
+  if(d===0||d===6||m<8*60+30||m>=19*60)return null;
   var w=waterGet(),due=WATER_H.filter(function(h){return h*60<=m}).length;
   return {n:w.n,due:w.n<due,next:WATER_H[w.n]!=null?WATER_H[w.n]:null,total:WATER_H.length};
 }
 function waterLine(l){
   var w=waterNow();if(!w)return false;
-  if(w.n>=w.total)l.innerHTML='<span style="color:var(--ok)">Water done · '+(w.n*GLASS).toString().replace(/\.?0+$/,'')+' L</span>';
+  if(w.n>=w.total)l.innerHTML='<span style="color:var(--ok)">Water done · '+(w.n*GLASS).toString().replace(/\.?0+$/,'')+' L</span>'; // more glasses keep counting
   else if(w.due)l.innerHTML='<span class="acc">Time for water</span> · '+w.n+'/'+w.total;
-  else l.innerHTML='Water <span class="val">'+w.n+'/'+w.total+'</span> · next '+f2(w.next)+':00';
+  else l.innerHTML='Water <span class="val">'+w.n+'/'+w.total+'</span>'+(w.next!=null?' · next '+f2(w.next)+':00':'');
   return true;
 }
 var stepsLast,stepsUpd;
@@ -1197,6 +1198,7 @@ function renderSteps(steps,upd){
   v.classList.toggle('dim',steps==null);
   if(steps==null){v.textContent='No data';var ww=waterNow();if(ww&&ww.due){waterLine(l);return}l.textContent=upd?'Steps · last sync '+hhmm(upd):'Steps · waiting for phone';return}
   countSteps(steps);
+  if(waterUndo)return; // a glass was just counted: leave its line
   if(waterLine(l))return;
   // the expected pace ("Expected X · N ahead/behind") is off for now, in both modes: see the roadmap
   if(steps>=GOAL)l.innerHTML='<span style="color:var(--ok)">Goal reached</span>';
@@ -1218,14 +1220,20 @@ function fetchSteps(){
 
 // tap the steps block: fetch now, then say when the phone last sent steps
 var syncBusy=false;
+// a tap counts a glass; a second tap while it says "Glass N" takes it back (a mistaken tap)
+var waterUndo=null;
+function waterTap(){
+  var s=waterGet(),l=$('h-steps-l');
+  if(waterUndo){clearTimeout(waterUndo);waterUndo=null;s.n=Math.max(0,s.n-1);try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
+    l.textContent='Glass taken back';setTimeout(function(){renderSteps(stepsLast,stepsUpd)},1600);return}
+  s.n++;try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
+  l.innerHTML='<span style="color:var(--ok)">Glass '+s.n+' · '+(s.n*GLASS).toString().replace(/\.?0+$/,'')+' L today</span>';
+  if(l.animate)l.animate([{opacity:0,transform:'translateY(8px)',filter:'blur(3px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
+  waterUndo=setTimeout(function(){waterUndo=null;renderSteps(stepsLast,stepsUpd)},3000);
+}
 $('h-steps-blk').addEventListener('click',function(){
   if(syncBusy)return;
-  var w=waterNow();if(w&&w.due){ // time for water: the tap counts the glass
-    var s=waterGet();s.n++;try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
-    var l=$('h-steps-l');l.innerHTML='<span style="color:var(--ok)">Glass '+s.n+' · '+(s.n*GLASS).toString().replace(/\.?0+$/,'')+' L today</span>';
-    if(l.animate)l.animate([{opacity:0,transform:'translateY(8px)',filter:'blur(3px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
-    syncBusy=true;setTimeout(function(){syncBusy=false;renderSteps(stepsLast,stepsUpd)},3000);return;
-  }
+  if(waterNow()){waterTap();return} // work days: the tap counts a glass, whenever you drink (steps sync on their own every minute)
   syncBusy=true;
   var b=$('h-steps-blk'),l=$('h-steps-l'),t0=Date.now();
   b.classList.remove('synced');b.classList.add('syncing');l.textContent='Syncing…';
@@ -1844,7 +1852,7 @@ cfgReady.then(function(){
   brandAccent();loadFootball();
   try{var sb=+localStorage.getItem('brightDay');if(sb)cfg.brightDay=sb}catch(e){}
   tick();setInterval(tick,1000);
-  fetchSteps();setInterval(fetchSteps,60*1000);setInterval(function(){if(!syncBusy&&stepsLast!==undefined)renderSteps(stepsLast,stepsUpd)},30*1000);
+  fetchSteps();setInterval(fetchSteps,60*1000);setInterval(function(){if(!syncBusy&&!waterUndo&&stepsLast!==undefined)renderSteps(stepsLast,stepsUpd)},30*1000);
   var c0=evCache[mode];if(c0){events=c0.events;wloc=c0.wloc;evTried=true;evShow()} // last known list, at once
   loadAllEvents();setInterval(loadAllEvents,5*60*1000);
   lastTouch=0;checkSleep(new Date());resetIdle();if(!sleeping)bright(cfg.brightDay);
