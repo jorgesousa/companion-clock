@@ -1222,7 +1222,7 @@ function renderSteps(steps,upd){
   if(steps==null){v.textContent='No data';l.textContent=upd?'Steps · '+hhmm(upd):'Steps';return}
   countSteps(steps);
   // the expected pace ("Expected X · N ahead/behind") is off for now, in both modes: see the roadmap
-  if(mode==='personal')l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Goal reached</span>':'<span class="val">'+fmtN(GOAL-steps)+'</span> to go';
+  if(mode==='personal')l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Goal reached</span>':'<span class="acc">'+fmtN(GOAL-steps)+'</span> to go';
   else l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Steps · goal</span>':'Steps';
 }
 var stepsAt=null;
