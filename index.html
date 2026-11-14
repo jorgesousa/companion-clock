@@ -1200,7 +1200,7 @@ function renderSteps(steps,upd){
   if(waterLine(l))return;
   // the expected pace ("Expected X · N ahead/behind") is off for now, in both modes: see the roadmap
   if(steps>=GOAL)l.innerHTML='<span style="color:var(--ok)">Goal reached</span>';
-  else l.textContent='Steps today';
+  else l.innerHTML='<span class="val">'+fmtN(GOAL-steps)+'</span> to go';
 }
 var stepsAt=null;
 function fetchSteps(){
