@@ -27,3 +27,7 @@ Earlier visual takes (glasses next to the number, bottle, number filling, half a
 ## Left to the builder
 
 Exact timings and curves, the wave shape, how far the level rises.
+
+## Revised (same day)
+
+Pages were dropped for a card split in two equal halves: steps | glasses (WORK mode only). Essentials only: a number and a word on each side. Behind: the glasses turn to the accent, say "Drink" and breathe; the colour travels. Tap: the number ticks up (old sinks, new rises and settles) with one ripple; a second tap straight after takes it back. No falling drop, no water level.
