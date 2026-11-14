@@ -52,8 +52,18 @@ irq(){ grep tlsc6x /proc/interrupts | tr -s ' ' | cut -d' ' -f3; }
       if [ "$edge" -eq 0 ] || [ "$pts" -le 1 ]; then sus=$((sus + 1)); else sus=0; fi
       if [ "$sus" -ge 2 ]; then
         sus=0
-        echo "$(date) ghost touch ($d irq/2s, $pts point(s)) - reset" >> $C/touch.log
-        input keyevent 223; sleep 2; input keyevent 224; sleep 2; prev=$(irq)
+        # reset only the touch panel: unbinding and binding its driver pulses the panel's reset line,
+        # with no screen-off (the old sleep/wake made the screen blink). If it's still stuck, fall back to sleep/wake.
+        T=/sys/bus/i2c/drivers/tlsc6x
+        echo 2-002e > $T/unbind; sleep 1; echo 2-002e > $T/bind; sleep 2
+        a=$(irq); sleep 2; b=$(irq)
+        if [ $((b - a)) -gt 100 ]; then
+          echo "$(date) ghost touch ($d irq/2s, $pts point(s)) - panel reset didn't hold, sleep/wake" >> $C/touch.log
+          input keyevent 223; sleep 2; input keyevent 224; sleep 2
+        else
+          echo "$(date) ghost touch ($d irq/2s, $pts point(s)) - panel reset" >> $C/touch.log
+        fi
+        prev=$(irq)
       fi
     else
       sus=0

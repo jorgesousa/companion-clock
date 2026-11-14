@@ -32,7 +32,7 @@
 
 ## Known issues
 
-- **Ghost touch.** The touch panel sometimes keeps reporting a touch with no finger on it (stuck on the top edge, or glued to one point), so the screen looks frozen. `device/boot.sh` detects both shapes and resets the panel within about 4 seconds; see [docs/setup.md](docs/setup.md#touch-panel-stops-responding-ghost-touch). Likely a hardware quirk of this panel.
+- **Ghost touch.** The touch panel sometimes keeps reporting a touch with no finger on it (stuck on the top edge, or glued to one point), so the screen looks frozen. `device/boot.sh` detects both shapes and resets the panel within about 4 seconds, without turning the screen off; see [docs/setup.md](docs/setup.md#touch-panel-stops-responding-ghost-touch). Likely a hardware quirk of this panel.
 
 ## Done
 

@@ -65,10 +65,16 @@ adb shell am start -n de.ozerov.fully/.MainActivity -a android.intent.action.VIE
 
 Some Mi Smart Clocks have a touch panel that, now and then, keeps reporting a touch with no finger on it. The screen looks frozen: real taps don't get through because the panel says it's already being pressed. You can see it in `dmesg` as a flood of identical `pointer report X is …, Y is …` lines from the `tlsc6x` driver, either stuck on the top edge (Y≈0–8) or glued to one exact point.
 
-Turning the screen off and on resets the panel:
+Unbinding and binding the panel's driver resets the panel (the driver pulses its reset line when it probes), with the screen staying on:
+
+```bash
+adb shell 'su -c "echo 2-002e > /sys/bus/i2c/drivers/tlsc6x/unbind; sleep 1; echo 2-002e > /sys/bus/i2c/drivers/tlsc6x/bind"'
+```
+
+The probe logs a few harmless errors (`/proc/tlsc6x-debug` already registered); touch keeps working. Turning the screen off and on also resets it, but the screen visibly blinks:
 
 ```bash
 adb shell input keyevent 223; sleep 2; adb shell input keyevent 224
 ```
 
-`device/boot.sh` does this on its own. Every 2 seconds it counts the panel's interrupts; when the panel has been reporting continuously and, in two checks in a row, the last reports are all on the top edge or all on the same point, it resets the panel and writes a line to `/data/local/companion-clock/touch.log`. A real finger always moves a little, so normal taps and long presses aren't affected.
+`device/boot.sh` does this on its own: the driver reset first, and sleep/wake only if the panel is still stuck 4 seconds later. Every 2 seconds it counts the panel's interrupts; when the panel has been reporting continuously and, in two checks in a row, the last reports are all on the top edge or all on the same point, it resets the panel and writes a line to `/data/local/companion-clock/touch.log`. A real finger always moves a little, so normal taps and long presses aren't affected.
