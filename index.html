@@ -70,7 +70,9 @@ nav{position:relative}
 /* a single hairline separates the clock from the information; the column keeps its full width for long meeting names */
 #v-home .col-r{align-self:center;justify-content:flex-start;margin-left:26px;padding-left:20px;border-left:2px solid var(--rule)}
 #h-next.free{color:var(--ok)}
-#h-next.wknd{color:var(--accent)}
+#h-next.wknd{color:var(--accent);transition:transform .38s cubic-bezier(.34,1.56,.64,1);transform-origin:0 60%}
+#h-next.wknd.pop{-webkit-transform:scale(1.08);transform:scale(1.08)}
+#h-next-blk canvas.fw{position:absolute;left:0;top:0;pointer-events:none;z-index:3}
 /* Monday's meeting, on its own line under "Back"; a long title glides instead of "…" */
 #h-next-l .wk-t{display:block;margin-top:4px;white-space:nowrap;overflow:hidden}
 #h-next-l .wk-t .mq{display:inline-block;white-space:nowrap}
@@ -884,12 +886,13 @@ function stepBackHome(){var c=$('h-next-c');c.className='outr';setTimeout(functi
   blk.addEventListener('touchstart',function(ev){x0=ev.touches[0].clientX;y0=ev.touches[0].clientY},{passive:true});
   blk.addEventListener('touchend',function(ev){
     if(x0===null)return;var t=ev.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+    if($('h-next').classList.contains('wknd')&&Math.abs(dx)<10&&Math.abs(dy)<10){fireworks();ev.preventDefault();return}
     if(isFreeDay()&&(Math.abs(dx)>40||(Math.abs(dx)<10&&Math.abs(dy)<10))){flipFree();x0=null;return}
     if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))stepNext(dx<0?1:-1);
     else if(Math.abs(dx)<10&&Math.abs(dy)<10)stepNext(nOff<nCards()-1?1:-nOff);
     ev.preventDefault();
   });
-  blk.addEventListener('click',function(){if(!('ontouchstart' in window)){if(isFreeDay())flipFree();else stepNext(nOff<nCards()-1?1:-nOff)}});
+  blk.addEventListener('click',function(){if(!('ontouchstart' in window)){if($('h-next').classList.contains('wknd'))fireworks();else if(isFreeDay())flipFree();else stepNext(nOff<nCards()-1?1:-nOff)}});
 })();
 // Calendar: tap a row with a cut-off title to glide it once and reveal the end
 var cmq={anim:null,el:null};
@@ -1422,6 +1425,28 @@ function loadWx(){
 cfgReady.then(function(){loadWx();setInterval(loadWx,15*60*1000)});
 
 // ---------- a friend peeks in now and then (spike, clock only) ----------
+
+// easter egg: tap "Weekend" and fireworks go off inside the card
+var fwBusy=false;
+function fireworks(){
+  if(fwBusy)return;if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var blk=$('h-next-blk'),W=blk.clientWidth,H=blk.clientHeight,c=document.createElement('canvas');
+  c.width=W;c.height=H;c.className='fw';blk.appendChild(c);fwBusy=true;
+  var g=c.getContext('2d'),acc=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#e8473a';
+  var cols=[acc,acc,'#f2efe8','#f2efe8'],ps=[],t0=Date.now();
+  var bursts=[[0,.72,.38],[420,.32,.30],[820,.86,.62],[1300,.52,.22]].map(function(b){return {at:b[0],x:b[1]*W,y:b[2]*H,done:false}});
+  var v=$('h-next');v.classList.add('pop');setTimeout(function(){v.classList.remove('pop')},380);
+  function burst(b){for(var i=0;i<54;i++){var a=Math.PI*2*i/54+Math.random()*.2,sp=2.4+Math.random()*3.4;
+    ps.push({x:b.x,y:b.y,px:b.x,py:b.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:0,max:52+Math.random()*34,c:cols[i%cols.length]})}}
+  (function frame(){
+    var now=Date.now()-t0;bursts.forEach(function(b){if(!b.done&&now>=b.at){b.done=true;burst(b)}});
+    g.clearRect(0,0,W,H);g.lineCap='round';
+    ps=ps.filter(function(p){return p.life<p.max});
+    ps.forEach(function(p){p.px=p.x;p.py=p.y;p.vx*=.975;p.vy=p.vy*.975+.045;p.x+=p.vx;p.y+=p.vy;p.life++;
+      g.globalAlpha=Math.max(0,1-p.life/p.max);g.strokeStyle=p.c;g.lineWidth=3;g.beginPath();g.moveTo(p.px-p.vx*2,p.py-p.vy*2);g.lineTo(p.x,p.y);g.stroke()});
+    if(now<3200&&(ps.length||bursts.some(function(b){return !b.done})))requestAnimationFrame(frame);else{c.remove();fwBusy=false}
+  })();
+}
 // easter egg: tap the seconds and it peeks out from one of its hiding places
 var minderBusy=false,minderLast=-1;
 function minderSpots(){
