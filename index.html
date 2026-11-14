@@ -46,7 +46,7 @@ header{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-ite
 nav button[data-v="tv"]{max-width:90px;overflow:hidden;transition:max-width .45s var(--ease),padding .45s var(--ease),opacity .3s var(--ease)}
 body.work nav button[data-v="tv"]{max-width:0;padding-left:0;padding-right:0;opacity:0;pointer-events:none}
 #net i{display:inline-block;width:8px;height:8px;border-radius:4px;background:var(--muted);margin-right:8px;vertical-align:1px}
-#net.on i{background:var(--ok)}
+#net.on i{background:var(--accent);transition:background .8s}
 nav{flex:1;display:flex;align-items:baseline;justify-content:center;height:64px}
 nav button{height:64px;padding:0 14px;color:var(--muted);position:relative;font:700 25px/1 var(--sans);letter-spacing:-.02em}
 nav button.on{color:var(--fg)}
@@ -404,7 +404,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #amb.night .mono{color:var(--muted)}
 
 /* mode switch: spark, wash */
-#h-next-blk .card-old{position:absolute;background:var(--bg);z-index:2;pointer-events:none;overflow:hidden}
+#h-next-blk .card-old{position:absolute;z-index:2;pointer-events:none;overflow:hidden}
 .mode-line{position:fixed;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:395;pointer-events:none}
 .mode-spark{position:fixed;left:36px;right:36px;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:400;pointer-events:none}
 .mode-wash{position:fixed;width:1900px;height:1900px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0,rgba(0,0,0,0) 62%);z-index:390;pointer-events:none;mix-blend-mode:screen}
@@ -777,7 +777,11 @@ function modeFlip(m){
         ln.style.left=cr.left+'px';ln.style.width=cr.width+'px';ln.style.top=y+'px';document.body.appendChild(ln);
         ln.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.55},{transform:'scaleX(1)',opacity:0}],{duration:760,easing:ease}).onfinish=function(){ln.remove()}})}
     // the old card is erased behind the running line (same timing), revealing the new one
-    old.animate([{clipPath:'inset(0 0 0 0)',webkitClipPath:'inset(0 0 0 0)'},{clipPath:'inset(0 0 0 100%)',webkitClipPath:'inset(0 0 0 100%)'}],{duration:418,easing:ease,fill:'forwards'}).onfinish=function(){old.remove();flipping=false};
+    // the old lines drift off and blur away one after another; the new ones rise into focus behind the lines
+    var rows=function(c){return [].slice.call(c.children)};
+    rows(old).forEach(function(r,i){r.animate([{opacity:1,transform:'translateX(0)',filter:'blur(0)'},{opacity:0,transform:'translateX(-14px)',filter:'blur(3px)'}],{duration:170,delay:i*35,easing:'cubic-bezier(.2,.6,.4,1)',fill:'forwards'})});
+    rows(oc).forEach(function(r,i){r.animate([{opacity:0,transform:'translateY(12px)',filter:'blur(5px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:620,delay:190+i*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})});
+    setTimeout(function(){old.remove()},420);setTimeout(function(){flipping=false},900);
     // 3 · the new colour washes out from "JS"
     var w=document.createElement('i');w.className='mode-wash';w.style.left=cx+'px';w.style.top=cy+'px';document.body.appendChild(w);
     w.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.55},{transform:'translate(-50%,-50%) scale(1)',opacity:0}],{duration:900,easing:ease}).onfinish=function(){w.remove()};
