@@ -232,8 +232,6 @@ body.personal #hw{display:none}
 #hw:before{content:'';position:absolute;left:0;top:18px;bottom:18px;width:2px;background:var(--rule)}
 #hw .fl{position:absolute;left:0;right:0;top:0;bottom:0;background:var(--accent);-webkit-transform:scaleY(0);transform:scaleY(0);-webkit-transform-origin:50% 100%;transform-origin:50% 100%}
 #hw.due .fl{-webkit-transform:none;transform:none}
-#hw.due .fl:after{content:'';position:absolute;left:0;right:0;top:0;bottom:0;background:#fff;opacity:0;animation:hw-pulse 1.6s ease-in-out infinite}
-@keyframes hw-pulse{0%,100%{opacity:0}50%{opacity:.22}}
 #hw.due:before{opacity:0}
 #hw.due #hw-n,#hw.due #hw-t{color:var(--bg)}
 #hw.due .of{color:rgba(14,14,12,.6)}
