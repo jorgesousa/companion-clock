@@ -1265,7 +1265,7 @@ function stepsSync(){
 var waterUndo=null,dropBusy=false;
 // (dropBusy is no longer used: kept false)
 function waterDue(){var w=waterNow();return !!(w&&w.due)}
-var wasDue=false,ringT=null;
+var wasDue=false,ringT=null,chimed=false;
 function renderWater(){
   var w=waterNow(),c=waterGet().n,hw=$('hw'),due=!!(w&&w.due),N=GLASSES;
   if(!dropBusy)$('hw-n').textContent=c;
@@ -1274,9 +1274,11 @@ function renderWater(){
   if(due&&!wasDue&&cur==='home'){ // you just fell behind: the half floods with the accent, a chime
     hw.classList.add('due');var fl=hw.querySelector('.fl');
     if(fl.animate)fl.animate([{transform:'scaleY(0)'},{transform:'scaleY(1.04)',offset:.7},{transform:'scaleY(1)'}],{duration:700,easing:'cubic-bezier(.2,.8,.3,1)'});
-    if(!inMeeting()&&!quiet()){beep(880,.14);setTimeout(function(){beep(1320,.22)},180)} // never a sound during a meeting, whatever the setting
   }else hw.classList.toggle('due',due);
   wasDue=due;
+  // the chime: once each time you fall behind, never during a meeting; if a meeting is on, it plays as soon as it ends (if you're still behind)
+  if(!due)chimed=false;
+  else if(!chimed&&!inMeeting()&&!quiet()){chimed=true;beep(880,.14);setTimeout(function(){beep(1320,.22)},180)}
   clearInterval(ringT);
   if(due)ringT=setInterval(function(){if(cur!=='home'||!$('hw').classList.contains('due'))return;var n=$('hw-n'),hr=$('hw').getBoundingClientRect(),nr=n.getBoundingClientRect();ripple(nr.left-hr.left+nr.width/2,nr.top-hr.top+nr.height*.92,0)},2000);
 }
