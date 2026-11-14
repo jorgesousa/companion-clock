@@ -1274,7 +1274,7 @@ function renderWater(){
   if(due&&!wasDue&&cur==='home'){ // you just fell behind: the half floods with the accent, a chime
     hw.classList.add('due');var fl=hw.querySelector('.fl');
     if(fl.animate)fl.animate([{transform:'scaleY(0)'},{transform:'scaleY(1.04)',offset:.7},{transform:'scaleY(1)'}],{duration:700,easing:'cubic-bezier(.2,.8,.3,1)'});
-    if(!quiet()){beep(880,.14);setTimeout(function(){beep(1320,.22)},180)}
+    if(!inMeeting()&&!quiet()){beep(880,.14);setTimeout(function(){beep(1320,.22)},180)} // never a sound during a meeting, whatever the setting
   }else hw.classList.toggle('due',due);
   wasDue=due;
   clearInterval(ringT);
