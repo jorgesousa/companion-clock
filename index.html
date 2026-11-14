@@ -8,7 +8,7 @@
 <script src="a/hls.min.js" defer></script>
 <style>
 :root{
-  --bg:#0e0e0c;--bg2:#161614;--fg:#f2efe8;--muted:#8f8b80;--line:#2a2925;
+  --bg:#0e0e0c;--rule:#5c5850;--bg2:#161614;--fg:#f2efe8;--muted:#8f8b80;--line:#2a2925;
   --accent:#e8473a;--accent-ink:#0e0e0c;--ok:#5ee07a;
   --sans:"Inter Tight",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
   --ease:cubic-bezier(.22,1,.36,1);
@@ -64,7 +64,7 @@ nav{position:relative}
 .attn #v-home #h-h{color:var(--fg)}
 #v-home .col-l{justify-content:center;padding-bottom:14px}
 /* a single hairline separates the clock from the information; the column keeps its full width for long meeting names */
-#v-home .col-r{align-self:center;justify-content:flex-start;margin-left:26px;padding-left:20px;border-left:1px solid var(--line)}
+#v-home .col-r{align-self:center;justify-content:flex-start;margin-left:26px;padding-left:20px;border-left:2px solid var(--rule)}
 #h-next.free{color:var(--ok)}
 #h-next.wknd{color:var(--accent)}
 /* Monday's meeting, on its own line under "Back"; a long title glides instead of "…" */
@@ -85,7 +85,8 @@ nav{position:relative}
 #t-m{display:block}
 #t-s{font-size:var(--t-val);color:var(--muted);margin:0 0 4px 14px;letter-spacing:-.03em}
 #t-m{transition:color .4s var(--ease)}
-#t-m.hot{-webkit-text-stroke-color:var(--accent)}
+#t-m{-webkit-text-stroke-color:var(--accent)} /* the timer's minutes are outlined in the accent */
+#t-m.hot{color:var(--accent)} /* last minute: they fill in */
 #alert{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:400;overflow:hidden}
 #al-sheet{position:absolute;left:0;right:0;top:0;height:420px;background:var(--accent);color:var(--fg);border-radius:0 0 44px 44px;box-shadow:0 16px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;padding-top:30px;text-align:center}
 #al-sheet .mono{color:var(--fg)}
@@ -105,7 +106,7 @@ nav{position:relative}
 /* Home's bottom strip: the running timer burns along a track, the next alarm sits on the right */
 #h-strip{position:absolute;left:36px;right:36px;bottom:22px;height:58px}
 #v-home.strip-on{padding-bottom:78px}
-#hs-trk{position:absolute;left:0;right:0;top:0;height:6px;border-radius:3px;background:#5c5850}
+#hs-trk{position:absolute;left:0;right:0;top:0;height:6px;border-radius:3px;background:var(--rule)}
 #hs-fill{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:3px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;transition:transform 1s linear}
 #hs-dot{position:absolute;top:-6px;width:18px;height:18px;margin-left:-9px;border-radius:9px;background:var(--accent);box-shadow:0 0 0 5px rgba(232,71,58,.25);transition:left 1s linear}
 #h-strip.idle #hs-fill,#h-strip.idle #hs-dot{display:none}
@@ -157,7 +158,7 @@ nav{position:relative}
 /* meeting in progress: accent time, a live dot, and the block's rule fills as the meeting elapses */
 #h-next-blk{position:relative}
 /* lines that carry time: a 6px track on the block's bottom edge */
-.hl{position:absolute;left:0;right:0;height:6px;border-radius:3px;background:#5c5850}
+.hl{position:absolute;left:0;right:0;height:6px;border-radius:3px;background:var(--rule)}
 .hl i,.hl b{position:absolute;top:0;bottom:0;left:0;border-radius:3px}
 /* next meeting: burns down over its last 15 minutes, then fills while it's on */
 #h-live{bottom:-3px;opacity:0;transition:opacity .4s var(--ease)}
@@ -188,14 +189,14 @@ nav{position:relative}
 .cl.none{box-shadow:inset 0 0 0 1.5px var(--muted)}
 @media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#ttab.sway{animation:none}#hs-fill,#hs-dot{transition:none}#h-lf,#h-ld{transition:none}#h-strip.hot #hs-dot{animation:none}#h-steps-blk.syncing #h-sync,#h-steps-blk.syncing .v,#h-steps-blk.synced .v{animation:none}#alert.ringing #al-sheet{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
 
-.cap{padding-bottom:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
+.cap{padding-bottom:14px;border-bottom:2px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline}
 .cap-side{white-space:nowrap;flex-shrink:0;margin-left:16px}
 #h-date{font-size:var(--t-ui);letter-spacing:.04em;color:var(--muted);white-space:nowrap}
 /* colour rule on Home: white = values you read, grey = labels and context, colour = state */
 .val{color:var(--fg)}
 .ok{color:var(--ok)}
 #h-alarm svg.i{margin-right:6px;vertical-align:-3px}
-.blk{padding:18px 0;border-bottom:1px solid var(--line)}
+.blk{padding:18px 0;border-bottom:2px solid var(--rule)}
 .blk:last-child{border-bottom:0;padding-bottom:0}
 .blk .v{font-size:var(--t-val)}
 .blk .v small{display:block;font:600 var(--t-ui)/1.2 var(--sans);letter-spacing:-.01em;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -218,9 +219,9 @@ nav{position:relative}
 /* loading: skeleton rows in the real layout, pulsing one after another */
 #cal-skel{flex:1}
 #cal-skel i{display:block;height:16px;border-radius:3px;background:var(--line);animation:skel 1.4s ease-in-out infinite}
-#cal-skel .sk-h{padding:4px 0 14px;border-bottom:1px solid var(--line)}
+#cal-skel .sk-h{padding:4px 0 14px;border-bottom:2px solid var(--rule)}
 #cal-skel .sk-h i{height:12px}
-#cal-skel .sk-r{display:flex;align-items:center;height:62px;border-bottom:1px solid var(--line)}
+#cal-skel .sk-r{display:flex;align-items:center;height:62px;border-bottom:2px solid var(--rule)}
 #cal-skel .sk-t{width:150px;margin-right:50px;flex-shrink:0}
 #cal-skel .sk-r:nth-child(3) i{animation-delay:.12s}#cal-skel .sk-r:nth-child(4) i{animation-delay:.24s}
 #cal-skel .sk-r:nth-child(5) i{animation-delay:.36s}#cal-skel .sk-r:nth-child(6) i{animation-delay:.48s}
@@ -230,7 +231,7 @@ nav{position:relative}
 @keyframes breathe{0%,100%{opacity:.35}50%{opacity:.9}}
 .ev-group{margin-top:18px}
 .ev-group:first-child{margin-top:0}
-.ev-group>.mono{padding:8px 0 10px;border-bottom:1px solid var(--line);position:-webkit-sticky;position:sticky;top:0;z-index:2;background:var(--bg)}
+.ev-group>.mono{padding:8px 0 10px;border-bottom:2px solid var(--rule);position:-webkit-sticky;position:sticky;top:0;z-index:2;background:var(--bg)}
 .ev-group>.mono .today{color:var(--fg)}
 /* day heading: the day in big type, date and location small beside it, a white rule closing it */
 .ev-group>.dh{display:flex;align-items:baseline;padding:10px 0 12px;border-bottom:2px solid var(--fg);position:-webkit-sticky;position:sticky;top:0;z-index:2;background:var(--bg)}
@@ -238,7 +239,7 @@ nav{position:relative}
 .dh .dtemp{margin-left:12px;font:700 26px/1 var(--sans);letter-spacing:-.02em;color:var(--fg)}
 .dh .dsm{flex:1;margin-left:14px;font:500 var(--t-cap)/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .dh .sum{color:var(--muted);white-space:nowrap}
-.ev{display:flex;align-items:baseline;padding:15px 0;border-bottom:1px solid var(--line)}
+.ev{display:flex;align-items:baseline;padding:15px 0;border-bottom:2px solid var(--rule)}
 .ev .t{width:200px;flex-shrink:0;font-size:var(--t-ui);letter-spacing:.02em}
 .ev .n{font:600 var(--t-row)/1.15 var(--sans);letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev.now .t{color:var(--accent)}
@@ -270,12 +271,12 @@ nav{position:relative}
 .empty-text{margin-top:22px;max-width:620px;color:var(--muted);font:500 var(--t-ui)/1.4 var(--sans);letter-spacing:-.005em}
 
 /* timer */
-.seg{display:flex;border-bottom:1px solid var(--line);margin-bottom:auto}
+.seg{display:flex;border-bottom:2px solid var(--rule);margin-bottom:auto}
 .seg button{height:56px;margin-right:28px;color:var(--muted);position:relative;font-size:var(--t-ui)}
 .seg button.on{color:var(--fg)}
 .seg button.on:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--accent)}
 .presets{display:flex;flex-wrap:wrap;margin:0 -4px}
-.presets button{width:calc(33.333% - 8px);margin:0 4px 8px;height:76px;border:1px solid var(--line);border-radius:4px;text-align:center;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.presets button{width:calc(33.333% - 8px);margin:0 4px 8px;height:76px;border:2px solid var(--rule);border-radius:4px;text-align:center;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .presets button .num{font-size:var(--t-num)}
 .presets button .mono{margin-top:4px;color:var(--muted);line-height:1}
 .presets button.on{border-color:var(--fg)}
@@ -285,7 +286,7 @@ nav{position:relative}
 .btn svg.i{width:22px;height:22px;margin-right:10px}
 .btn.pri{flex:1;background:var(--fg);color:var(--bg)}
 .btn.pri svg.i{stroke:var(--bg)}
-.btn.sec{border:1px solid var(--line);margin-left:8px}
+.btn.sec{border:2px solid var(--rule);margin-left:8px}
 .btn:active{opacity:.8}
 #a-left .mono{margin-bottom:10px}
 /* the alarm reads like Home's clock: same size, minutes step right and up into the hours, a dark halo where they cross */
@@ -295,13 +296,15 @@ nav{position:relative}
 #a-left-m{position:relative;z-index:0}
 #a-left-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:12px var(--bg);z-index:-1}
 #a-left.none .num{opacity:.3}
-#t-bar{height:2px;background:var(--line);margin-top:22px;position:relative}
-#t-bar s{position:absolute;left:0;top:0;bottom:0;background:var(--fg);transition:width 1s linear}
+#a-left-h{color:var(--accent)} /* like Home: the hours carry the accent */
+#a-left.none #a-left-h{color:var(--fg)} /* no alarm: plain and dimmed */
+#t-bar{height:2px;background:var(--rule);margin-top:22px;position:relative}
+#t-bar s{position:absolute;left:0;top:0;bottom:0;background:var(--accent);transition:width 1s linear}
 #t-bar.low s{background:var(--accent)}
 
-.add{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.add{display:flex;align-items:center;padding:6px 0;border-bottom:2px solid var(--rule)}
 .stp{display:flex;flex-direction:column;align-items:center;width:96px}
-.stp button{width:96px;height:52px;border:1px solid var(--line);border-radius:4px;color:var(--fg)}
+.stp button{width:96px;height:52px;border:2px solid var(--rule);border-radius:4px;color:var(--fg)}
 .stp button:active,.stp button.held{background:var(--bg2);border-color:var(--muted)}
 .stp svg.i{width:30px;height:30px;stroke-width:2}
 .stp .num{margin:6px 0}
@@ -309,7 +312,25 @@ nav{position:relative}
 .add .colon{margin:0 6px;padding-bottom:4px}
 .add .btn{margin-left:auto;height:68px;padding:0 22px}
 #alrm-list{overflow-y:auto;max-height:180px}
-.alrm{display:flex;align-items:center;height:72px;border-bottom:1px solid var(--line)}
+/* one alarm: the big time is the editor (arrows beside the hours and the minutes); the right column is its state */
+#p-a{margin-bottom:auto}
+#a-left .a-row{display:flex;align-items:center}
+.arw{display:flex;flex-direction:column;margin-left:22px;position:relative;z-index:2}
+.arw button{width:52px;height:52px;border:2px solid var(--rule);border-radius:4px;color:var(--fg);background:var(--bg);display:flex;align-items:center;justify-content:center}
+.arw button+button{margin-top:6px}
+.arw button:active,.arw button.held{border-color:var(--fg)}
+.arw svg.i{width:28px;height:28px;stroke-width:2}
+#a-state .mono{font-size:var(--t-cap);letter-spacing:.06em}
+.a-big{font:800 46px/1.05 var(--sans);letter-spacing:-.03em;margin-top:8px;color:var(--fg)}
+.a-big.off{color:var(--muted)}
+.a-sub{font:600 26px/1.2 var(--sans);letter-spacing:-.01em;color:var(--muted);margin-top:4px}
+.a-swrow{margin-top:26px;padding-top:18px;border-top:2px solid var(--rule)}
+#a-left-h,#a-left-m{font-variant-numeric:tabular-nums} /* the arrows don't shift as the digits change */
+#v-timer .col-l{position:relative;z-index:3} /* the minutes' arrows may reach past the column */
+#a-left .tfill{overflow:visible}
+#a-left.none .num{opacity:1}
+#a-left.none #a-left-h,#a-left.none #a-left-m{opacity:.3} /* off: only the time dims, the arrows stay ready */
+.alrm{display:flex;align-items:center;height:72px;border-bottom:2px solid var(--rule)}
 .alrm .num{font-size:var(--t-num);flex:1}
 .alrm.off .num{color:var(--muted)}
 .sw{width:60px;height:34px;border-radius:17px;background:var(--line);position:relative;transition:background .2s var(--ease)}
@@ -320,7 +341,7 @@ nav{position:relative}
 
 /* tv */
 #v-tv{flex-direction:column;padding-bottom:0}
-.tv-top{display:flex;align-items:flex-end;border-bottom:1px solid var(--line);flex-shrink:0}
+.tv-top{display:flex;align-items:flex-end;border-bottom:2px solid var(--rule);flex-shrink:0}
 #ch-groups{flex:1;white-space:nowrap;overflow-x:auto;overflow-y:hidden}
 #ch-groups button{height:56px;margin-right:28px;color:var(--muted);position:relative;font-size:var(--t-ui)}
 #ch-groups button.on{color:var(--fg)}
@@ -328,8 +349,8 @@ nav{position:relative}
 .tv-top .r{display:flex;align-items:center;height:56px;color:var(--muted)}
 .tv-top .r button{width:52px;height:52px;color:var(--muted)}
 #ch-list{flex:1;overflow-y:auto;display:flex;flex-wrap:wrap;align-content:flex-start;margin:0 -36px;padding:0 36px 22px}
-.ch{width:50%;height:72px;display:flex;align-items:center;border-bottom:1px solid var(--line);padding-right:18px;text-align:left}
-.ch:nth-child(even){padding-left:18px;padding-right:0;border-left:1px solid var(--line)}
+.ch{width:50%;height:72px;display:flex;align-items:center;border-bottom:2px solid var(--rule);padding-right:18px;text-align:left}
+.ch:nth-child(even){padding-left:18px;padding-right:0;border-left:2px solid var(--rule)}
 .ch:active{background:var(--bg2)}
 .ch .mono{width:44px;color:var(--muted);flex-shrink:0}
 .ch-logo{width:48px;height:32px;flex-shrink:0;margin-right:14px;display:flex;align-items:center;justify-content:center}
@@ -358,7 +379,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #a-s{font-size:54px;color:var(--muted);margin:0 0 6px 16px;letter-spacing:-.03em}
 #a-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:14px var(--bg);z-index:-1}
 #amb .mono{margin:16px 0 0 74px}
-#amb.night .solid{color:#e2ded5}
+#amb.night .solid{color:var(--accent)}
 #amb.night .outline{-webkit-text-stroke-color:#e2ded5}
 #amb.night .mono{color:var(--muted)}
 
@@ -414,17 +435,17 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 .pf-pair .pf-row{width:48%}
 .pf-pair .pf-sw button{width:68px;font-size:20px}
 .pf-pair .pf-row>span{white-space:nowrap;margin-right:12px}
-.pf-sw button{width:96px;height:48px;border:1px solid var(--line);font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
+.pf-sw button{width:96px;height:48px;border:2px solid var(--rule);font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
 .pf-sw button:first-child{border-radius:4px 0 0 4px}.pf-sw button:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
-.pf-sw button.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg);position:relative}
+.pf-sw button.on{border-color:var(--fg);position:relative}
 .pf-bright{display:grid;grid-template-columns:repeat(6,1fr);grid-gap:8px;margin-bottom:20px}
-.pf-bright button{height:52px;border:1px solid var(--line);border-radius:4px;font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
-.pf-bright button.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.pf-bright button{height:52px;border:2px solid var(--rule);border-radius:4px;font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
+.pf-bright button.on{border-color:var(--fg)}
 .pf-bright button:active{background:var(--bg2)}
 .pf-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:56px;grid-gap:8px}
-.acc-opt{border:1px solid var(--line);border-radius:4px;display:block;text-align:left;background-repeat:no-repeat;background-position:14px 50%;background-size:26px 26px;padding:0 10px 0 52px;position:relative}
+.acc-opt{border:2px solid var(--rule);border-radius:4px;display:block;text-align:left;background-repeat:no-repeat;background-position:14px 50%;background-size:26px 26px;padding:0 10px 0 52px;position:relative}
 .acc-opt b{display:block;font:600 var(--t-ui)/1.1 var(--sans);letter-spacing:-.01em;white-space:nowrap}
-.acc-opt.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.acc-opt.on{border-color:var(--fg)}
 .acc-opt:active{background:var(--bg2)}
 
 /* alert (alarm / timer end) */
@@ -520,9 +541,8 @@ video::-internal-media-controls-overlay-cast-button{display:none}
     </div>
     <!-- Alarms tab: the left column shows the next alarm instead of the timer -->
     <div id="a-left" hidden>
-      <div class="mono muted" id="a-left-l">Next alarm</div>
-      <div class="num big solid" id="a-left-h">07</div>
-      <div class="num big tfill"><span class="outline" id="a-left-m" data-t="00">00</span></div>
+      <div class="a-row"><div class="num big solid" id="a-left-h">07</div><div class="arw"><button data-s="h" data-d="1" aria-label="Hour up"><svg class="i"><use href="#i-up"/></svg></button><button data-s="h" data-d="-1" aria-label="Hour down"><svg class="i"><use href="#i-down"/></svg></button></div></div>
+      <div class="num big tfill a-row"><span class="outline" id="a-left-m" data-t="00">00</span><div class="arw"><button data-s="m" data-d="5" aria-label="Minutes up"><svg class="i"><use href="#i-up"/></svg></button><button data-s="m" data-d="-5" aria-label="Minutes down"><svg class="i"><use href="#i-down"/></svg></button></div></div>
     </div>
   </div>
   <div class="col-r" style="justify-content:flex-start">
@@ -538,13 +558,8 @@ video::-internal-media-controls-overlay-cast-button{display:none}
       </div>
     </div>
     <div id="p-a" hidden>
-      <div class="add">
-        <div class="stp"><button data-s="h" data-d="1" aria-label="Hour up"><svg class="i"><use href="#i-up"/></svg></button><span class="num" id="a-hh">07</span><button data-s="h" data-d="-1" aria-label="Hour down"><svg class="i"><use href="#i-down"/></svg></button></div>
-        <span class="num colon">:</span>
-        <div class="stp"><button data-s="m" data-d="5" aria-label="Minutes up"><svg class="i"><use href="#i-up"/></svg></button><span class="num" id="a-mm">00</span><button data-s="m" data-d="-5" aria-label="Minutes down"><svg class="i"><use href="#i-down"/></svg></button></div>
-        <button class="btn pri" id="alrm-add"><svg class="i"><use href="#i-bell"/></svg>Set</button>
-      </div>
-      <div id="alrm-list"></div>
+      <div id="a-state"></div>
+      <div class="a-swrow"><div class="pf-sw" id="a-sw"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
     </div>
   </div>
 </section>
@@ -1214,37 +1229,44 @@ var alarms=[];try{alarms=JSON.parse(localStorage.getItem('alarms')||'[]')}catch(
 // one alarm only: keep the first switched-on one from older saves
 if(alarms.length>1){alarms=[alarms.filter(function(a){return a.on})[0]||alarms[0]];try{localStorage.setItem('alarms',JSON.stringify(alarms))}catch(e){}}
 function saveA(){try{localStorage.setItem('alarms',JSON.stringify(alarms))}catch(e){}}
-function renderALeft(){
-  var na=nextAlarm(),l=$('a-left');
-  l.classList.toggle('none',!na);
-  if(na){var p=na.split(':');$('a-left-l').textContent='Next alarm';$('a-left-h').textContent=p[0];$('a-left-m').textContent=p[1];$('a-left-m').setAttribute('data-t',p[1])}
-  else{$('a-left-l').textContent='No alarm set';$('a-left-h').textContent='00';$('a-left-m').textContent='00';$('a-left-m').setAttribute('data-t','00')}
+// one alarm: the big time on the left IS the alarm; arrows beside it change it; the right column is its state
+var aH=7,aM=0;
+if(alarms[0]){var ap=alarms[0].t.split(':');aH=+ap[0];aM=+ap[1]}
+function renderALeft(){ // the time is always shown; dimmed when the alarm is off
+  var a=alarms[0],t=a?a.t:f2(aH)+':'+f2(aM),p=t.split(':');
+  $('a-left').classList.toggle('none',!(a&&a.on));
+  $('a-left-h').textContent=p[0];$('a-left-m').textContent=p[1];$('a-left-m').setAttribute('data-t',p[1]);
+}
+function alarmIn(t){
+  var now=new Date(),p=t.split(':'),at=new Date(now);at.setHours(+p[0],+p[1],0,0);if(at<=now)at.setDate(at.getDate()+1);
+  var m=Math.round((at-now)/60000),h=Math.floor(m/60);return (h?h+'h ':'')+f2(m%60)+'m';
 }
 function renderA(){
-  var el=$('alrm-list');
-  if(!alarms.length){el.innerHTML='<div class="mono muted" style="padding:18px 0">No alarms</div>';return}
-  el.innerHTML=alarms.slice().sort(function(a,b){return a.t.localeCompare(b.t)}).map(function(a){
-    return '<div class="alrm'+(a.on?'':' off')+'"><span class="num">'+esc(a.t)+'</span><button class="sw'+(a.on?' on':'')+'" data-tog="'+a.id+'" aria-label="Toggle alarm"></button><button class="del" data-del="'+a.id+'" aria-label="Delete alarm"><svg class="i"><use href="#i-trash"/></svg></button></div>';
-  }).join('');
+  var a=alarms[0],on=!!(a&&a.on);
+  $('a-state').innerHTML=on
+    ?'<div class="mono muted">Rings</div><div class="a-big">'+(alarmWhen(a.t)==='today'?'Today':'Tomorrow')+'</div><div class="a-sub">in '+alarmIn(a.t)+'</div>'
+    :'<div class="mono muted">Alarm</div><div class="a-big off">Off</div><div class="a-sub">Won\'t ring</div>'; // same three lines as when on, so nothing moves
+  [].forEach.call($('a-sw').children,function(b){b.classList.toggle('on',(b.getAttribute('data-v')==='1')===on)}); // Off | On, like Settings
 }
-$('alrm-list').addEventListener('click',function(ev){
-  var b=ev.target.closest('button');if(!b)return;
-  var tog=b.getAttribute('data-tog'),del=b.getAttribute('data-del');
-  if(tog){alarms.forEach(function(a){if(String(a.id)===tog)a.on=!a.on})}
-  if(del){alarms=alarms.filter(function(a){return String(a.id)!==del})}
-  saveA();renderA();renderALeft();ambLine();
+setInterval(function(){if(cur==='timer'&&!$('p-a').hidden)renderA()},30000);
+function alarmChanged(){saveA();renderA();renderALeft();ambLine()}
+$('a-sw').addEventListener('click',function(ev){
+  var b=ev.target.closest('button');if(!b)return;var want=b.getAttribute('data-v')==='1';
+  if(!alarms[0])alarms=[{t:f2(aH)+':'+f2(aM),on:want,id:Date.now()}];else alarms[0].on=want;
+  alarmChanged();
 });
-var aH=7,aM=0;
-function aUI(){$('a-hh').textContent=f2(aH);$('a-mm').textContent=f2(aM)}
-function aStep(b){var d=+b.getAttribute('data-d');if(b.getAttribute('data-s')==='h')aH=(aH+d+24)%24;else aM=(aM+d+60)%60;aUI()}
-document.querySelectorAll('.stp button').forEach(function(b){
+// an arrow changes the alarm and switches it on
+function aStep(b){
+  var d=+b.getAttribute('data-d');if(b.getAttribute('data-s')==='h')aH=(aH+d+24)%24;else aM=(aM+d+60)%60;
+  alarms=[{t:f2(aH)+':'+f2(aM),on:true,id:alarms[0]?alarms[0].id:Date.now()}];alarmChanged();
+}
+document.querySelectorAll('.arw button').forEach(function(b){
   var holdT=null,repI=null,repeated=false;
   function stop(){clearTimeout(holdT);clearInterval(repI);b.classList.remove('held')}
   b.addEventListener('touchstart',function(){repeated=false;b.classList.add('held');holdT=setTimeout(function(){repeated=true;repI=setInterval(function(){aStep(b)},140)},450)},{passive:true});
   b.addEventListener('touchend',stop);b.addEventListener('touchcancel',stop);
   b.addEventListener('click',function(){if(repeated){repeated=false;return}aStep(b)});
 });
-$('alrm-add').addEventListener('click',function(){var v=f2(aH)+':'+f2(aM);alarms=[{t:v,on:true,id:Date.now()}];saveA();renderA();renderALeft();ambLine()});
 function checkAlarms(now){var s=hhmm(now);alarms.forEach(function(a){if(a.on&&a.t===s){var p=s.split(':');ring('Alarm',p[0],p[1])}})}
 renderA();
 
