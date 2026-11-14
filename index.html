@@ -413,6 +413,8 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 #hdr-temp{display:inline-block;transition:opacity .18s var(--ease),transform .18s var(--ease);height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 #hdr-temp b{font:700 25px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
 #hdr-temp i{font-style:normal;margin-left:6px}
+#hdr-temp i.warn{margin-left:10px}
+#hdr-temp i.warn:before{content:'';display:inline-block;width:8px;height:8px;border-radius:4px;background:currentColor;margin-right:6px;vertical-align:1px}
 #a-h{position:relative;display:inline-block;vertical-align:top}
 /* a small friend peeks up from the bottom edge, in the empty middle of the strip (spike, clock only) */
 #minder{position:fixed;left:0;top:0;width:48px;height:58px;overflow:hidden;pointer-events:none;z-index:5;visibility:hidden}
@@ -1559,7 +1561,25 @@ function nextFlash(){flashT=setTimeout(function(){
 var wxT={home:null,away:null},wxAway=false;
 function showTemp(){
   var away=wxAway&&wxT.away,t=away?wxT.away:wxT.home;if(!t)return;
-  var b=$('hdr-temp');b.hidden=false;b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'');
+  var w=!away&&wxWarn,b=$('hdr-temp');b.hidden=false;
+  b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'')+(w?'<i class="warn" style="color:'+WARN_C[w.level]+'">'+w.label+'</i>':'');
+  b.setAttribute('aria-label','Temperature'+(w?', '+w.level+' warning: '+w.label:'')+': tap to switch place');
+}
+// IPMA weather warnings (yellow, orange, red) for your district: the worst one active now sits next to the temperature
+var wxWarn=null,WARN_C={yellow:'#ffd23f',orange:'#ff8c2e',red:'#ff4a3d'},WARN_N={yellow:1,orange:2,red:3};
+var WARN_T={'Precipitação':'Rain','Vento':'Wind','Trovoada':'Thunder','Nevoeiro':'Fog','Neve':'Snow','Tempo Quente':'Heat','Tempo Frio':'Cold'}; // sea warnings left out: the district's coast isn't where the clock is
+function loadWarn(){
+  var o=(location.search.match(/warn=(\w+):([^&]+)/)||[]);if(o[1]){wxWarn={level:o[1],label:WARN_T[decodeURIComponent(o[2])]||decodeURIComponent(o[2])};showTemp();return}
+  var area=cfg.ipmaArea;if(!area)return; // district code, e.g. LSB, CBR, PTO
+  fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(list){
+    var now=Date.now(),best=null;
+    (list||[]).forEach(function(x){
+      if(x.idAreaAviso!==area||!WARN_N[x.awarenessLevelID]||x.awarenessTypeName==='Agitação Marítima')return;
+      if(new Date(x.startTime).getTime()>now||new Date(x.endTime).getTime()<now)return;
+      if(!best||WARN_N[x.awarenessLevelID]>WARN_N[best.awarenessLevelID])best=x;
+    });
+    wxWarn=best?{level:best.awarenessLevelID,label:WARN_T[best.awarenessTypeName]||best.awarenessTypeName}:null;showTemp();
+  }).catch(function(){});
 }
 $('hdr-temp').addEventListener('click',function(){
   if(!wxT.away)return;var b=this;
@@ -1580,7 +1600,7 @@ function loadWx(){
   fetch('https://api.open-meteo.com/v1/forecast?latitude='+(cfg.lat2!=null?cfg.lat2:51.5072)+'&longitude='+(cfg.lon2!=null?cfg.lon2:-0.1276)+'&current=temperature_2m',{cache:'no-store'})
     .then(function(r){return r.json()}).then(function(d){wxT.away=Math.round(d.current.temperature_2m)+'°';showTemp()}).catch(function(){});
 }
-cfgReady.then(function(){loadWx();setInterval(loadWx,15*60*1000)});
+cfgReady.then(function(){loadWx();loadWarn();setInterval(function(){loadWx();loadWarn()},15*60*1000)});
 
 // ---------- a friend peeks in now and then (spike, clock only) ----------
 
