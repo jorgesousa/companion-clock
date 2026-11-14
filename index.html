@@ -781,7 +781,7 @@ function applyMode(m){
   if(m==='work'&&cur==='tv')go('home');
   var t0=Date.now();(function nb(){navBar();if(Date.now()-t0<500)requestAnimationFrame(nb)})();
   var c=evCache[m];events=c?c.events:null;wloc=c?c.wloc:{};evTried=!!c;nOff=0;freeAlt=false;
-  renderCal();renderNext();loadEvents();if(typeof renderWater==='function')renderWater();
+  renderCal();renderNext();loadEvents();if(typeof renderWater==='function')renderWater();if(typeof stepsLast!=='undefined'&&stepsLast!==undefined){stepsShown=null;renderSteps(stepsLast,stepsUpd)}
   if(typeof renderModeCard==='function')renderModeCard();
 }
 // the switch is a moment: a spark leaves "JS", the board turns over flap by flap, the new colour washes out from "JS"
@@ -1201,7 +1201,7 @@ function setNet(ok){online=ok;$('net').classList.toggle('on',ok)}
 var stepsShown=null,stepsAnim=null;
 function countSteps(n){
   var v=$('h-steps'),from=stepsShown==null?n:stepsShown,t0=Date.now(),dur=900;stepsShown=n;cancelAnimationFrame(stepsAnim);
-  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.textContent=fmtN(val);if(k<1)stepsAnim=requestAnimationFrame(f)}
+  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+(mode==='personal'?'<span class="of">/ '+fmtN(GOAL)+' steps</span>':'');if(k<1)stepsAnim=requestAnimationFrame(f)}
   f();
 }
 // water: on work days, the glasses you set in Settings (250 ml each), spread evenly from 09:00 to 17:00; tap the steps card whenever you drink one
@@ -1222,7 +1222,8 @@ function renderSteps(steps,upd){
   if(steps==null){v.textContent='No data';l.textContent=upd?'Steps · '+hhmm(upd):'Steps';return}
   countSteps(steps);
   // the expected pace ("Expected X · N ahead/behind") is off for now, in both modes: see the roadmap
-  l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Steps · goal</span>':'Steps';
+  if(mode==='personal')l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Goal reached</span>':'<span class="val">'+fmtN(GOAL-steps)+'</span> to go';
+  else l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Steps · goal</span>':'Steps';
 }
 var stepsAt=null;
 function fetchSteps(){
