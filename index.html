@@ -1181,13 +1181,9 @@ function renderSteps(steps,upd){
   v.classList.toggle('dim',steps==null);
   if(steps==null){v.textContent='No data';l.textContent=upd?'Steps · last sync '+hhmm(upd):'Steps · waiting for phone';return}
   countSteps(steps);
-  var now=new Date(),frac=Math.min(1,Math.max(0,(mins(now)-DAY_START)/Math.max(cfg.dayEndMinute-DAY_START,1)));
-  var exp=Math.round(GOAL*frac);
+  // the expected pace ("Expected X · N ahead/behind") is off for now, in both modes: see the roadmap
   if(steps>=GOAL)l.innerHTML='<span style="color:var(--ok)">Goal reached</span>';
-  else if(exp===0)l.innerHTML='Pace starts at '+f2(Math.floor(DAY_START/60))+':'+f2(DAY_START%60);
-  else if(exp>=GOAL)l.innerHTML='<span class="acc">'+fmtN(GOAL-steps)+' behind</span>'; // the day's pace is over: "expected" would just repeat the goal
-  else if(steps>=exp)l.innerHTML='Expected <span class="val">'+fmtN(exp)+'</span> · <span class="ok">'+fmtN(steps-exp)+' ahead</span>';
-  else l.innerHTML='Expected <span class="val">'+fmtN(exp)+'</span> · <span class="acc">'+fmtN(exp-steps)+' behind</span>';
+  else l.textContent='Steps today';
 }
 var stepsAt=null;
 function fetchSteps(){

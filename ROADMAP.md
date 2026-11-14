@@ -10,6 +10,7 @@
   - On the clock: today's to-dos on Home (a card like the meeting, or a count), ticked off on the phone or Mac, never on the clock.
 - **Claude Code → clock.** `Notification` / `Stop` hooks post to a private ntfy topic; the clock shows "Claude is waiting for you".
 - **Unread email** via the same Apps Script: unread count and the last important sender on Home.
+- **Steps pace, revisited.** "Expected X · N ahead/behind" is switched off for now: it paced 10,000 steps over the working day (08:00 to `dayEndMinute`) every day, weekends too. Decide a pace that fits (work days vs weekends, a different window) or keep just the count.
 - **Microphone indicator.** Replace the assistant's overlay with the clock's own mic-off icon; needs the mute switch state source first.
 - **Type scale pass.** 9 sizes → 5 (18 · 24 · 44 · 84 · 210) and 3 type styles.
 - **DESIGN.md.** Document the design system (tokens, type scale, components) from the built app.
@@ -31,6 +32,6 @@
 - Calendar via an Apps Script web app: today to the end of next week, declined events hidden, working location per day (Office highlighted), a red rule with the week number where next week starts.
 - Free time: gaps of 15+ min inside 09:00–17:00 shown as hatched Free rows; the slot you are in stands out as "Free now · Xh left".
 - Home: current meeting is live (dot, accent time, filling rule); swipe or tap to browse today's later meetings; long titles glide.
-- Steps (ntfy) with pace: "Expected X · N ahead/behind".
+- Steps (ntfy) against a 10,000 goal.
 - TV player for your own HLS playlist, through a local playlist proxy.
 - Settings (tap "JS"): brightness 10–100% and 8 accent colours.

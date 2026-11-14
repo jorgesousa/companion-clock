@@ -62,7 +62,7 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **A friend.** Tap the seconds and the Minder (Mindera's mascot) peeks out from a hiding place, leaning or lying down, looks around, blinks and hides again. Tap "Weekend" and fireworks go off inside the card.
 - **Work and Personal.** Tap "JS" to switch. The new accent washes out from "JS" and hits the hours; the lines above and below the card light up and run across, the old card blurs away and the new one rises into focus. WORK shows your work calendar and meetings (TV hidden); PERSONAL shows your personal calendar, TV, and a Sporting card instead of the meeting: the next match (live score while it's on, the line burning down 15 minutes before kick-off), the league position, the last result. Each mode keeps its own accent; the brand slot is Mindera in WORK and Sporting in PERSONAL.
 - **Colour has a job.** White is a value, grey is a label, colour is a state (now, soon, free, behind).
-- **Steps.** Today's count against 10,000, with the pace you should be at by now ("Expected 3,820 · 1,040 ahead").
+- **Steps.** Today's count against 10,000.
 - **Calendar.** Grouped by day, with a summary per day ("4 meetings · 4h free"). Free time is counted inside the working day (09:00–17:00, Monday to Friday) in gaps of 15 minutes or more. Each client in `[Brackets]` gets its own colour, or its brand colour if you set one.
   A meeting's time turns to the accent only when it's on now or starts within 30 minutes.
 - **Working location.** Google Calendar's Home / Office shows in each day's heading; Office in white.
