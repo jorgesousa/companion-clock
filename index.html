@@ -418,6 +418,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 /* IPMA warning as a card: tap the temperature and the meeting card turns into the warning, hatched like a Free row */
 #h-warn{position:absolute;left:0;right:0;top:0;bottom:0;padding:18px 14px;display:none;z-index:2;pointer-events:none}
 #h-warn.on{display:block}
+#h-next-blk.warned #h-live{visibility:hidden}
 #h-warn .wh{position:absolute;left:0;top:0;right:0;bottom:0;background-color:var(--wt);background-image:repeating-linear-gradient(135deg,var(--wh) 0,var(--wh) 1.5px,transparent 1.5px,transparent 9px)}
 #h-warn .v,#h-warn .l{position:relative}
 #hw-l{white-space:nowrap}
@@ -1606,14 +1607,14 @@ function rgba(h,a){var n=parseInt(h.slice(1),16);return 'rgba('+(n>>16)+','+(n>>
 // the meeting drifts away and the warning comes into focus. Tap the card or the temperature to go back; it goes back on its own too.
 var warnOpen=false,warnT=null,warnBusy=false,warnOut=[];
 var WEASE='cubic-bezier(.2,.7,.2,1)';
-function warnRows(){return [$('h-next'),$('h-next-l'),$('h-live')]}
+function warnRows(){return [$('h-next'),$('h-next-l')]} // not the meeting line: animating it would show it even when it's meant to be hidden
 function warnShow(){
   var w=wxWarn,el=$('h-warn'),cap=document.querySelector('#v-home .col-r .cap');if(!w||warnBusy||warnOpen||cur!=='home')return;
   var c=WARN_C[w.level];el.style.setProperty('--wh',rgba(c,.34));el.style.setProperty('--wt',rgba(c,.08));
   var v=$('hw-v');v.textContent=w.label;v.style.color=c;
   $('hw-l').innerHTML=w.level+' · <span class="val">'+w.when+'</span>';
   var q=$('hw-q'),mq=q.firstChild;mq.textContent=w.text||'';q.style.display=w.text?'':'none'; // IPMA's own sentence, in Portuguese, when it gives one
-  el.classList.add('on');warnOpen=true;clearTimeout(warnT);warnT=setTimeout(warnHide,w.text?15000:9000);
+  el.classList.add('on');$('h-next-blk').classList.add('warned');warnOpen=true;clearTimeout(warnT);warnT=setTimeout(warnHide,w.text?15000:9000);
   if(!Element.prototype.animate)return;
   warnBusy=true;setTimeout(function(){warnBusy=false},700);
   warnOut.forEach(function(a){a.cancel()});
@@ -1628,7 +1629,7 @@ function warnShow(){
 }
 function warnHide(now){
   var el=$('h-warn');clearTimeout(warnT);if(!warnOpen||(warnBusy&&!now))return;warnOpen=false;
-  var back=function(){warnOut.forEach(function(a){a.cancel()});warnOut=[]};
+  var back=function(){warnOut.forEach(function(a){a.cancel()});warnOut=[];$('h-next-blk').classList.remove('warned')};
   if(now===true||!Element.prototype.animate){el.classList.remove('on');back();return}
   warnBusy=true;
   var ex=[$('hw-v'),$('hw-l'),$('hw-q')].map(function(r,i){return r.animate([{opacity:1,filter:'blur(0)'},{opacity:0,filter:'blur(4px)'}],{duration:170,delay:i*35,fill:'forwards'})});
