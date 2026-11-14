@@ -224,7 +224,7 @@ nav{position:relative}
 #h-steps-l{letter-spacing:.02em;white-space:nowrap}
 /* tap steps to refresh: the number breathes and a light runs along the block while it syncs */
 #h-steps-blk{position:relative;overflow:hidden}
-body.work #h-steps-blk{overflow:visible;-webkit-clip-path:inset(0 0 -40px 0);clip-path:inset(0 0 -40px 0)} /* sides clipped (the sync sweep), open below so the water reminder reaches the line */
+body.work #h-steps-blk{overflow:visible;-webkit-clip-path:inset(-10px 0 -100px 0);clip-path:inset(-10px 0 -100px 0)} /* sides clipped (the sync sweep), open below so the water reminder reaches the line */
 /* Health: the steps card in two: steps on the left, glasses of water on the right (a fixed column).
    Tap the water: a drop falls into the number, it squashes and ticks up, ripples spread. Behind: it drips, in the accent */
 body.personal #hw{display:none}
@@ -1295,19 +1295,48 @@ function drink(){
     waterUndo=setTimeout(function(){waterUndo=null;renderWater()},1400);return}
   s.n++;try{localStorage.setItem('water',JSON.stringify(s))}catch(e){}
   if(!n.animate){renderWater();return}
-  // the number ticks up: the old one sinks away, the new one rises in and settles with a little squash; a ring spreads from it
-  var hr=hw.getBoundingClientRect(),nr=n.getBoundingClientRect(),x=nr.left-hr.left+nr.width/2,cy=nr.top-hr.top+nr.height*.92;
-  if(hw.classList.contains('due')){var fl=hw.querySelector('.fl');if(fl.animate)fl.animate([{transform:'scaleY(1)'},{transform:'scaleY(0)'}],{duration:420,easing:'cubic-bezier(.5,0,.75,0)'})}
-  hw.classList.remove('due');clearInterval(ringT); // still behind? it floods back without the chime
-  n.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(12px)',opacity:0}],{duration:160,easing:'cubic-bezier(.4,0,1,1)'}).onfinish=function(){
-    n.textContent=s.n;t.textContent=litres(s.n);
-    n.animate([{transform:'translateY(-16px) scale(1)',opacity:0},{transform:'translateY(2px) scale(1.08,.9)',opacity:1,offset:.55},{transform:'translateY(0) scale(1)',opacity:1}],{duration:520,easing:'cubic-bezier(.2,.8,.3,1)'});
-    ripple(x,cy,120);
-  };
+  if(hw.classList.contains('due')&&window.requestAnimationFrame)crumble(s);else syncTick(s);
   waterUndo=setTimeout(function(){waterUndo=null;renderWater()},2600);
 }
-$('hw').addEventListener('click',function(ev){ev.stopPropagation();drink()});
-$('hw').addEventListener('touchend',function(ev){ev.stopPropagation();ev.preventDefault();drink()});
+// no reminder: the same answer the steps give when you tap them: a line runs along the top, the number pops to the new one
+function syncTick(s){
+  var hw=$('hw'),n=$('hw-n'),t=$('hw-t'),ln=document.createElement('i');
+  ln.style.cssText='position:absolute;left:0;top:0;height:2px;width:30%;background:var(--accent);z-index:2;pointer-events:none';hw.appendChild(ln);
+  ln.animate([{transform:'translateX(-100%)'},{transform:'translateX(340%)'}],{duration:800,easing:'cubic-bezier(.65,0,.35,1)'}).onfinish=function(){ln.remove()};
+  setTimeout(function(){n.textContent=s.n;t.textContent=litres(s.n);
+    n.parentNode.animate([{transform:'scale(.94)'},{transform:'none'}],{duration:500,easing:'cubic-bezier(.16,1,.3,1)'})},380);
+}
+// the reminder answered: what's in the yellow is redrawn as grain, loosens outward from your finger, then bursts and falls
+var hwTap=null;
+function crumble(s){
+  var hw=$('hw'),n=$('hw-n'),t=$('hw-t'),of=$('hw-of'),fl=hw.querySelector('.fl'),row=n.parentNode;
+  var hr=hw.getBoundingClientRect(),fr=fl.getBoundingClientRect(),W=Math.round(hr.width),H=Math.round(fr.bottom-hr.top);
+  var src=document.createElement('canvas');src.width=W;src.height=H;var g=src.getContext('2d');
+  g.fillStyle=getComputedStyle(fl).backgroundColor;g.fillRect(0,0,W,H);g.textBaseline='top';
+  [n,of,t].forEach(function(e){var cs=getComputedStyle(e),r=e.getBoundingClientRect();g.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;g.fillStyle=cs.color;
+    var tx=e.textContent;if(cs.textTransform==='uppercase')tx=tx.toUpperCase();g.fillText(tx,r.left-hr.left,r.top-hr.top+(parseFloat(cs.fontSize)>30?2:0))});
+  var data=g.getImageData(0,0,W,H).data,P=[],S=4,tp=hwTap||{x:W/2,y:H/2};
+  for(var y=0;y<H;y+=S)for(var x=0;x<W;x+=S){var i=(y*W+x)*4,dx=x-tp.x,dy=y-tp.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+    P.push({x:x,y:y,c:'rgb('+data[i]+','+data[i+1]+','+data[i+2]+')',t0:d*2.2,ux:dx/d,uy:dy/d,sp:60+Math.random()*140,j:Math.random()*6.28})}
+  var cv=document.createElement('canvas');cv.width=W;cv.height=H+110;cv.style.cssText='position:absolute;left:0;top:0;z-index:4;pointer-events:none';hw.appendChild(cv);
+  var ctx=cv.getContext('2d');
+  hw.classList.remove('due');clearInterval(ringT);row.style.opacity=0;t.style.opacity=0; // still behind? it floods back later, without the chime
+  var start=Date.now(),LOOSE=380,shown=false;
+  (function frame(){var tt=Date.now()-start,alive=0;ctx.clearRect(0,0,cv.width,cv.height);
+    for(var k=0;k<P.length;k++){var p=P[k],lt=tt-p.t0,x=p.x,y=p.y,a=1;
+      if(lt>0){
+        if(lt<LOOSE){var q=lt/LOOSE;x+=Math.sin(p.j+lt*.06)*1.6*q+p.ux*4*q*q;y+=Math.cos(p.j+lt*.05)*1.6*q+p.uy*4*q*q} // loosening: tremble, drift
+        else{var e=(lt-LOOSE)/1000;x+=p.ux*4+p.ux*p.sp*e+Math.sin(p.j)*20*e;y+=p.uy*4+p.uy*p.sp*e*.8-40*e+260*e*e;a=Math.max(0,1-e/.9)} // burst, fall
+      }
+      if(a<=0)continue;alive++;ctx.globalAlpha=a;ctx.fillStyle=p.c;ctx.fillRect(x,y,S-.5,S-.5)}
+    if(tt>500&&!shown){shown=true;n.textContent=s.n;t.textContent=litres(s.n);row.style.opacity='';t.style.opacity='';
+      [row,t].forEach(function(q,i){q.animate([{opacity:0,filter:'blur(5px)',transform:'scale(.92)'},{opacity:1,filter:'blur(0)',transform:'scale(1.05)',offset:.6},{opacity:1,filter:'blur(0)',transform:'none'}],{duration:620,delay:i*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})})}
+    if(alive||tt<600)requestAnimationFrame(frame);else cv.remove();
+  })();
+}
+function hwAt(x,y){var r=$('hw').getBoundingClientRect();hwTap={x:x-r.left,y:y-r.top}}
+$('hw').addEventListener('click',function(ev){ev.stopPropagation();hwAt(ev.clientX,ev.clientY);drink()});
+$('hw').addEventListener('touchend',function(ev){ev.stopPropagation();ev.preventDefault();var t=ev.changedTouches[0];hwAt(t.clientX,t.clientY);drink()});
 $('h-steps-blk').addEventListener('click',function(){stepsSync()});
 
 // ---------- som ----------
