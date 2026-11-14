@@ -1622,6 +1622,20 @@ function splashCanvas(row,digits){
   var c=document.createElement('canvas');c.className='splash';c.setAttribute('aria-hidden','true');row.appendChild(c);
   return {c:c,g:c.getContext('2d'),row:row,digits:digits};
 }
+// where the digits touch their base line: draw them off screen at their real positions and read the lowest ink
+function inkCols(el){
+  var t=el.querySelector('.r')||el,node=t.firstChild;if(!node||node.nodeType!==3)return [];
+  var cs=getComputedStyle(t),w=el.offsetWidth,h=el.offsetHeight;if(!w||!h)return [];
+  var c=document.createElement('canvas');c.width=w;c.height=h;var g=c.getContext('2d');
+  g.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;g.textBaseline='middle';g.fillStyle='#000';
+  var base=el.getBoundingClientRect(),rg=document.createRange(),txt=node.nodeValue;
+  for(var i=0;i<txt.length;i++){rg.setStart(node,i);rg.setEnd(node,i+1);var r=rg.getBoundingClientRect();g.fillText(txt[i],r.left-base.left,h/2)}
+  var d=g.getImageData(0,0,w,h).data,maxY=-1,x,y;
+  for(y=h-1;y>=0&&maxY<0;y--)for(x=0;x<w;x++)if(d[(y*w+x)*4+3]>128){maxY=y;break}
+  if(maxY<0)return [];
+  var cols=[];for(x=0;x<w;x++)for(y=maxY;y>maxY-5;y--)if(d[(y*w+x)*4+3]>128){cols.push(x);break}
+  return cols;
+}
 function splashTick(){
   var raining=function(el){return el.classList.contains('wx-rain')||el.classList.contains('wx-storm')};
   var any=false;
@@ -1633,9 +1647,10 @@ function splashTick(){
     // the ground: just under the digits' base line
     k.c.style.left=d.offsetLeft+'px';k.c.style.top=(d.offsetTop+d.offsetHeight-H-Math.round(d.offsetHeight*.075))+'px';
     if(!k.ps)k.ps=[];
-    if(k.ps.length<14&&Math.random()<.35){var x=8+Math.random()*(w-16);
+    var txt=d.textContent;if(k.txt!==txt||!k.cols){k.txt=txt;k.cols=inkCols(d)}
+    if(k.cols.length&&k.ps.length<14&&Math.random()<.35){var x=k.cols[Math.floor(Math.random()*k.cols.length)];
       k.ps.push({x:x,y:H-6,r:0,life:0,max:16});                      // the ripple
-      for(var i=0;i<3;i++)k.ps.push({x:x,y:H-7,vx:(Math.random()-.5)*2.2,vy:-1.4-Math.random()*1.6,life:0,max:14,drop:1})} // droplets
+      for(var i=0;i<3;i++)k.ps.push({x:x,y:H-7,vx:(Math.random()-.5)*1.2,vy:-1.4-Math.random()*1.6,life:0,max:14,drop:1})} // droplets
     var g=k.g;g.clearRect(0,0,w,H);
     k.ps=k.ps.filter(function(p){return p.life<p.max});
     k.ps.forEach(function(p){p.life++;var a=1-p.life/p.max;
