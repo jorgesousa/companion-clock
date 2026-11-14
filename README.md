@@ -78,7 +78,7 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **Starts itself.** [`device/boot.sh`](device/boot.sh) runs at boot: it starts the server, restarts it if it ever stops, keeps the kiosk browser in front, and resets the touch panel if it gets stuck.
 - **Calendar.** A Google Apps Script web app in your own account ([`calendar/Code.gs`](calendar/Code.gs)) returns your events as JSON, guarded by a random key. The clock asks for it every 5 minutes.
 - **Steps.** Read from an [ntfy.sh](https://ntfy.sh) topic that your phone posts to (for example with [Unsit](https://github.com/jorgesousa/Unsit)).
-- **Personal side.** A second Apps Script in a personal Google account ([`personal/Code.gs`](personal/Code.gs)) serves the personal calendar and football fixtures and the league table from [football-data.org](https://www.football-data.org).
+- **Personal side.** A second Apps Script in a personal Google account ([`personal/Code.gs`](personal/Code.gs)) serves the personal calendar. Football (every competition, live scores, the league table) comes straight from ESPN's public API, no key.
 - **Private values stay on the clock.** The calendar URL and key, the steps topic, your coordinates and the playlist URL live only in the clock's `config.json` and `m3u.url`, never in this repo. See [`config.example.json`](config.example.json).
 
 ## Install

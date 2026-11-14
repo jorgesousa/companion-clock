@@ -18,8 +18,6 @@
     "name": "Sporting",
     "color": "#00a651"
   },
-  "footballUrl": "https://script.google.com/macros/s/<personal-deployment-id>/exec",
-  "footballToken": "<your-football-data.org-token>",
-  "footballTeam": 498,
+  "footballTeam": 2250,
   "personalCalUrl": "https://script.google.com/macros/s/<personal-deployment-id>/exec?f=calendar&k=<key>"
 }

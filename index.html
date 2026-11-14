@@ -39,7 +39,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;str
 header{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-items:baseline;padding:4px 24px 0 36px;z-index:10}
 #net{width:160px;color:var(--fg);text-align:left;height:64px;white-space:nowrap} /* identity + connection; tap switches WORK / PERSONAL */
 #mode-w{display:inline-block;overflow:hidden;vertical-align:bottom;height:1.3em;margin-left:10px;padding-left:10px;border-left:2px solid var(--rule)}
-#mode-l{display:inline-block;color:var(--muted);font-size:15px;letter-spacing:.1em;transition:transform .32s var(--ease),opacity .32s var(--ease)}
+#mode-l{display:inline-block;color:var(--muted);transition:transform .32s var(--ease),opacity .32s var(--ease)}
 #mode-l.out{-webkit-transform:translateY(-110%);transform:translateY(-110%);opacity:0}
 #mode-l.in{transition:none;-webkit-transform:translateY(110%);transform:translateY(110%);opacity:0}
 /* TV only in PERSONAL: the other tabs slide to close the gap */
@@ -401,9 +401,10 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 /* mode switch: spark, wash */
 .mode-spark{position:fixed;left:36px;right:36px;height:2px;background:var(--accent);-webkit-transform-origin:0 50%;transform-origin:0 50%;z-index:400;pointer-events:none}
 .mode-wash{position:fixed;width:1900px;height:1900px;border-radius:50%;background:radial-gradient(circle,var(--accent) 0,rgba(0,0,0,0) 62%);z-index:390;pointer-events:none;mix-blend-mode:screen}
+canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 /* the temperature sits in the header beside Sleep, on every screen; tap to switch home / UK */
 #hdr-temp{display:inline-block;transition:opacity .18s var(--ease),transform .18s var(--ease);height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
-#hdr-temp b{font:700 26px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
+#hdr-temp b{font:700 25px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
 #hdr-temp i{font-style:normal;margin-left:6px}
 #a-h{position:relative;display:inline-block;vertical-align:top}
 /* a small friend peeks up from the bottom edge, in the empty middle of the strip (spike, clock only) */
@@ -754,7 +755,7 @@ function modeFlip(m){
   var sp=document.createElement('i');sp.className='mode-spark';sp.style.top=(js.bottom-6)+'px';document.body.appendChild(sp);
   sp.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.7},{transform:'scaleX(1)',opacity:0}],{duration:520,easing:'cubic-bezier(.2,.7,.2,1)'}).onfinish=function(){sp.remove()};
   // 2 · the flaps fold down one after another, the content changes, they fall back into place
-  var flaps=[$('h-h'),document.querySelector('#v-home .mrow'),document.querySelector('#v-home .col-r .cap'),$('h-next-blk'),$('h-steps-blk')].filter(Boolean);
+  var flaps=[$('h-h'),$('h-next-blk')]; // only what changes turns over: the hours (new colour) and the card
   var down=[{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'},{transform:'perspective(700px) rotateX(-90deg)',filter:'brightness(.35)'}];
   var up=[{transform:'perspective(700px) rotateX(90deg)',filter:'brightness(.35)'},{transform:'perspective(700px) rotateX(-12deg)',filter:'brightness(1.1)',offset:.75},{transform:'perspective(700px) rotateX(0deg)',filter:'brightness(1)'}];
   var downs=[];flaps.forEach(function(el,i){el.style.transformOrigin='50% 50%';downs[i]=el.animate(down,{duration:200,delay:120+i*70,easing:'cubic-bezier(.5,0,.9,.4)',fill:'forwards'})});
@@ -866,15 +867,30 @@ function nextWorkEvent(){ // first meeting on a weekday from now on
 function setL(l,h){if(l._h!==h){l._h=h;l.innerHTML=h}} // rewrite only on change, so the live dot keeps animating
 // ---------- Sporting (PERSONAL): matches and league table from the personal script ----------
 var fb={matches:null,me:null,at:0,off:0},fbT=null,fbBack=null;
-function fbTeam(){return +(cfg.footballTeam||498)}
-function fbGet(q){var u=cfg.footballUrl;return fetch(u+(u.indexOf('?')<0?'?':'&')+q+'&ft='+encodeURIComponent(cfg.footballToken),{cache:'no-store'}).then(function(r){return r.json()})}
+function fbTeam(){return +(cfg.footballTeam||2250)} // ESPN team id (2250 = Sporting CP)
+var ESPN='https://site.api.espn.com/apis/';
+function jget(u){return fetch(u,{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}
+// every competition (league, cups, Europe) straight from ESPN's public API, which allows any page to read it
+function espnMatches(lists,team){
+  var seen={},out=[];
+  lists.forEach(function(d){((d&&d.events)||[]).forEach(function(e){
+    if(seen[e.id])return;seen[e.id]=1;
+    var c=e.competitions&&e.competitions[0];if(!c)return;
+    var st=(c.status&&c.status.type)||{},h=null,a=null;
+    c.competitors.forEach(function(x){if(x.homeAway==='home')h=x;else a=x});if(!h||!a)return;
+    function sc(x){var v=x.score;if(v==null)return null;return typeof v==='object'?v.value:parseFloat(v)}
+    var status=/POSTPONED|CANCELED|CANCELLED/.test(st.name||'')?'POSTPONED':st.state==='in'?'IN_PLAY':st.state==='post'?'FINISHED':'TIMED';
+    out.push({d:new Date(e.date),status:status,comp:e.league&&e.league.name,home:h.team.shortDisplayName||h.team.displayName,away:a.team.shortDisplayName||a.team.displayName,
+      us:String(h.team.id)===String(team)?'home':'away',score:status==='TIMED'?null:[sc(h),sc(a)]});
+  })});
+  return out.sort(function(x,y){return x.d-y.d});
+}
 function loadFootball(){
-  clearTimeout(fbT);if(!cfg.footballUrl||!cfg.footballToken)return;
-  var team=fbTeam();
-  Promise.all([fbGet('f=football&teams='+team).catch(function(){return null}),fbGet('f=table&comp=PPL').catch(function(){return null})]).then(function(r){
-    var t=r[0]&&r[0][0];
-    if(t&&t.matches){fb.matches=t.matches.map(function(m){m.d=new Date(m.utc);return m}).sort(function(a,b){return a.d-b.d});fb.at=Date.now()}
-    if(Array.isArray(r[1]))fb.me=r[1].filter(function(x){return x.teamId===team})[0]||fb.me;
+  clearTimeout(fbT);var team=fbTeam(),base=ESPN+'site/v2/sports/soccer/all/teams/'+team+'/schedule';
+  Promise.all([jget(base+'?fixture=true'),jget(base),jget(ESPN+'v2/sports/soccer/'+(cfg.footballLeague||'por.1')+'/standings')]).then(function(r){
+    if(r[0]||r[1]){fb.matches=espnMatches([r[0],r[1]],team);fb.at=Date.now()}
+    var t=r[2]&&r[2].children&&r[2].children[0];
+    if(t)t.standings.entries.forEach(function(e){if(+e.team.id!==team)return;var s={};e.stats.forEach(function(x){s[x.name]=x.value});fb.me={pos:s.rank,pts:s.points,played:s.gamesPlayed}});
     if(mode==='personal')renderNext();
   }).then(function(){fbT=setTimeout(loadFootball,fbLive()?60000:600000)});
 }
@@ -888,12 +904,12 @@ function ordinal(n){var s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||
 function renderSporting(v,l,blk){
   var team=fbTeam();
   v.classList.remove('dim','free','wknd');v.classList.toggle('loading',!fb.matches);
-  if(!fb.matches){v._h=null;v.textContent=cfg.footballUrl?'Sporting':'No football set';setL(l,cfg.footballUrl?'Football · loading':'Add footballUrl to config.json');return}
+  if(!fb.matches){v._h=null;v.textContent='Sporting';setL(l,'Football · loading');return}
   var live=fbLive(),up=fbUpcoming(),last=fbLast(),cards=[];
   function teams(m){return '<small><span class="mq">'+esc(m.home)+' – '+esc(m.away)+'</span></small>'}
   function when(m){var t=new Date(),dd=Math.round((new Date(m.d).setHours(0,0,0,0)-t.setHours(0,0,0,0))/864e5);return dd===0?'Today':dd===1?'Tomorrow':DAYS[m.d.getDay()].slice(0,3)+' '+m.d.getDate()}
-  function comp(m){var c=m.comp||'';if(/primeira liga/i.test(c)||!c)return '';return ' · '+esc({'UEFA Champions League':'UCL','UEFA Europa League':'UEL','UEFA Conference League':'UECL','Taça de Portugal':'Taça'}[c]||c)}
-  function result(m){var us=m.homeId===team?0:1,g=m.score||[0,0],a=g[us],o=g[1-us];return (a>o?'Won ':a<o?'Lost ':'Draw ')+a+'–'+o}
+  function comp(m){var c=m.comp||'';if(/primeira liga|portuguese liga/i.test(c)||!c)return '';return ' · '+esc({'UEFA Champions League':'UCL','UEFA Europa League':'UEL','UEFA Conference League':'UECL','Taca de Portugal':'Taça','Taca da Liga':'Taça da Liga','Portuguese League Cup':'Taça da Liga'}[c]||c)}
+  function result(m){var us=m.us==='home'?0:1,g=m.score||[0,0],a=g[us],o=g[1-us];return (a>o?'Won ':a<o?'Lost ':'Draw ')+a+'–'+o}
   // card 1 · the match: live, or the next one (just-finished takes its place until the next one is close)
   if(live){var sc=live.score&&live.score[0]!=null?live.score:[0,0];cards.push({v:sc[0]+'–'+sc[1]+teams(live),l:'<span class="acc">Live</span>'+comp(live),live:live})}
   else if(last&&!(up[0]&&up[0].d-Date.now()<3*3600000))cards.push({v:result(last)+teams(last),l:'Final'+comp(last),fin:true});
@@ -1599,6 +1615,42 @@ function minderPeek(){
     .forEach(function(x){setTimeout(x[1],x[0])});
 }
 $('h-s').addEventListener('click',minderPeek);
+
+// ---------- rain hits the ground: drops splash on the base line of the minutes (Live rain or storm) ----------
+var splash={on:false,cv:[],ps:[]};
+function splashCanvas(row,digits){
+  var c=document.createElement('canvas');c.className='splash';c.setAttribute('aria-hidden','true');row.appendChild(c);
+  return {c:c,g:c.getContext('2d'),row:row,digits:digits};
+}
+function splashTick(){
+  var raining=function(el){return el.classList.contains('wx-rain')||el.classList.contains('wx-storm')};
+  var any=false;
+  splash.cv.forEach(function(k){
+    var show=k.row.id==='a-mrow'?(!$('amb').hidden&&raining($('amb'))):(cur==='home'&&!sleeping&&raining(document.body));
+    k.c.style.display=show?'block':'none';if(!show)return;any=true;
+    var d=$(k.digits),w=d.offsetWidth,H=40;
+    if(k.c.width!==w){k.c.width=w;k.c.height=H}
+    // the ground: just under the digits' base line
+    k.c.style.left=d.offsetLeft+'px';k.c.style.top=(d.offsetTop+d.offsetHeight-H-Math.round(d.offsetHeight*.075))+'px';
+    if(!k.ps)k.ps=[];
+    if(k.ps.length<14&&Math.random()<.35){var x=8+Math.random()*(w-16);
+      k.ps.push({x:x,y:H-6,r:0,life:0,max:16});                      // the ripple
+      for(var i=0;i<3;i++)k.ps.push({x:x,y:H-7,vx:(Math.random()-.5)*2.2,vy:-1.4-Math.random()*1.6,life:0,max:14,drop:1})} // droplets
+    var g=k.g;g.clearRect(0,0,w,H);
+    k.ps=k.ps.filter(function(p){return p.life<p.max});
+    k.ps.forEach(function(p){p.life++;var a=1-p.life/p.max;
+      if(p.drop){p.vy+=.22;p.x+=p.vx;p.y+=p.vy;g.fillStyle='rgba(188,211,234,'+(.85*a).toFixed(2)+')';g.fillRect(p.x,p.y,1.6,1.6)}
+      else{p.r+=.9;g.strokeStyle='rgba(188,211,234,'+(.7*a).toFixed(2)+')';g.lineWidth=1.2;g.beginPath();g.ellipse?g.ellipse(p.x,p.y,p.r*1.6,p.r*.35,0,0,Math.PI*2):g.arc(p.x,p.y,p.r,0,Math.PI*2);g.stroke()}});
+  });
+  splash.on=any;
+  setTimeout(function(){requestAnimationFrame(splashTick)},any?33:500); // ~30 fps while it rains, idle otherwise
+}
+(function(){
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  splash.cv.push(splashCanvas(document.querySelector('#v-home .mrow'),'h-m'));
+  splash.cv.push(splashCanvas($('a-mrow'),'a-m'));
+  splashTick();
+})();
 
 // ---------- arranque ----------
 setTimer(25*60);
