@@ -3,9 +3,11 @@
 ## Next
 
 - **Snooze on the ringing sheet.** Push the sheet up to snooze: a timer restarts with a few more minutes, an alarm rings again later (duration to decide: +1, +5 or +10 min).
-- **Reminders.** Two routes to decide between:
-  - *Google Tasks*: add Tasks to the existing Apps Script and return today's tasks with the events; no new sign-in.
-  - *Apple Reminders*: an iOS Shortcut posts due reminders to a private ntfy topic, the same path the steps use.
+- **Reminders and to-dos.** First analyse which source fits how the work actually happens: a MacBook for work, Mindera on Google Workspace, and a client on Microsoft 365. Routes to compare (sign-in and tenant policies, what each one sees, effort), then pick one or merge a few:
+  - *Google Tasks*: add Tasks to the existing work Apps Script and return today's tasks with the events; no new sign-in.
+  - *Apple Reminders*: a Shortcut on the Mac or iPhone posts due reminders to a private ntfy topic, the same path the steps use; works across accounts, but only for what lands in Reminders.
+  - *Microsoft To Do / Outlook flagged email* (client's Microsoft 365): Microsoft Graph needs an app consent the client's tenant may not allow; a Power Automate flow posting to ntfy may be the realistic path, if the tenant permits it.
+  - On the clock: today's to-dos on Home (a card like the meeting, or a count), ticked off on the phone or Mac, never on the clock.
 - **Claude Code → clock.** `Notification` / `Stop` hooks post to a private ntfy topic; the clock shows "Claude is waiting for you".
 - **Unread email** via the same Apps Script: unread count and the last important sender on Home.
 - **Microphone indicator.** Replace the assistant's overlay with the clock's own mic-off icon; needs the mute switch state source first.
