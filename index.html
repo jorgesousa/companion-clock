@@ -414,20 +414,15 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 #hdr-temp{display:inline-block;transition:opacity .18s var(--ease),transform .18s var(--ease);height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 #hdr-temp b{font:700 25px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
 #hdr-temp i{font-style:normal;margin-left:6px}
-#hdr-temp i.warn{margin-left:0}
-#warn{position:fixed;z-index:60;display:none;padding:0 16px;border-radius:4px;color:#170d05;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.5);
-  background:repeating-linear-gradient(135deg,rgba(0,0,0,.09) 0,rgba(0,0,0,.09) 5px,rgba(0,0,0,0) 5px,rgba(0,0,0,0) 11px),var(--wc,#ff8c2e)}
-#warn.on{display:block}
-#warn .wr{display:-webkit-box;display:flex;-webkit-box-align:baseline;align-items:baseline;-webkit-box-pack:justify;justify-content:space-between;padding-top:13px}
-#warn p{margin:7px 0 0;overflow:hidden;white-space:nowrap;font:500 15px/1.1 var(--sans)}
-#warn p span{display:inline-block;font:inherit;letter-spacing:0;text-transform:none;opacity:1}
-#warn p:empty,#warn p.none{display:none}
-#warn b{font:700 23px/1 var(--sans);letter-spacing:-.01em}
-#warn span{font:600 12px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;opacity:.82}
-#hdr-temp i.warn.dot{margin-left:10px}
-#hdr-temp i.warn.dot:before{margin-right:0}
-#hdr-temp i.warn.dot.soon:before{background:transparent;box-shadow:inset 0 0 0 2px currentColor}
-#hdr-temp i.warn:before{content:'';display:inline-block;width:8px;height:8px;border-radius:4px;background:currentColor;margin-right:6px;vertical-align:1px}
+#hdr-temp b{transition:color .6s var(--ease)}
+/* IPMA warning as a card: tap the temperature and the meeting card turns into the warning, hatched like a Free row */
+#h-warn{position:absolute;left:0;right:0;top:0;bottom:0;padding:18px 14px;display:none;z-index:2;pointer-events:none}
+#h-warn.on{display:block}
+#h-warn .wh{position:absolute;left:0;top:0;right:0;bottom:0;background-color:var(--wt);background-image:repeating-linear-gradient(135deg,var(--wh) 0,var(--wh) 1.5px,transparent 1.5px,transparent 9px)}
+#h-warn .v,#h-warn .l{position:relative}
+#hw-l{white-space:nowrap}
+#hw-q{color:var(--fg);overflow:hidden;white-space:nowrap;margin-top:4px}
+#hw-q .mq{display:inline-block}
 #a-h{position:relative;display:inline-block;vertical-align:top}
 /* a small friend peeks up from the bottom edge, in the empty middle of the strip (spike, clock only) */
 #minder{position:fixed;left:0;top:0;width:48px;height:58px;overflow:hidden;pointer-events:none;z-index:5;visibility:hidden}
@@ -526,7 +521,6 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
     <button id="hdr-temp" hidden aria-label="Temperature: tap to switch place"></button><button id="set-btn" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button><button id="sleep-btn" aria-label="Sleep"><svg class="i"><use href="#i-moon"/></svg></button>
   </span>
 </header>
-<div id="warn" role="status" aria-live="polite"><div class="wr"><b id="warn-t"></b><span id="warn-s"></span></div><p id="warn-p"><span id="warn-q"></span></p></div>
 <!-- active timer: a small tab hanging from the top edge; tap opens Timer, pull it down to stop -->
 <div id="ttab-veil" hidden><span id="ttab-msg">Pull to stop</span></div>
 <div id="ttab" hidden role="button" aria-label="Timer: tap to open, pull down to stop"><div id="ttab-in"><span id="ttab-bg"></span><div id="ttab-c"><b id="ttab-t">0:00</b><span class="tt-stop">Release</span><i></i></div></div></div>
@@ -543,6 +537,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
       <div id="h-next-c"><div class="v num" id="h-next">—</div>
       <div class="l mono muted" id="h-next-l">Next meeting</div></div>
       <i class="hl" id="h-live"><i id="h-lf"></i><b id="h-ld"></b></i>
+      <div id="h-warn" role="status" aria-live="polite"><i class="wh"></i><div class="v num" id="hw-v"></div><div class="l mono muted" id="hw-l"></div><div class="l mono" id="hw-q"><span class="mq"></span></div></div>
     </div>
     <div class="blk" id="h-steps-blk" role="button" aria-label="Refresh steps">
       <div class="v num" id="h-steps">—</div>
@@ -752,6 +747,7 @@ document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('
 // switching mode: label, accent, TV tab, calendar source and the Home card change together
 $('mode-l').textContent=mode==='personal'?'PERSONAL':'WORK';
 function applyMode(m){
+  if(typeof warnHide==='function')warnHide(true);
   if(typeof events!=='undefined')evCache[mode]={events:events,wloc:wloc};
   var b=document.body;b.classList.remove(mode);mode=m;b.classList.add(mode);
   try{localStorage.setItem('mode',m)}catch(e){}
@@ -1060,6 +1056,7 @@ function stepBackHome(){var c=$('h-next-c');c.className='outr';setTimeout(functi
   blk.addEventListener('touchstart',function(ev){x0=ev.touches[0].clientX;y0=ev.touches[0].clientY},{passive:true});
   blk.addEventListener('touchend',function(ev){
     if(x0===null)return;var t=ev.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+    if(warnOpen){warnHide();ev.preventDefault();return}
     if(mode==='personal'){if(Math.abs(dx)<10&&Math.abs(dy)<10||Math.abs(dx)>40)fbStep();ev.preventDefault();return}
     if($('h-next').classList.contains('wknd')&&Math.abs(dx)<10&&Math.abs(dy)<10){fireworks();ev.preventDefault();return}
     if(isFreeDay()&&(Math.abs(dx)>40||(Math.abs(dx)<10&&Math.abs(dy)<10))){flipFree();x0=null;return}
@@ -1067,7 +1064,7 @@ function stepBackHome(){var c=$('h-next-c');c.className='outr';setTimeout(functi
     else if(Math.abs(dx)<10&&Math.abs(dy)<10)stepNext(nOff<nCards()-1?1:-nOff);
     ev.preventDefault();
   });
-  blk.addEventListener('click',function(){if(!('ontouchstart' in window)){if(mode==='personal')fbStep();else if($('h-next').classList.contains('wknd'))fireworks();else if(isFreeDay())flipFree();else stepNext(nOff<nCards()-1?1:-nOff)}});
+  blk.addEventListener('click',function(){if(!('ontouchstart' in window)){if(warnOpen)warnHide();else if(mode==='personal')fbStep();else if($('h-next').classList.contains('wknd'))fireworks();else if(isFreeDay())flipFree();else stepNext(nOff<nCards()-1?1:-nOff)}});
 })();
 // Calendar: tap a row with a cut-off title to glide it once and reveal the end
 var cmq={anim:null,el:null};
@@ -1575,18 +1572,20 @@ function nextFlash(){flashT=setTimeout(function(){
 },4000+Math.random()*8000)}
 var wxT={home:null,away:null},wxAway=false;
 function showTemp(){
-  // tap the temperature: with a warning on, the dot spills into the warning band; otherwise it shows the second place
+  // tap the temperature: with a warning, the meeting card turns into it; otherwise it shows the second place
   var b=$('hdr-temp'),w=wxWarn;
   var away=wxAway&&!w&&wxT.away,t=away?wxT.away:wxT.home;if(!t)return;b.hidden=false;
-  b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'')+(w?'<i class="warn dot'+(w.soon?' soon':'')+'" style="color:'+WARN_C[w.level]+'"></i>':'');
-  b.setAttribute('aria-label','Temperature'+(w?', '+w.level+' weather warning'+(w.soon?' coming':'')+': tap to see it':': tap to switch place'));
+  // a warning colours the temperature: solid while it's on, outlined (like the minutes) while it's still to come
+  b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'');
+  if(w&&!away){var tb=b.querySelector('b'),c=WARN_C[w.level];if(w.soon){tb.style.color='var(--bg)';tb.style.webkitTextStroke='1.5px '+c}else tb.style.color=c}
+  b.setAttribute('aria-label','Temperature'+(w&&!away?', '+w.level+' weather warning'+(w.soon?' coming':'')+': tap to see it':': tap to switch place'));
 }
 function untilTxt(d){var n=new Date(),hm=hhmm(d);var t=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);return d.toDateString()===n.toDateString()?hm:(d.toDateString()===t.toDateString()?'tomorrow ':DAYS[d.getDay()].slice(0,3)+' ')+hm}
 // IPMA weather warnings (yellow, orange, red) for your district: the worst one active now sits next to the temperature
 var wxWarn=null,WARN_C={yellow:'#ffd23f',orange:'#ff8c2e',red:'#ff4a3d'},WARN_N={yellow:1,orange:2,red:3};
 var WARN_T={'Precipitação':'Rain','Vento':'Wind','Trovoada':'Thunder','Nevoeiro':'Fog','Neve':'Snow','Tempo Quente':'Heat','Tempo Frio':'Cold'}; // sea warnings left out: the district's coast isn't where the clock is
 function loadWarn(){
-  var o=(location.search.match(/warn=(\w+):([^&]+)/)||[]);if(o[1]){wxWarn={level:o[1],label:WARN_T[decodeURIComponent(o[2])]||decodeURIComponent(o[2]),soon:/soon=1/.test(location.search),when:/soon=1/.test(location.search)?'from '+untilTxt(new Date(Date.now()+20*36e5)):'until '+untilTxt(new Date(Date.now()+5*36e5)),text:decodeURIComponent((location.search.match(/wtxt=([^&]+)/)||[])[1]||'')};showTemp();return}
+  var o=(location.search.match(/warn=(\w+):([^&]+)/)||[]);if(o[1]){wxWarn={level:o[1],label:WARN_T[decodeURIComponent(o[2])]||decodeURIComponent(o[2]),soon:/soon=1/.test(location.search),when:/soon=1/.test(location.search)?untilTxt(new Date(Date.now()+20*36e5)):'until '+untilTxt(new Date(Date.now()+5*36e5)),text:decodeURIComponent((location.search.match(/wtxt=([^&]+)/)||[])[1]||'')};showTemp();return}
   var area=cfg.ipmaArea;if(!area)return; // district code, e.g. LSB, CBR, PTO
   fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(list){
     // the worst warning on now; with none, the next one coming (IPMA looks up to 3 days ahead), shown as a hollow dot
@@ -1599,38 +1598,44 @@ function loadWarn(){
     });
     var x=best||next;
     wxWarn=x?{level:x.awarenessLevelID,label:WARN_T[x.awarenessTypeName]||x.awarenessTypeName,soon:!best,
-      when:best?'until '+untilTxt(new Date(x.endTime)):'from '+untilTxt(new Date(x.startTime)),text:(x.text||'').trim()}:null;showTemp();
+      when:best?'until '+untilTxt(new Date(x.endTime)):untilTxt(new Date(x.startTime)),text:(x.text||'').trim()}:null;showTemp();
   }).catch(function(){});
 }
-// the warning band: the dot by the temperature spills into a band over the date, in the warning's colour
-var warnOpen=false,warnT=null,warnBusy=false;
+function rgba(h,a){var n=parseInt(h.slice(1),16);return 'rgba('+(n>>16)+','+(n>>8&255)+','+(n&255)+','+a+')'}
+// the warning card: the line above the card lights in the warning's colour and runs across, the hatching draws in behind it,
+// the meeting drifts away and the warning comes into focus. Tap the card or the temperature to go back; it goes back on its own too.
+var warnOpen=false,warnT=null,warnBusy=false,warnOut=[];
+var WEASE='cubic-bezier(.2,.7,.2,1)';
+function warnRows(){return [$('h-next'),$('h-next-l'),$('h-live')]}
 function warnShow(){
-  var w=wxWarn,cap=document.querySelector('#v-home .col-r .cap'),dot=document.querySelector('#hdr-temp i.dot');if(!w||!cap||!dot||warnBusy)return;
-  var el=$('warn'),cr=cap.getBoundingClientRect(),dr=dot.getBoundingClientRect();if(!cr.width)return; // only on Home, where the date row is
-  $('warn-t').textContent=w.label;$('warn-s').textContent=w.level+' · '+w.when;
-  $('warn-q').textContent=w.text||'';$('warn-p').classList.toggle('none',!w.text); // IPMA's own sentence, in Portuguese, when it gives one
-  el.style.setProperty('--wc',WARN_C[w.level]);
-  el.style.left=(cr.left-14)+'px';el.style.width=(cr.width+28)+'px';el.style.top=(cr.top-12)+'px';el.style.height=(w.text?cr.height+36:cr.height+10)+'px';
-  el.classList.add('on');warnOpen=true;clearTimeout(warnT);warnT=setTimeout(warnHide,w.text?14000:8000);
+  var w=wxWarn,el=$('h-warn'),cap=document.querySelector('#v-home .col-r .cap');if(!w||warnBusy||warnOpen||cur!=='home')return;
+  var c=WARN_C[w.level];el.style.setProperty('--wh',rgba(c,.34));el.style.setProperty('--wt',rgba(c,.08));
+  var v=$('hw-v');v.textContent=w.label;v.style.color=c;
+  $('hw-l').innerHTML=w.level+' · <span class="val">'+w.when+'</span>';
+  var q=$('hw-q'),mq=q.firstChild;mq.textContent=w.text||'';q.style.display=w.text?'':'none'; // IPMA's own sentence, in Portuguese, when it gives one
+  el.classList.add('on');warnOpen=true;clearTimeout(warnT);warnT=setTimeout(warnHide,w.text?15000:9000);
   if(!Element.prototype.animate)return;
-  var r=el.getBoundingClientRect(),x=dr.left+dr.width/2-r.left,y=dr.top+dr.height/2-r.top,R=Math.ceil(Math.sqrt(Math.max(x*x,(r.width-x)*(r.width-x))+Math.pow(Math.max(y,r.height-y),2)))+4;
-  var c0='circle(4px at '+x+'px '+y+'px)',c1='circle('+R+'px at '+x+'px '+y+'px)';
-  warnBusy=true;
-  el.animate([{clipPath:c0,webkitClipPath:c0},{clipPath:c1,webkitClipPath:c1}],{duration:560,easing:'cubic-bezier(.7,0,.2,1)'}).onfinish=function(){warnBusy=false};
-  var q=$('warn-q'),qd=q.scrollWidth-$('warn-p').clientWidth;if(q._g)q._g.cancel();
-  if(w.text&&qd>0)q._g=q.animate([{transform:'translateX(0)'},{transform:'translateX(0)',offset:.2},{transform:'translateX('+(-qd)+'px)',offset:.8},{transform:'translateX('+(-qd)+'px)'}],{duration:2600+qd*40,delay:900,direction:'alternate',iterations:Infinity,easing:'ease-in-out'}); // long text glides
-  [$('warn-t'),$('warn-s'),$('warn-p')].forEach(function(n,i){n.animate([{opacity:0,transform:'translateY(9px)',filter:'blur(4px)'},{opacity:n.id==='warn-s'?.82:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:480,delay:300+i*90,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})});
+  warnBusy=true;setTimeout(function(){warnBusy=false},700);
+  warnOut.forEach(function(a){a.cancel()});
+  warnOut=warnRows().map(function(r,i){return r.animate([{opacity:1,transform:'translateX(0)',filter:'blur(0)'},{opacity:0,transform:'translateX(-14px)',filter:'blur(3px)'}],{duration:170,delay:i*35,easing:'cubic-bezier(.2,.6,.4,1)',fill:'forwards'})});
+  if(cap){var cr=cap.getBoundingClientRect(),ln=document.createElement('i');ln.className='mode-line';ln.style.background=c;
+    ln.style.left=cr.left+'px';ln.style.width=cr.width+'px';ln.style.top=(cr.bottom-2)+'px';document.body.appendChild(ln);
+    ln.animate([{transform:'scaleX(0)',opacity:1},{transform:'scaleX(1)',opacity:1,offset:.55},{transform:'scaleX(1)',opacity:0}],{duration:760,easing:WEASE}).onfinish=function(){ln.remove()}}
+  el.querySelector('.wh').animate([{clipPath:'inset(0 100% 0 0)',webkitClipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0 0 0)',webkitClipPath:'inset(0 0 0 0)'}],{duration:418,easing:WEASE,fill:'backwards'});
+  [v,$('hw-l'),q].forEach(function(r,i){r.animate([{opacity:0,transform:'translateY(12px)',filter:'blur(5px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:620,delay:190+i*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})});
+  if(mq._g)mq._g.cancel();var qd=mq.scrollWidth-q.clientWidth;
+  if(w.text&&qd>0)mq._g=mq.animate([{transform:'translateX(0)'},{transform:'translateX(0)',offset:.2},{transform:'translateX('+(-qd)+'px)',offset:.8},{transform:'translateX('+(-qd)+'px)'}],{duration:2600+qd*40,delay:1200,direction:'alternate',iterations:Infinity,easing:'ease-in-out'}); // long text glides
 }
-function warnHide(){
-  var el=$('warn'),dot=document.querySelector('#hdr-temp i.dot');clearTimeout(warnT);if(!warnOpen||warnBusy)return;warnOpen=false;
-  if(!Element.prototype.animate||!dot){el.classList.remove('on');return}
-  var r=el.getBoundingClientRect(),dr=dot.getBoundingClientRect(),x=dr.left+dr.width/2-r.left,y=dr.top+dr.height/2-r.top,R=Math.ceil(Math.sqrt(r.width*r.width+Math.pow(Math.max(y,r.height-y),2)))+4;
-  var c0='circle('+R+'px at '+x+'px '+y+'px)',c1='circle(4px at '+x+'px '+y+'px)';
+function warnHide(now){
+  var el=$('h-warn');clearTimeout(warnT);if(!warnOpen||(warnBusy&&!now))return;warnOpen=false;
+  var back=function(){warnOut.forEach(function(a){a.cancel()});warnOut=[]};
+  if(now===true||!Element.prototype.animate){el.classList.remove('on');back();return}
   warnBusy=true;
-  el.animate([{clipPath:c0,webkitClipPath:c0},{clipPath:c1,webkitClipPath:c1}],{duration:380,easing:'cubic-bezier(.5,0,.75,0)'}).onfinish=function(){el.classList.remove('on');warnBusy=false};
+  var ex=[$('hw-v'),$('hw-l'),$('hw-q')].map(function(r,i){return r.animate([{opacity:1,filter:'blur(0)'},{opacity:0,filter:'blur(4px)'}],{duration:170,delay:i*35,fill:'forwards'})});
+  ex.push(el.querySelector('.wh').animate([{clipPath:'inset(0 0 0 0)',webkitClipPath:'inset(0 0 0 0)'},{clipPath:'inset(0 0 0 100%)',webkitClipPath:'inset(0 0 0 100%)'}],{duration:380,delay:80,easing:WEASE,fill:'forwards'}));
+  ex[ex.length-1].onfinish=function(){el.classList.remove('on');ex.forEach(function(a){a.cancel()});warnBusy=false}; // cleared, so the next opening starts clean
+  setTimeout(function(){back();warnRows().forEach(function(r,i){r.animate([{opacity:0,transform:'translateY(12px)',filter:'blur(5px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:620,delay:i*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})})},240);
 }
-$('warn').addEventListener('click',warnHide);
-document.addEventListener('touchstart',function(e){if(warnOpen&&!$('warn').contains(e.target)&&!$('hdr-temp').contains(e.target))warnHide()},true);
 $('hdr-temp').addEventListener('click',function(){
   if(wxWarn&&!wxAway){if(warnOpen)warnHide();else warnShow();return}
   if(!wxT.away)return;var b=this;
