@@ -483,6 +483,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 .pf-bright button{height:52px;border:2px solid var(--rule);border-radius:4px;font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
 .pf-bright button.on{border-color:var(--fg)}
 .pf-bright button:active{background:var(--bg2)}
+.pf-bright.pf-5{grid-template-columns:repeat(5,1fr)}
 .pf-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:56px;grid-gap:8px}
 .acc-opt{border:2px solid var(--rule);border-radius:4px;display:block;text-align:left;background-repeat:no-repeat;background-position:14px 50%;background-size:26px 26px;padding:0 10px 0 52px;position:relative}
 .acc-opt b{display:block;font:600 var(--t-ui)/1.1 var(--sans);letter-spacing:-.01em;white-space:nowrap}
@@ -642,6 +643,10 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
     <div class="pf-row"><span class="mono muted">Weather</span><div class="pf-sw" id="pf-wx"><button data-v="0">Off</button><button data-v="1">Live</button></div></div>
   </div>
   <div class="pf-row" id="pf-tap-row"><span class="mono muted">Tap the temperature</span><div class="pf-sw" id="pf-tap"><button data-v="details">Details</button><button data-v="away" id="pf-tap-away">UK</button></div></div>
+  <div class="pf-sec mono muted">Health · steps a day</div>
+  <div class="pf-bright pf-5" id="pf-steps"></div>
+  <div class="pf-sec mono muted">Health · glasses of water on work days (250 ml)</div>
+  <div class="pf-bright pf-5" id="pf-glass"></div>
   <div class="pf-foot mono muted">Crafted by Jorge Sousa · jorgesousa.github.io</div>
 </div>
 
@@ -1169,6 +1174,17 @@ function renderCal(){
 
 // ---------- passos (Unsit via ntfy.sh) ----------
 var GOAL=10000,DAY_START=8*60,online=false;
+// Health (Settings): steps a day and glasses of water a work day, remembered on the clock
+var STEP_OPTS=[6000,8000,10000,12000,15000],GLASS_OPTS=[6,8,9,10,12],GLASSES=9;
+try{var sg=+localStorage.getItem('stepGoal');if(STEP_OPTS.indexOf(sg)>=0)GOAL=sg;var gg=+localStorage.getItem('glassGoal');if(GLASS_OPTS.indexOf(gg)>=0)GLASSES=gg}catch(e){}
+function litres(n){return (n*.25).toString().replace(/\.?0+$/,'')+' L'}
+function renderHealthPrefs(){
+  $('pf-steps').innerHTML=STEP_OPTS.map(function(v){return '<button data-v="'+v+'"'+(v===GOAL?' class="on"':'')+'>'+fmtN(v)+'</button>'}).join('');
+  $('pf-glass').innerHTML=GLASS_OPTS.map(function(v){return '<button data-v="'+v+'"'+(v===GLASSES?' class="on"':'')+'>'+v+' · '+litres(v)+'</button>'}).join('');
+}
+$('pf-steps').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;GOAL=+b.getAttribute('data-v');try{localStorage.setItem('stepGoal',GOAL)}catch(e){}renderHealthPrefs();stepsShown=null;if(stepsLast!==undefined)renderSteps(stepsLast,stepsUpd)});
+$('pf-glass').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;GLASSES=+b.getAttribute('data-v');try{localStorage.setItem('glassGoal',GLASSES)}catch(e){}renderHealthPrefs();if(stepsLast!==undefined)renderSteps(stepsLast,stepsUpd)});
+renderHealthPrefs();
 function setNet(ok){online=ok;$('net').classList.toggle('on',ok)}
 var stepsShown=null,stepsAnim=null;
 function countSteps(n){
@@ -1176,20 +1192,21 @@ function countSteps(n){
   function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+'<span class="of">/ '+fmtN(GOAL)+' steps</span>';if(k<1)stepsAnim=requestAnimationFrame(f)}
   f();
 }
-// water: on work days, a glass (250 ml) every hour from 09:00 to 17:00, nine in all (2.25 L); tap the steps card when it's time
-var WATER_H=[9,10,11,12,13,14,15,16,17],GLASS=.25;
+// water: on work days, the glasses you set in Settings (250 ml each), spread evenly from 09:00 to 17:00; tap the steps card whenever you drink one
+var GLASS=.25;
+function waterTimes(){var n=GLASSES,t=[];for(var i=0;i<n;i++)t.push(Math.round((9*60+i*480/Math.max(n-1,1))/5)*5);return t}
 function waterGet(){var k=new Date().toDateString(),w=null;try{w=JSON.parse(localStorage.getItem('water')||'null')}catch(e){}return w&&w.d===k?w:{d:k,n:0}}
 function waterNow(){
   var now=new Date(),d=now.getDay(),m=mins(now);if(/water=1/.test(location.search))d=3; // ?water=1 previews it on a weekend
   if(d===0||d===6||m<8*60+30||m>=19*60)return null;
-  var w=waterGet(),due=WATER_H.filter(function(h){return h*60<=m}).length;
-  return {n:w.n,due:w.n<due,next:WATER_H[w.n]!=null?WATER_H[w.n]:null,total:WATER_H.length};
+  var w=waterGet(),T=waterTimes(),due=T.filter(function(t){return t<=m}).length;
+  return {n:w.n,due:w.n<due,next:T[w.n]!=null?T[w.n]:null,total:T.length};
 }
 function waterLine(l){
   var w=waterNow();if(!w)return false;
   if(w.n>=w.total)l.innerHTML='<span style="color:var(--ok)">Water done · '+(w.n*GLASS).toString().replace(/\.?0+$/,'')+' L</span>'; // more glasses keep counting
   else if(w.due)l.innerHTML='<span class="acc">Time for water</span> · '+w.n+'/'+w.total;
-  else l.innerHTML='Water <span class="val">'+w.n+'/'+w.total+'</span>'+(w.next!=null?' · next '+f2(w.next)+':00':'');
+  else l.innerHTML='Water <span class="val">'+w.n+'/'+w.total+'</span>'+(w.next!=null?' · next '+f2(Math.floor(w.next/60))+':'+f2(w.next%60):'');
   return true;
 }
 var stepsLast,stepsUpd;

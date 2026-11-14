@@ -62,14 +62,14 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **A friend.** Tap the seconds and the Minder (Mindera's mascot) peeks out from a hiding place, leaning or lying down, looks around, blinks and hides again. Tap "Weekend" and fireworks go off inside the card.
 - **Work and Personal.** Tap "JS" to switch. The new accent washes out from "JS" and hits the hours; the lines above and below the card light up and run across, the old card blurs away and the new one rises into focus. WORK shows your work calendar and meetings (TV hidden); PERSONAL shows your personal calendar, TV, and a Sporting card instead of the meeting: the next match (live score while it's on, the line burning down 15 minutes before kick-off), the league position, the last result. Each mode keeps its own accent; the brand slot is Mindera in WORK and Sporting in PERSONAL.
 - **Colour has a job.** White is a value, grey is a label, colour is a state (now, soon, free, behind).
-- **Steps and water.** Today's count against 10,000, and how many to go. On work days the same card keeps count of your water: tap it whenever you drink a glass (tap again straight away to take it back). It nudges you only when you fall behind a glass an hour from 09:00 to 17:00 (nine glasses, 2.25 L): "Time for water" in the accent.
+- **Health: steps and water.** Today's steps against your goal, and how many to go. On work days the same card keeps count of your water: tap it whenever you drink a glass (tap again straight away to take it back). It nudges you only when you fall behind, with the glasses spread evenly from 09:00 to 17:00: "Time for water" in the accent. Settings → Health sets the steps a day (6,000 to 15,000; 10,000 by default) and the glasses of 250 ml (6 to 12; 9 by default).
 - **Calendar.** Grouped by day, with a summary per day ("4 meetings · 4h free"). Free time is counted inside the working day (09:00–17:00, Monday to Friday) in gaps of 15 minutes or more. Each client in `[Brackets]` gets its own colour, or its brand colour if you set one.
   A meeting's time turns to the accent only when it's on now or starts within 30 minutes.
 - **Working location.** Google Calendar's Home / Office shows in each day's heading; Office in white.
 - **Clock.** One timer (presets from 5 to 60 minutes) and one alarm. Both ring full-screen until you pull the sheet down.
 - **Sleep.** One button turns the screen into a calm, centred clock in the same staircase as Home, with the next alarm and the weather.
 - **TV.** Plays an HLS playlist (M3U) you provide. Ships with no channels; use only playlists you're entitled to.
-- **Settings.** Brightness 10–100%, eight accent colours (one can be your company's, set in `config.json`), muting the TV in meetings and Weather Live / Off, remembered on the clock.
+- **Settings.** Brightness 10–100%, eight accent colours (one can be your company's, set in `config.json`), muting the TV in meetings, Weather Live / Off, what a tap on the temperature does, and Health goals, remembered on the clock.
 
 ## How it works
 
