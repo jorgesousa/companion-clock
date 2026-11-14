@@ -227,13 +227,20 @@ nav{position:relative}
 /* Health: the steps card in two: steps on the left, glasses of water on the right (a fixed column).
    Tap the water: a drop falls into the number, it squashes and ticks up, ripples spread. Behind: it drips, in the accent */
 body.personal #hw{display:none}
-#hw{position:absolute;left:50%;right:0;top:18px;bottom:18px;padding-left:18px;border-left:2px solid var(--rule)}
-body.work #h-steps,body.work #h-steps-l{max-width:calc(50% - 12px)} /* two equal halves: steps | water */
+#hw{position:absolute;left:50%;right:0;top:0;bottom:0;padding:18px 0 18px 18px}
+#hw:before{content:'';position:absolute;left:0;top:18px;bottom:18px;width:2px;background:var(--rule)}
+#hw .fl{position:absolute;left:0;right:0;top:0;bottom:0;background:var(--accent);-webkit-transform:scaleY(0);transform:scaleY(0);-webkit-transform-origin:50% 100%;transform-origin:50% 100%}
+#hw.due .fl{-webkit-transform:none;transform:none}
+#hw.due .fl:after{content:'';position:absolute;left:0;right:0;top:0;bottom:0;background:#fff;opacity:0;animation:hw-pulse 1.6s ease-in-out infinite}
+@keyframes hw-pulse{0%,100%{opacity:0}50%{opacity:.22}}
+#hw.due:before{opacity:0}
+#hw.due #hw-n,#hw.due #hw-t{color:var(--bg)}
+#hw.due .of{color:rgba(14,14,12,.6)}
+#hw.due .rp{border-color:var(--bg)}
+body.work #h-steps,body.work #h-steps-l{max-width:calc(50% - 12px)}
+body.work #v-home #h-steps-l{white-space:nowrap} /* two equal halves: steps | water */
 #hw .v,#hw .l{position:relative;z-index:1}
 #hw-n{display:inline-block;-webkit-transform-origin:50% 100%;transform-origin:50% 100%}
-#hw.due #hw-n,#hw.due #hw-t{color:var(--accent)}
-#hw.due #hw-n{animation:hw-breathe 2.4s ease-in-out infinite}
-@keyframes hw-breathe{0%,100%{opacity:1}50%{opacity:.45}}
 #hw .rp{position:absolute;width:40px;height:10px;margin:-5px 0 0 -20px;border:2px solid var(--water);border-radius:50%;opacity:0;pointer-events:none}
 #h-sync{position:absolute;left:0;top:0;height:2px;width:30%;background:var(--accent);opacity:0}
 #h-steps-blk.syncing #h-sync{opacity:1;animation:sync-sweep .9s cubic-bezier(.65,0,.35,1) infinite}
@@ -559,7 +566,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
       <div class="v num" id="h-steps">—</div>
       <div class="l mono muted" id="h-steps-l">Steps</div>
       <i id="h-sync"></i>
-      <div id="hw" role="button" aria-label="Count a glass of water"><div class="v num"><span id="hw-n">0</span></div><div class="l mono muted" id="hw-t">Glasses</div></div>
+      <div id="hw" role="button" aria-label="Count a glass of water"><i class="fl"></i><div class="v num"><span id="hw-n">0</span><span class="of" id="hw-of"></span></div><div class="l mono muted" id="hw-t">Glasses</div></div>
     </div>
   </div>
   <div id="minder" aria-hidden="true"><svg viewBox="0 0 48 56" width="48" height="56"><path d="M24 2C36.5 2 46 11 46 23.5C46 37 37.5 51.5 26.5 54C14.5 56.5 4.5 47 3 33C1.5 16.5 10.5 2 24 2Z" fill="#ffc500"/><g id="mi-eye"><path d="M12.5 19.5C16 14.8 20 13.2 24 13.2C28 13.2 32 14.8 35.5 19.5C32 24.2 28 25.8 24 25.8C20 25.8 16 24.2 12.5 19.5Z" fill="#fff"/><circle id="mi-p" cx="24" cy="19.5" r="4.4" fill="#111"/></g></svg></div>
@@ -1222,8 +1229,7 @@ function renderSteps(steps,upd){
   if(steps==null){v.textContent='No data';l.textContent=upd?'Steps · '+hhmm(upd):'Steps';return}
   countSteps(steps);
   // the expected pace ("Expected X · N ahead/behind") is off for now, in both modes: see the roadmap
-  if(mode==='personal')l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Goal reached</span>':'<span class="acc">'+fmtN(GOAL-steps)+'</span> to go';
-  else l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Steps · goal</span>':'Steps';
+  l.innerHTML=steps>=GOAL?'<span style="color:var(--ok)">Goal reached</span>':'<span class="acc">'+fmtN(GOAL-steps)+'</span> to go';
 }
 var stepsAt=null;
 function fetchSteps(){
@@ -1244,10 +1250,10 @@ var syncBusy=false;
 function stepsSync(){
   if(syncBusy)return;syncBusy=true;
   var b=$('h-steps-blk'),l=$('h-steps-l'),t0=Date.now();
-  b.classList.remove('synced');b.classList.add('syncing');l.textContent='Syncing…';
+  b.classList.remove('synced');b.classList.add('syncing');l.textContent='Syncing';
   fetchSteps().then(function(){return new Promise(function(r){setTimeout(r,Math.max(0,900-(Date.now()-t0)))})}).then(function(){
     b.classList.remove('syncing');void b.offsetWidth;b.classList.add('synced');
-    l.textContent=stepsAt?'From phone at '+hhmm(stepsAt):'Waiting for phone';
+    l.textContent=stepsAt?'Synced '+hhmm(stepsAt):'No phone yet'; // short: it has half the card in WORK
     setTimeout(function(){syncBusy=false;fetchSteps()},3500);
   });
 }
@@ -1259,11 +1265,20 @@ function stepsSync(){
 var waterUndo=null,dropBusy=false;
 // (dropBusy is no longer used: kept false)
 function waterDue(){var w=waterNow();return !!(w&&w.due)}
+var wasDue=false,ringT=null;
 function renderWater(){
-  var w=waterNow(),c=waterGet().n,hw=$('hw'),due=!!(w&&w.due);
+  var w=waterNow(),c=waterGet().n,hw=$('hw'),due=!!(w&&w.due),N=GLASSES;
   if(!dropBusy)$('hw-n').textContent=c;
-  hw.classList.toggle('due',due);
-  if(!waterUndo)$('hw-t').textContent=due?'Drink':(c===1?'Glass':'Glasses');
+  $('hw-of').textContent='/ '+N;
+  if(!waterUndo)$('hw-t').textContent=due?'Drink water':(c===1?'Glass':'Glasses');
+  if(due&&!wasDue&&cur==='home'){ // you just fell behind: the half floods with the accent, a chime
+    hw.classList.add('due');var fl=hw.querySelector('.fl');
+    if(fl.animate)fl.animate([{transform:'scaleY(0)'},{transform:'scaleY(1.04)',offset:.7},{transform:'scaleY(1)'}],{duration:700,easing:'cubic-bezier(.2,.8,.3,1)'});
+    if(!quiet()){beep(880,.14);setTimeout(function(){beep(1320,.22)},180)}
+  }else hw.classList.toggle('due',due);
+  wasDue=due;
+  clearInterval(ringT);
+  if(due)ringT=setInterval(function(){if(cur!=='home'||!$('hw').classList.contains('due'))return;var n=$('hw-n'),hr=$('hw').getBoundingClientRect(),nr=n.getBoundingClientRect();ripple(nr.left-hr.left+nr.width/2,nr.top-hr.top+nr.height*.92,0)},2000);
 }
 function ripple(x,y,d){var hw=$('hw'),r=document.createElement('i');r.className='rp';r.style.left=x+'px';r.style.top=y+'px';hw.appendChild(r);
   r.animate([{opacity:.9,transform:'scale(.2)'},{opacity:0,transform:'scale(1.6)'}],{duration:700,delay:d,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'}).onfinish=function(){r.remove()}}
@@ -1277,7 +1292,8 @@ function drink(){
   if(!n.animate){renderWater();return}
   // the number ticks up: the old one sinks away, the new one rises in and settles with a little squash; a ring spreads from it
   var hr=hw.getBoundingClientRect(),nr=n.getBoundingClientRect(),x=nr.left-hr.left+nr.width/2,cy=nr.top-hr.top+nr.height*.92;
-  hw.classList.remove('due');
+  if(hw.classList.contains('due')){var fl=hw.querySelector('.fl');if(fl.animate)fl.animate([{transform:'scaleY(1)'},{transform:'scaleY(0)'}],{duration:420,easing:'cubic-bezier(.5,0,.75,0)'})}
+  hw.classList.remove('due');clearInterval(ringT); // still behind? it floods back without the chime
   n.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(12px)',opacity:0}],{duration:160,easing:'cubic-bezier(.4,0,1,1)'}).onfinish=function(){
     n.textContent=s.n;t.textContent=litres(s.n);
     n.animate([{transform:'translateY(-16px) scale(1)',opacity:0},{transform:'translateY(2px) scale(1.08,.9)',opacity:1,offset:.55},{transform:'translateY(0) scale(1)',opacity:1}],{duration:520,easing:'cubic-bezier(.2,.8,.3,1)'});
