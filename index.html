@@ -37,18 +37,22 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;str
 
 /* header */
 header{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-items:baseline;padding:4px 24px 0 36px;z-index:10}
-#net{width:160px;color:var(--fg);text-align:left;height:64px}
+#net{width:160px;color:var(--fg);text-align:left;height:64px;pointer-events:none} /* identity + connection, not a button */
 #net i{display:inline-block;width:8px;height:8px;border-radius:4px;background:var(--muted);margin-right:8px;vertical-align:1px}
 #net.on i{background:var(--ok)}
 nav{flex:1;display:flex;align-items:baseline;justify-content:center;height:64px}
 nav button{height:64px;padding:0 14px;color:var(--muted);position:relative;font:700 25px/1 var(--sans);letter-spacing:-.02em}
 nav button.on{color:var(--fg)}
 nav{position:relative}
-#sleep-btn{height:64px;padding:0 6px 0 18px;color:var(--muted)}
-#sleep-btn svg.i{width:26px;height:26px;vertical-align:-6px}
+/* header controls: Settings and Sleep side by side, big enough for a finger */
+#set-btn,#sleep-btn{width:52px;height:64px;padding:0;color:var(--muted);vertical-align:top}
+#sleep-btn{margin-right:-10px}
+#set-btn svg.i,#sleep-btn svg.i{width:32px;height:32px;vertical-align:middle;stroke-width:1.9}
+#set-btn:active,#sleep-btn:active{color:var(--fg)}
 #nav-bar{position:absolute;left:0;bottom:10px;height:3px;width:10px;background:var(--accent);transition:transform .35s var(--ease),width .35s var(--ease);-webkit-transform-origin:0 0;transform-origin:0 0}
 #hdr-right{width:160px;text-align:right}
-#hdr-right button{height:64px;padding:0 12px;color:var(--muted)}
+#hdr-right{display:flex;align-items:center;justify-content:flex-end;height:64px;white-space:nowrap}
+#hdr-right>button{display:flex;align-items:center;justify-content:center}
 
 /* views */
 .view{position:absolute;top:68px;left:0;right:0;bottom:0;padding:0 36px 34px;display:flex}
@@ -320,12 +324,14 @@ nav{position:relative}
 .arw button+button{margin-top:6px}
 .arw button:active,.arw button.held{border-color:var(--fg)}
 .arw svg.i{width:28px;height:28px;stroke-width:2}
+#a-state{transition:opacity .16s var(--ease),transform .16s var(--ease)}
+#a-state.swap{opacity:0;-webkit-transform:translateY(6px);transform:translateY(6px)}
 #a-state .mono{font-size:var(--t-cap);letter-spacing:.06em}
 .a-big{font:800 46px/1.05 var(--sans);letter-spacing:-.03em;margin-top:8px;color:var(--fg)}
 .a-big.off{color:var(--muted)}
 .a-sub{font:600 26px/1.2 var(--sans);letter-spacing:-.01em;color:var(--muted);margin-top:4px}
 .a-swrow{margin-top:26px;padding-top:18px;border-top:2px solid var(--rule)}
-#a-left-h,#a-left-m{font-variant-numeric:tabular-nums} /* the arrows don't shift as the digits change */
+#a-left-h,#a-left-m{font-variant-numeric:tabular-nums;transition:opacity .3s var(--ease),color .3s var(--ease)} /* the arrows don't shift as the digits change */
 #v-timer .col-l{position:relative;z-index:3} /* the minutes' arrows may reach past the column */
 #a-left .tfill{overflow:visible}
 #a-left.none .num{opacity:1}
@@ -384,7 +390,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #amb.night .mono{color:var(--muted)}
 
 /* the temperature sits in the header beside Sleep, on every screen; tap to switch home / UK */
-#hdr-temp{height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+#hdr-temp{display:inline-block;transition:opacity .18s var(--ease),transform .18s var(--ease);height:64px;padding:0 6px;vertical-align:top;color:var(--muted);font:500 15px/64px var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 #hdr-temp b{font:700 26px/1 var(--sans);letter-spacing:-.02em;color:var(--fg);text-transform:none}
 #hdr-temp i{font-style:normal;margin-left:6px}
 #a-h{position:relative;display:inline-block;vertical-align:top}
@@ -423,7 +429,8 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 .flash .wx{opacity:1;-webkit-filter:brightness(2.2);filter:brightness(2.2)}
 
 /* preferences */
-#prefs{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:350;padding:22px 36px 34px;display:flex;flex-direction:column}
+#prefs{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:350;padding:22px 36px 34px;display:flex;flex-direction:column;opacity:0;-webkit-transform:translateY(18px);transform:translateY(18px);transition:opacity .24s var(--ease),transform .3s var(--ease)}
+#prefs.in{opacity:1;-webkit-transform:none;transform:none}
 .pf-head{display:flex;justify-content:space-between;align-items:center;height:56px;margin-bottom:6px}
 #pf-close{height:56px;padding:0 4px 0 16px;color:var(--fg)}
 #pf-close svg.i{margin-right:8px}
@@ -455,6 +462,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 <body>
 
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
   <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
@@ -471,7 +479,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 </svg>
 
 <header>
-  <button id="net" class="mono" aria-label="Settings"><i></i>JS</button>
+  <button id="net" class="mono" aria-label="Connection" tabindex="-1"><i></i>JS</button>
   <nav>
     <button class="on" data-v="home">Home</button>
     <button data-v="cal">Calendar</button>
@@ -480,7 +488,7 @@ video::-internal-media-controls-overlay-cast-button{display:none}
     <i id="nav-bar"></i>
   </nav>
   <span id="hdr-right" class="mono">
-    <button id="hdr-temp" hidden aria-label="Temperature: tap to switch place"></button><button id="sleep-btn" aria-label="Sleep"><svg class="i"><use href="#i-moon"/></svg></button>
+    <button id="hdr-temp" hidden aria-label="Temperature: tap to switch place"></button><button id="set-btn" aria-label="Settings"><svg class="i"><use href="#i-sliders"/></svg></button><button id="sleep-btn" aria-label="Sleep"><svg class="i"><use href="#i-moon"/></svg></button>
   </span>
 </header>
 <!-- active timer: a small tab hanging from the top edge; tap opens Timer, pull it down to stop -->
@@ -651,8 +659,10 @@ function setAccent(c){
   accent=savedAccent=c;document.documentElement.style.setProperty('--accent',c);try{localStorage.setItem('accent',c)}catch(e){}
   clientMap={};renderPrefs();if(events)renderCal();
 }
-$('net').addEventListener('click',function(){renderPrefs();$('prefs').hidden=false});
-$('pf-close').addEventListener('click',function(){$('prefs').hidden=true});
+function openPrefs(){var p=$('prefs');renderPrefs();p.hidden=false;void p.offsetWidth;p.classList.add('in')}
+function closePrefs(){var p=$('prefs');p.classList.remove('in');setTimeout(function(){if(!p.classList.contains('in'))p.hidden=true},260)}
+$('set-btn').addEventListener('click',openPrefs);
+$('pf-close').addEventListener('click',closePrefs);
 $('pf-bright').addEventListener('click',function(ev){var b=ev.target.closest('button');if(b)setBright(+b.getAttribute('data-p'))});
 // mute during meetings: alarm/timer beeps stay silent and TV plays muted while a meeting is on
 var muteMtg=true;try{muteMtg=localStorage.getItem('muteMeetings')!=='0'}catch(e){} // on unless turned off
@@ -1252,8 +1262,8 @@ setInterval(function(){if(cur==='timer'&&!$('p-a').hidden)renderA()},30000);
 function alarmChanged(){saveA();renderA();renderALeft();ambLine()}
 $('a-sw').addEventListener('click',function(ev){
   var b=ev.target.closest('button');if(!b)return;var want=b.getAttribute('data-v')==='1';
-  if(!alarms[0])alarms=[{t:f2(aH)+':'+f2(aM),on:want,id:Date.now()}];else alarms[0].on=want;
-  alarmChanged();
+  if(!alarms[0])alarms=[{t:f2(aH)+':'+f2(aM),on:want,id:Date.now()}];else if(alarms[0].on===want)return;else alarms[0].on=want;
+  var st=$('a-state');st.classList.add('swap');setTimeout(function(){alarmChanged();st.classList.remove('swap')},160);
 });
 // an arrow changes the alarm and switches it on
 function aStep(b){
@@ -1302,7 +1312,7 @@ function checkSleep(now){
 // (not while TV plays or an alarm rings; a running timer shows on Home anyway)
 function resetIdle(){lastTouch=Date.now();clearTimeout(idleT);idleT=setTimeout(function(){
   if(sleeping||!$('player').hidden||!$('alert').hidden)return;
-  $('prefs').hidden=true;if(cur!=='home')go('home');
+  $('prefs').classList.remove('in');$('prefs').hidden=true;if(cur!=='home')go('home');
 },3*60*1000)}
 $('amb').addEventListener('click',function(){
   if(manualSleep){manualSleep=false;sleeping=false;awake();return}
@@ -1390,7 +1400,11 @@ function showTemp(){
   var away=wxAway&&wxT.away,t=away?wxT.away:wxT.home;if(!t)return;
   var b=$('hdr-temp');b.hidden=false;b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'');
 }
-$('hdr-temp').addEventListener('click',function(){if(!wxT.away)return;wxAway=!wxAway;showTemp()});
+$('hdr-temp').addEventListener('click',function(){
+  if(!wxT.away)return;var b=this;
+  b.style.opacity='0';b.style.transform='translateY(-8px)';
+  setTimeout(function(){wxAway=!wxAway;showTemp();b.style.transition='none';b.style.transform='translateY(8px)';void b.offsetWidth;b.style.transition='';b.style.opacity='';b.style.transform=''},180);
+});
 function loadWx(){
   var o=(location.search.match(/wx=(\w+)/)||[])[1];if(o){setWx(o);return}
   if(cfg.lat==null)return;
