@@ -232,10 +232,10 @@ body.personal #h-crest.on b{-webkit-transform:rotate(6deg);transform:rotate(6deg
 #h-steps-l{letter-spacing:.02em;white-space:nowrap}
 /* tap steps to refresh: the number breathes and a light runs along the block while it syncs */
 #h-steps-blk{position:relative;overflow:hidden}
-body.work #h-steps-blk{overflow:visible;-webkit-clip-path:inset(-10px 0 -100px 0);clip-path:inset(-10px 0 -100px 0)} /* sides clipped (the sync sweep), open below so the water reminder reaches the line */
+body.water #h-steps-blk{overflow:visible;-webkit-clip-path:inset(-10px 0 -100px 0);clip-path:inset(-10px 0 -100px 0)} /* sides clipped (the sync sweep), open below so the water reminder reaches the line */
 /* Health: the steps card in two: steps on the left, glasses of water on the right (a fixed column).
    Tap the water: a drop falls into the number, it squashes and ticks up, ripples spread. Behind: it drips, in the accent */
-body.personal #hw{display:none}
+body:not(.water) #hw{display:none} /* glasses: WORK mode on work days only; otherwise the steps take the whole card */
 #hw{position:absolute;left:50%;right:0;top:0;bottom:0;padding:18px 0 18px 18px}
 #hw:before{content:'';position:absolute;left:0;top:18px;bottom:18px;width:2px;background:var(--rule)}
 #hw .fl{position:absolute;left:0;right:0;top:0;bottom:0;background:var(--accent);-webkit-transform:scaleY(0);transform:scaleY(0);-webkit-transform-origin:50% 100%;transform-origin:50% 100%}
@@ -244,8 +244,8 @@ body.personal #hw{display:none}
 #hw.due #hw-n,#hw.due #hw-t{color:var(--bg)}
 #hw.due .of{color:rgba(14,14,12,.6)}
 #hw.due .rp{border-color:var(--bg)}
-body.work #h-steps,body.work #h-steps-l{max-width:calc(50% - 12px)}
-body.work #v-home #h-steps-l{white-space:nowrap} /* two equal halves: steps | water */
+body.water #h-steps,body.water #h-steps-l{max-width:calc(50% - 12px)}
+body.water #v-home #h-steps-l{white-space:nowrap} /* two equal halves: steps | water */
 #hw .v,#hw .l{position:relative;z-index:1}
 #hw-n{display:inline-block;-webkit-transform-origin:50% 100%;transform-origin:50% 100%}
 #hw .rp{position:absolute;width:40px;height:10px;margin:-5px 0 0 -20px;border:2px solid var(--water);border-radius:50%;opacity:0;pointer-events:none}
@@ -1217,7 +1217,7 @@ function setNet(ok){online=ok;$('net').classList.toggle('on',ok)}
 var stepsShown=null,stepsAnim=null;
 function countSteps(n){
   var v=$('h-steps'),from=stepsShown==null?n:stepsShown,t0=Date.now(),dur=900;stepsShown=n;cancelAnimationFrame(stepsAnim);
-  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+(mode==='personal'?'<span class="of">/ '+fmtN(GOAL)+' steps</span>':'');if(k<1)stepsAnim=requestAnimationFrame(f)}
+  function f(){var k=Math.min(1,(Date.now()-t0)/dur),e=1-Math.pow(1-k,3),val=Math.round(from+(n-from)*e);v.innerHTML=fmtN(val)+(!document.body.classList.contains('water')?'<span class="of">/ '+fmtN(GOAL)+' steps</span>':'');if(k<1)stepsAnim=requestAnimationFrame(f)}
   f();
 }
 // water: on work days, the glasses you set in Settings (250 ml each), spread evenly from 09:00 to 17:00; tap the steps card whenever you drink one
@@ -1275,7 +1275,10 @@ var waterUndo=null,dropBusy=false;
 // (dropBusy is no longer used: kept false)
 function waterDue(){var w=waterNow();return !!(w&&w.due)}
 var wasDue=false,ringT=null,chimed=false;
+function waterDay(){var d=new Date().getDay();return mode!=='personal'&&(/water=1/.test(location.search)||(d!==0&&d!==6))}
 function renderWater(){
+  var on=waterDay(),b=document.body.classList;
+  if(b.contains('water')!==on){b.toggle('water',on);if(typeof stepsLast!=='undefined'&&stepsLast!==undefined){stepsShown=null;renderSteps(stepsLast,stepsUpd)}}
   var w=waterNow(),c=waterGet().n,hw=$('hw'),due=!!(w&&w.due),N=GLASSES;
   if(!dropBusy)$('hw-n').textContent=c;
   $('hw-of').textContent='/ '+N;
