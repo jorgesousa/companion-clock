@@ -75,15 +75,323 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **TV.** Plays an HLS playlist (M3U) you provide. Ships with no channels; use only playlists you're entitled to.
 - **Settings.** Brightness 10–100%, eight accent colours (one can be your company's, set in `config.json`), muting the TV in meetings, Weather Live / Off, what a tap on the temperature does, and Health goals, remembered on the clock.
 
-## How it works
+## Under the hood
 
-- **One HTML file.** [`index.html`](index.html) holds the whole app: inline CSS, JavaScript and SVG icons. It targets the clock's WebView 74, so no `?.`, `??`, `inset`, `clamp()` or flex `gap`.
-- **Served from the clock.** [`device/serve.sh`](device/serve.sh) is a tiny HTTP server on `127.0.0.1:8080`, run by the clock's own `nc`. It serves the page, the config, self-hosted fonts and hls.js, the playlist proxy and a brightness endpoint. Nothing is hosted anywhere else.
-- **Starts itself.** [`device/boot.sh`](device/boot.sh) runs at boot: it starts the server, restarts it if it ever stops, keeps the kiosk browser in front, and resets the touch panel if it gets stuck.
-- **Calendar.** A Google Apps Script web app in your own account ([`calendar/Code.gs`](calendar/Code.gs)) returns your events as JSON, guarded by a random key. The clock asks for it every 5 minutes.
-- **Steps.** Read from an [ntfy.sh](https://ntfy.sh) topic that your phone posts to (for example with [Unsit](https://github.com/jorgesousa/Unsit)).
-- **Personal side.** A second Apps Script in a personal Google account ([`personal/Code.gs`](personal/Code.gs)) serves the personal calendar. Football (every competition, live scores, the league table) comes straight from ESPN's public API, no key.
-- **Private values stay on the clock.** The calendar URL and key, the steps topic, your coordinates and the playlist URL live only in the clock's `config.json` and `m3u.url`, never in this repo. See [`config.example.json`](config.example.json).
+No build step, no framework, no backend of its own. One HTML file, a 35-line shell HTTP server and a boot script, running on a 2019 smart clock. The interesting parts are the constraints.
+
+| | |
+|---|---|
+| **Screen** | 800 × 480 CSS px (`width=800` viewport on a 1.5 DPR panel) |
+| **Engine** | Android WebView 74 inside Fully Kiosk Browser |
+| **App** | [`index.html`](index.html): inline CSS, JS and SVG, ES5-style, no dependencies except hls.js for TV |
+| **Server** | [`device/serve.sh`](device/serve.sh), spawned per connection by toybox `nc -L` on `127.0.0.1:8080` |
+| **Supervisor** | [`device/boot.sh`](device/boot.sh), a Magisk `service.d` script |
+| **Feeds** | Two Google Apps Script web apps (work and personal calendars), ntfy.sh, Open-Meteo, IPMA, ESPN |
+
+### Architecture
+
+```mermaid
+flowchart TB
+  subgraph clock["Mi Smart Clock (rooted, Magisk)"]
+    direction LR
+    boot["boot.sh<br/>Magisk service.d"] -- "starts, restarts" --> nc["toybox nc -L<br/>127.0.0.1:8080"]
+    nc --> serve["serve.sh<br/>one process per request"]
+    serve --> files[("/data/local/companion-clock<br/>index.html · config.json · assets/<br/>m3u.url · playlist.cache")]
+    boot -- "keeps in front" --> fully["Fully Kiosk<br/>WebView 74"]
+    fully --> app["index.html"]
+    app -- "same origin" --> nc
+  end
+  subgraph net["Read straight from the page"]
+    direction LR
+    gas1["Apps Script<br/>work calendar"]
+    gas2["Apps Script<br/>personal calendar"]
+    ntfy["ntfy.sh<br/>steps topic"]
+    om["Open-Meteo"]
+    ipma["IPMA"]
+    espn["ESPN"]
+    hlsrc["HLS streams"]
+  end
+  app --> net
+  phone["Phone (e.g. Unsit)"] -- "posts steps" --> ntfy
+  serve -- "playlist, every 6 h at most" --> m3u["Your M3U upstream"]
+```
+
+Everything the page loads from the clock is same-origin (`config.json`, fonts, hls.js, the playlist, the brightness endpoint). Everything else is a CORS-readable public API or your own Apps Script.
+
+### The server: an HTTP router in POSIX sh
+
+`nc -L` forks `serve.sh` for every connection with the socket on stdin/stdout. The script reads the request line, drains the headers and answers with HTTP/1.0 and `Connection: close`.
+
+| Route | What it does |
+|---|---|
+| `/` · `/index.html` | The app, `Cache-Control: no-cache` |
+| `/config.json` | The clock's private config (`chmod 600`, never in git) |
+| `/a/<name>` | Fonts, CSS and hls.js from `assets/`. The name must match `[A-Za-z0-9.-]`, can't start with `.`, and must be `.woff2`, `.css` or `.js`: no path traversal. Cached for a year |
+| `/bright?v=0..255` | Runs as root: `settings put system screen_brightness` (auto-brightness off), answers `204` |
+| `/playlist.m3u` | A caching proxy for your IPTV playlist: if the cache is older than 6 h, it fetches `m3u.url` with a hand-written HTTP/1.0 request through `nc`, keeps it only on a `200`, strips the headers, then serves the cache |
+| anything else | `404` |
+
+The page is why brightness is an HTTP call: a WebView can't change system settings, but a root shell one socket away can.
+
+### Boot and supervision
+
+```mermaid
+sequenceDiagram
+  participant M as Magisk
+  participant B as boot.sh
+  participant S as nc + serve.sh
+  participant F as Fully Kiosk
+  M->>B: service.d at boot
+  B->>B: wait for sys.boot_completed
+  opt adb_from exists
+    B->>B: iptables: port 5555 open to one IP only
+    B->>B: setprop service.adb.tcp.port 5555
+  end
+  B->>S: start the server
+  loop every 2 s (the watchdog)
+    B->>S: alive?
+    alt server is down
+      B->>S: restart it
+      B->>F: am start http://localhost:8080/
+    end
+    opt every 3rd pass (~6 s), unless a pause file exists
+      B->>F: not the resumed activity? bring it back
+    end
+    B->>B: ghost-touch check (below)
+  end
+```
+
+### Ghost-touch watchdog
+
+Some clocks' `tlsc6x` touch panels get stuck reporting a touch with no finger on them, and real taps stop getting through. `boot.sh` detects it from the interrupt counter and the driver's own `dmesg` reports:
+
+```mermaid
+flowchart TD
+  A["Every 2 s: read tlsc6x count in /proc/interrupts"] --> B{"More than 100 IRQs<br/>since last check?"}
+  B -- no --> R["suspicion = 0"]
+  B -- yes --> C["Parse the last 60<br/>'pointer report X, Y' lines from dmesg"]
+  C --> D{"All on the top edge (Y ≤ 8)<br/>or all on one exact point?"}
+  D -- no --> R
+  D -- yes --> E["suspicion + 1"]
+  E --> F{"suspicion ≥ 2?<br/>(two checks in a row, ~4 s)"}
+  F -- no --> A
+  F -- yes --> G["Screen off and on<br/>keyevent 223, 2 s, keyevent 224"]
+  G --> H["Log to touch.log"]
+  H --> A
+  R --> A
+```
+
+Two checks in a row means a finger held still on a stepper isn't taken for a stuck panel: a real finger always moves a little. Unbinding and rebinding the driver also resets the panel, but it leaves a dangling `tlsc6x_wakelock` in the kernel. The next time Android reads the wakelock list, `system_server` hangs and the hardware watchdog reboots the clock (`sys.boot.reason = reboot,wdt_hw`). That one was found by reading the watchdog dumps in `/data/system/dropbox`.
+
+### App startup and the refresh loops
+
+```mermaid
+sequenceDiagram
+  participant P as index.html
+  participant L as localStorage
+  participant C as clock server
+  participant N as network
+  P->>C: GET config.json
+  C-->>P: private values, merged over defaults
+  P->>P: brand accent for the mode, start football
+  P->>P: tick() now, then every 1 s
+  P->>L: last calendar list for this mode (if < 36 h old)
+  L-->>P: shown at once, no spinner
+  P->>N: both calendars, then every 5 min
+  P->>N: steps now, then every 60 s
+  P->>N: weather and warnings, then every 15 min
+  P->>N: IPMA observation, then every 30 min
+  P->>P: sleep check every 5 s, idle timer reset
+```
+
+| Loop | Interval | Does |
+|---|---|---|
+| `tick` | 1 s | Clock digits, the meeting line, mute in meetings, the `attn` state; on each new minute: the next meeting, alarms, sleep |
+| `fetchSteps` | 60 s | Polls the ntfy topic for the last 12 h and keeps the last message only if it's from today |
+| `renderWater` | 30 s | Whether you're behind on water |
+| `loadAllEvents` | 5 min | Both calendars: the current mode is rendered, the other is cached for an instant switch |
+| `loadWx` · `loadWarn` | 15 min | Open-Meteo (two places) and IPMA warnings |
+| `loadObs` | 30 min | The nearest IPMA station's last hour of rain |
+| `loadFootball` | 60 s live, 10 min otherwise | ESPN schedule and table |
+| `checkSleep` | 5 s | Enters or leaves the night clock |
+
+### Calendar: stale-while-revalidate over Apps Script
+
+```mermaid
+flowchart TD
+  subgraph google["Your Google account"]
+    cal[("Calendar")] --> gs["Code.gs doGet<br/>key check · next 15 days<br/>drop declined · map to JSON"]
+  end
+  gs -- "[{start, end, title, allDay, type}]" --> parse["evParse<br/>WORKING_LOCATION → day heading<br/>the rest → sorted events"]
+  parse --> mem["evCache[mode]"]
+  parse --> ls[("localStorage<br/>ev-work · ev-personal")]
+  ls -. "next reload, < 36 h" .-> mem
+  mem --> home["Home card"]
+  mem --> list["Calendar view"]
+```
+
+The work feed can take around 15 seconds to answer, so nothing waits for it. A reload shows the last good list from `localStorage` straight away. A failed fetch keeps the last good list and says "offline". Both modes are fetched every time, so switching modes never waits for Google. Working-location events (Home / Office) never become rows: they turn into the day's heading.
+
+**Free time** is calculated on the clock: gaps of 15 minutes or more inside 09:00 to 17:00 on weekdays, in WORK only. The slot you're in right now is rendered live and counts down.
+
+### The Home card is a state machine
+
+```mermaid
+stateDiagram-v2
+  [*] --> Loading
+  Loading --> Offline: fetch failed, nothing cached
+  Loading --> Next: events
+  Offline --> Next: next fetch works
+  Next --> Soon: 15 min before start
+  Soon --> Live: start time
+  Live --> Next: ends, more today
+  Live --> Free: ends, nothing left today
+  Free --> Weekend: Friday ≥ dayEndMinute, or Sat/Sun
+  Weekend --> Next: Monday's first meeting is today
+  Free --> Next: a new day
+  Next --> Browse: swipe or tap
+  Browse --> Next: after 10 s
+  note right of Soon: the line burns down from 15 min to 0
+  note right of Live: the same line fills from start to end
+```
+
+In PERSONAL the same slot shows the club instead: the live score (or the next match, or a result from the last 26 h), the league position and the last result, cycled by tap and back to the first after 10 s.
+
+### Mode switch: one function, one choreography
+
+`applyMode(m)` keeps the two lives apart:
+
+```mermaid
+flowchart TD
+  T["Tap 'JS'"] --> F{"On Home, animations<br/>available, motion allowed?"}
+  F -- no --> A
+  F -- yes --> S["0 ms: spark runs across the header (520 ms)"]
+  S --> K["160 ms: clone the old card over the new one"]
+  K --> A["applyMode(m)"]
+  A --> A1["Save this mode's events, swap body class"]
+  A1 --> A2["Accent per mode (accent / accentPersonal),<br/>brand slot from config (Mindera / Sporting)"]
+  A2 --> A3["WORK: close the TV, hide its tab"]
+  A3 --> A4["Events from the other mode's cache, refetch"]
+  A4 --> A5["Water on or off, football card"]
+  K --> W["Lines above and below the card run across (760 ms)<br/>old rows blur out, 35 ms apart<br/>new rows rise in at 190 ms + 80 ms each<br/>accent washes out from 'JS' (900 ms)"]
+```
+
+The wash layer is never removed: on this WebView, removing a layer that large blanks the header for one frame.
+
+### Weather inside the digits
+
+The digits are the weather display. A class on `<body>` (`wx-rain`, `wx-storm`, `wx-snow`, `wx-sun`, `wx-stars`, `wx-haze`) drives CSS inside the outlined minutes. Deciding which class takes two sources, because the forecast model often calls rain that isn't falling:
+
+```mermaid
+flowchart TD
+  OM["Open-Meteo current:<br/>weather_code, is_day, cape"] --> K{"weather_code"}
+  K -- "≥ 95" --> CAPE{"CAPE ≥ 400 J/kg<br/>(or unknown)?"}
+  CAPE -- yes --> STORM["storm"]
+  CAPE -- no --> RAIN["rain"]
+  K -- "51–67, 80–82" --> RAIN
+  K -- "71–77, 85, 86" --> SNOW["snow"]
+  K -- "0–1" --> DAY{"is_day"}
+  DAY -- yes --> SUN["sun"]
+  DAY -- no --> STARS["stars"]
+  K -- "else" --> HAZE["haze"]
+  ST["IPMA stations:<br/>nearest within 30 km"] --> OBS["Observations: precipitation<br/>in the latest valid hour"]
+  STORM & RAIN & SNOW --> CHK{"Station measured 0 mm?"}
+  OBS --> CHK
+  CHK -- yes --> HAZE
+  CHK -- "no, or no station" --> KEEP["keep the model's kind"]
+```
+
+- **Lightning:** in a storm, the digits flash twice at a random 4 to 12 s interval.
+- **Rain hitting the ground:** the digits are drawn once to an offscreen canvas at their real glyph positions. The columns where ink touches the baseline become the only places a drop can splash. Ripples and droplets run at about 30 fps while it rains and check twice a second otherwise.
+- **Warnings:** IPMA's `warnings_www.json`, filtered to your district (`ipmaArea`), sea warnings left out. The worst warning active now wins. With none active, the next one coming is shown, and the temperature turns outlined in its colour.
+- **Calendar:** each day's forecast high comes from the same 16-day request.
+
+### Water: a schedule, not a counter
+
+On work days in WORK mode, `N` glasses (Settings: 6 to 12, 250 ml each) are spread evenly from 09:00 to 17:00, each time rounded to 5 minutes:
+
+```
+tᵢ = round((540 + i · 480 / (N − 1)) / 5) · 5      minutes after midnight, i = 0 … N−1
+```
+
+With 9 glasses that's on the hour, 09:00 to 17:00. You're **behind** when fewer glasses are logged than times that have passed. The check runs only between 08:30 and 19:00.
+
+```mermaid
+stateDiagram-v2
+  [*] --> OnTrack
+  OnTrack --> Behind: a scheduled time passes
+  Behind --> Behind: in a meeting (chime waits)
+  Behind --> OnTrack: tap (the reminder crumbles)
+  OnTrack --> OnTrack: tap (+1) · tap again within 2.6 s (undo) · hold 600 ms (−1)
+  note right of Behind: the half floods with the accent, chime 880 Hz then 1320 Hz, once per fall
+```
+
+The count is stored as `{d: <today>, n}`, so it resets itself at midnight without a timer.
+
+### Football from ESPN, with a live heuristic
+
+Three requests run in parallel: the team's fixtures, its results (both across every competition) and the league table (`por.1` by default). Matches are de-duplicated by id and normalised to `TIMED`, `IN_PLAY`, `FINISHED` or `POSTPONED`. The free API can lag, so a match also counts as **live** when kick-off has passed, it isn't marked finished, and it started less than 120 minutes ago. While a match is live it polls every 60 s, otherwise every 10 minutes. The crest is loaded once, greyscaled, and also used as its own CSS mask, so the sheen that crosses it stays inside the crest's shape.
+
+### Sleep, idle and sound
+
+```mermaid
+stateDiagram-v2
+  [*] --> Awake
+  Awake --> Awake: 3 min untouched, back to Home (not while TV plays or an alarm rings)
+  Awake --> Night: Sleep button, or inside the sleep window after 30 s untouched
+  Night --> Awake: tap, or the window ends
+  Awake --> Ringing: alarm time or timer ends
+  Night --> Ringing: alarm time
+  Ringing --> Awake: pull the sheet down, or 90 s
+```
+
+- **Night:** `#amb.night` with one ember tone on `#000`, and brightness set through `/bright`.
+- **Pull down to stop:** the sheet follows your finger with rubber-banding past 110 px. It's released past 110 px, or by a flick faster than 0.7 px/ms after 40 px, and then falls under gravity (2800 px/s²). Let go early and it springs back (stiffness 240, damping 12).
+- **Quiet in meetings:** while a calendar event is on, beeps are suppressed and the TV is muted (and unmuted afterwards only if the clock muted it).
+
+### State on the clock
+
+| `localStorage` key | Holds |
+|---|---|
+| `mode` | `work` or `personal` |
+| `accent` · `accentPersonal` | One accent per mode |
+| `ev-work` · `ev-personal` | Last good calendar list with its timestamp |
+| `water` | Today's glasses, keyed by date |
+| `stepGoal` · `glassGoal` | Health goals |
+| `alarms` | The alarm |
+| `brightDay` · `muteMeetings` · `wxLive` · `tapTemp` | Settings |
+
+### Private by construction
+
+```mermaid
+flowchart LR
+  subgraph repo["This repo (public)"]
+    r1["index.html · device/ · calendar/ · personal/"]
+    r2["config.example.json (placeholders)"]
+  end
+  subgraph dev["The clock only (chmod 600)"]
+    d1["config.json: calendar URLs + keys,<br/>ntfy topic, coordinates, brand colours"]
+    d2["m3u.url: playlist URL"]
+  end
+  subgraph g["Your Google account"]
+    g1["Apps Script key"]
+  end
+  r1 -. "reads at runtime" .-> d1
+  d1 -. "?k=" .-> g1
+```
+
+The Apps Scripts return `{"error":"forbidden"}` without the key. The work script holds the key in its source; the personal one generates it into Script Properties with `authorize()`. CI fails a push that tracks `config.json` or `m3u.url`, or that contains a real Apps Script deployment URL or steps topic.
+
+### Writing for a 2019 browser
+
+WebView 74 sets the rules, and [CI](.github/workflows/check.yml) enforces them on every push:
+
+- No `?.`, `??` or `Animation.finished` (use `onfinish`).
+- No CSS `inset`, `clamp()` or flex `gap`.
+- Every inline script must parse.
+- `shellcheck` runs on both device scripts.
+
+Animations use the Web Animations API with `onfinish`, `-webkit-` mask and stroke prefixes, and `requestAnimationFrame` loops that slow down when idle. The big moments (the mode switch, the minute change, gliding titles, rain splashes, fireworks) check `prefers-reduced-motion` and fall back to a static change.
 
 ## Install
 
