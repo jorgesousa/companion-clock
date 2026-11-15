@@ -782,7 +782,7 @@ function go(v){
   if(v!=='cal')calMarqueeStop();
   if(v==='cal'&&events){renderCal();calToNow()}
 }
-function navBar(){var b=document.querySelector('nav button.on'),bar=$('nav-bar');if(!b)return;bar.style.width=(b.offsetWidth-28)+'px';bar.style.transform='translateX('+(b.offsetLeft+14)+'px)'}
+function navBar(){var b=document.querySelector('nav button.on'),bar=$('nav-bar');if(!b)return;var w=(b.offsetWidth-28)+'px',x='translateX('+(b.offsetLeft+14)+'px)';if(bar.style.width!==w)bar.style.width=w;if(bar.style.transform!==x)bar.style.transform=x}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){navBar();if(typeof marquee==='function')marquee()});setTimeout(navBar,300);
 document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){go(b.getAttribute('data-v'))})});
 // switching mode: label, accent, TV tab, calendar source and the Home card change together
@@ -859,6 +859,7 @@ function tick(){
   var now=new Date(),h=f2(now.getHours()),m=f2(now.getMinutes());
   $('h-h').textContent=h;$('a-h').textContent=h;$('h-s').textContent=f2(now.getSeconds());
   $('a-m').textContent=m;$('a-m').setAttribute('data-t',m);$('a-s').textContent=f2(now.getSeconds());
+  navBar(); // the header can shift under the line (the temperature arriving, a warning, the TV tab): keep it under the tab
   if($('h-wx').textContent!==m){$('h-wx').textContent=m;$('a-wx').textContent=m}
   applyMute();fitDate(now);meetLine();
   var nb=$('h-next-blk').classList;document.body.classList.toggle('attn',nb.contains('soon')||nb.contains('live')||(tRun&&tLeft<60)||(typeof waterDue==='function'&&waterDue()));
