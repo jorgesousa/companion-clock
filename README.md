@@ -70,7 +70,8 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 - **Calendar.** Grouped by day, with a summary per day ("4 meetings · 4h free"). Free time is counted inside the working day (09:00–17:00, Monday to Friday) in gaps of 15 minutes or more. Each client in `[Brackets]` gets its own colour, or its brand colour if you set one.
   A meeting's time turns to the accent only when it's on now or starts within 30 minutes.
 - **Working location.** Google Calendar's Home / Office shows in each day's heading; Office in white.
-- **Clock.** One timer (presets from 5 to 60 minutes) and one alarm. Both ring full-screen until you pull the sheet down.
+- **Clock.** One timer (presets from 5 to 60 minutes) and one alarm. When one rings, a card in the accent rises in the middle of the dimmed screen: the time in the Home type (hours solid, minutes outlined), what's ringing, and for an alarm a line for the day ahead (where you work, the first meeting, the weather), gliding if it's long. It beats with the beeps. Tap it to stop: it crumbles into grain from your finger, like the water reminder. From Sleep, the screen brightens over 30 seconds while it rings, and stopping it wakes you to Home.
+- **Meeting heads-up.** In WORK, 5 minutes before each meeting (back-to-back ones too), the same card shows the meeting's start time, "Meeting · in 5 min" and its title, with one soft chime. Tap to crumble it; otherwise it crumbles by itself when the meeting starts. Once per meeting, never over an alarm or a timer, never in Sleep.
 - **Sleep.** One button (or the night hours) turns the screen into a clock for a dark bedroom: the same staircase as Home, hours and minutes only, in one dim ember red on true black. No seconds, no weather, no mode colour, nothing that moves; just the next alarm underneath.
 - **TV.** Plays an HLS playlist (M3U) you provide. Ships with no channels; use only playlists you're entitled to.
 - **Settings.** Brightness 10–100%, eight accent colours (one can be your company's, set in `config.json`), muting the TV in meetings, Weather Live / Off, what a tap on the temperature does, the club logo on or off, and Health goals, remembered on the clock.
@@ -342,11 +343,16 @@ stateDiagram-v2
   Night --> Awake: tap, or the window ends
   Awake --> Ringing: alarm time or timer ends
   Night --> Ringing: alarm time
-  Ringing --> Awake: pull the sheet down, or 90 s
+  Ringing --> Awake: tap (the card crumbles), or 90 s
+  Awake --> Heads_up: WORK, a meeting in 5 min
+  Heads_up --> Awake: tap, or the meeting starts
 ```
 
 - **Night:** `#amb.night` with one ember tone on `#000`, and brightness set through `/bright`.
-- **Pull down to stop:** the sheet follows your finger with rubber-banding past 110 px. It's released past 110 px, or by a flick faster than 0.7 px/ms after 40 px, and then falls under gravity (2800 px/s²). Let go early and it springs back (stiffness 240, damping 12).
+- **One card for everything that rings:** `ring(what, h, m, mins, meeting)` drives the alarm, the timer and the meeting heads-up. The alarm and the timer beep twice every 1.4 s, in step with the card's beat, and stop by themselves after 90 s; a meeting chimes once (two rising notes) and closes at its start time.
+- **Tap to stop, the crumble:** the card is drawn into a canvas as it looks (its flood, every letter where it really is, filled or outlined), sampled on a 5 px grid, and each grain starts after a delay proportional to its distance from your finger. It trembles for 380 ms, then bursts outwards and falls under gravity while it fades. The backdrop fades at 700 ms, so the room comes back while the grain is still falling.
+- **From Sleep:** the card turns ember red on black, and brightness ramps from the night's level to the day's over 30 s, in 2 s steps.
+- **Meetings, once each:** checked on every new minute. The first non-all-day event starting in the next 30 s to 5 min shows the card; its start time and title are kept in `meetSeen`, so a reload doesn't show it again.
 - **Quiet in meetings:** while a calendar event is on, beeps are suppressed and the TV is muted (and unmuted afterwards only if the clock muted it).
 
 ### State on the clock
@@ -359,7 +365,8 @@ stateDiagram-v2
 | `water` | Today's glasses, keyed by date |
 | `stepGoal` · `glassGoal` | Health goals |
 | `alarms` | The alarm |
-| `brightDay` · `muteMeetings` · `wxLive` · `tapTemp` | Settings |
+| `brightDay` · `muteMeetings` · `wxLive` · `tapTemp` · `crest` | Settings |
+| `meetSeen` | The last meeting the heads-up was shown for |
 
 ### Private by construction
 

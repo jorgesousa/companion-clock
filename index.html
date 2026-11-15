@@ -105,21 +105,34 @@ nav{position:relative}
 #t-m{transition:color .4s var(--ease)}
 #t-m{-webkit-text-stroke-color:var(--accent)} /* the timer's minutes are outlined in the accent */
 #t-m.hot{color:var(--accent)} /* last minute: they fill in */
-#alert{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:400;overflow:hidden}
-#al-sheet{position:absolute;left:0;right:0;top:0;height:420px;background:var(--accent);color:var(--fg);border-radius:0 0 44px 44px;box-shadow:0 16px 40px rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;padding-top:30px;text-align:center}
-#al-sheet .mono{color:var(--fg)}
-#al-what{margin-bottom:12px}
-#alert .big{font-size:150px}
-#alert .outline{color:var(--accent);-webkit-text-stroke:3px var(--fg)}
-#alert .outline:after{color:var(--accent)}
-#alert #al-m{display:block;margin-top:6px}
-#al-sheet .al-silent{margin-top:14px;background:var(--accent-ink);color:var(--accent);padding:6px 12px;border-radius:4px}
-.al-grip{position:absolute;left:50%;bottom:20px;width:80px;height:6px;margin-left:-40px;border-radius:3px;background:var(--fg);opacity:.6}
-#al-hint{position:absolute;left:0;right:0;top:446px;text-align:center;color:var(--muted)}
-#alert.armed #al-hint{color:var(--accent)}
-#alert.ringing #al-sheet{animation:al-breathe 1.4s cubic-bezier(.16,1,.3,1) infinite}
-#alert.drag #al-sheet{animation:none}
-@keyframes al-breathe{0%{-webkit-transform:translateY(16px);transform:translateY(16px)}14%{-webkit-transform:none;transform:none}32%{-webkit-transform:translateY(16px);transform:translateY(16px)}46%{-webkit-transform:none;transform:none}}
+/* ringing: a card in the middle of the screen, flooded with the accent, beating with the beeps; tap to stop and it crumbles */
+#alert{position:fixed;top:0;left:0;right:0;bottom:0;z-index:400;overflow:hidden}
+#alert:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(8,8,7,.8);opacity:0;transition:opacity .45s}
+#alert.in:before{opacity:1}
+/* in Sleep the alarm grows out of the ember: the night clock stays behind, the card takes the ember colour */
+#alert.night{--accent:#a8412b}
+#alert.night:before{background:#000}
+#al-card{position:absolute;left:50%;top:50%;width:520px;height:276px;margin:-138px 0 0 -260px;box-sizing:border-box;padding:0 34px;border-radius:4px;background:var(--accent);color:var(--accent-ink);display:flex;flex-direction:column;align-items:center;justify-content:center}
+#al-card:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;border-radius:4px;border:2px solid var(--accent);opacity:0}
+#al-what{color:var(--accent-ink);opacity:.72}
+.al-digits{display:flex;align-items:flex-end;justify-content:center;line-height:.82}
+.al-digits .num{font-size:150px;letter-spacing:-.04em}
+#al-h{color:var(--accent-ink)}
+#al-m{position:relative;color:var(--accent);-webkit-text-stroke:3px var(--accent-ink);margin-left:14px}
+#al-m:after{content:attr(data-t);position:absolute;left:0;top:0;color:var(--accent);-webkit-text-stroke:0;pointer-events:none} /* as on Home: hides the inner half of the stroke and overlapping contours */
+.al-foot{display:flex;align-items:center;justify-content:center;margin-top:26px}
+#al-silent{margin-left:12px}
+.al-foot .mono{white-space:nowrap}
+/* alarms only: where you work today, the first meeting, the weather. One line, glides if long */
+#al-info{width:100%;overflow:hidden;white-space:nowrap;text-align:center;margin-top:10px;color:var(--accent-ink)}
+#al-info.mq{text-align:left}
+#al-info-t{display:inline-block}
+#al-silent{background:var(--accent-ink);color:var(--accent);padding:5px 10px;border-radius:4px}
+#alert.ringing #al-card{animation:al-beat 1.4s cubic-bezier(.16,1,.3,1) infinite}
+#alert.ringing #al-card:before{animation:al-wave 1.4s cubic-bezier(.2,.7,.2,1) infinite}
+#alert.meet.ringing #al-card,#alert.meet.ringing #al-card:before{animation-iteration-count:1} /* a meeting is a heads-up: one beat with its chime, then still */
+@keyframes al-beat{0%{-webkit-transform:scale(1);transform:scale(1)}7%{-webkit-transform:scale(1.035);transform:scale(1.035)}20%{-webkit-transform:scale(1);transform:scale(1)}39%{-webkit-transform:scale(1.035);transform:scale(1.035)}52%{-webkit-transform:scale(1);transform:scale(1)}}
+@keyframes al-wave{0%{opacity:.7;-webkit-transform:scale(1);transform:scale(1)}60%{opacity:0;-webkit-transform:scale(1.18,1.3);transform:scale(1.18,1.3)}100%{opacity:0}}
 #h-timer{color:var(--fg);display:none}
 /* Home's bottom strip: the running timer burns along a track, the next alarm sits on the right */
 #h-strip{position:absolute;left:36px;right:36px;bottom:22px;height:58px}
@@ -214,7 +227,7 @@ body.personal #h-crest.on b{-webkit-transform:rotate(6deg);transform:rotate(6deg
 #h-next-l .pos,#h-steps-l .pos,#wa-l .pos{float:right;color:var(--muted)}
 .cl{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:12px;vertical-align:2px;flex-shrink:0}
 .cl.none{box-shadow:inset 0 0 0 1.5px var(--muted)}
-@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#ttab.sway{animation:none}#hs-fill,#hs-dot{transition:none}#h-lf,#h-ld{transition:none}#h-strip.hot #hs-dot{animation:none}#h-steps-blk.syncing #h-sync,#h-steps-blk.syncing .v,#h-steps-blk.synced .v{animation:none}#alert.ringing #al-sheet{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
+@media (prefers-reduced-motion:reduce){.view.enter{animation:none}.roller .r{transition:none!important}#nav-bar{transition:none}#amb{transition:none}.live-dot:after{animation:none}#ttab.sway{animation:none}#hs-fill,#hs-dot{transition:none}#h-lf,#h-ld{transition:none}#h-strip.hot #hs-dot{animation:none}#h-steps-blk.syncing #h-sync,#h-steps-blk.syncing .v,#h-steps-blk.synced .v{animation:none}#alert.ringing #al-card,#alert.ringing #al-card:before{animation:none}#cal-skel i,.blk .v.loading{animation:none}#h-next-c{transition:opacity .16s}#h-next-c.outl,#h-next-c.outr,#h-next-c.inl,#h-next-c.inr{transform:none}.blk.nudge-l #h-next-c,.blk.nudge-r #h-next-c{animation:none}#h-live{transition:opacity .4s}}
 
 .cap{padding-bottom:14px;border-bottom:2px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline}
 .cap-side{white-space:nowrap;flex-shrink:0;margin-left:16px}
@@ -683,14 +696,11 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 </div>
 
 <div id="alert" hidden>
-  <!-- ringing: a red sheet that breathes with the beeps; pull it down to stop -->
-  <div id="al-sheet">
-    <div class="mono" id="al-what">Alarm</div>
-    <div class="al-digits"><div class="num big" id="al-h">07</div><div class="num big outline" id="al-m">00</div></div>
-    <span class="mono al-silent" id="al-silent" hidden>Silent · in a meeting</span>
-    <i class="al-grip"></i>
+  <div id="al-card">
+    <div class="al-digits"><span class="num" id="al-h">07</span><span class="num" id="al-m">00</span></div>
+    <div class="al-foot"><span class="mono" id="al-what">Alarm</span><span class="mono" id="al-silent" hidden>Silent</span></div>
+    <div class="mono" id="al-info"><span id="al-info-t"></span></div>
   </div>
-  <div class="mono" id="al-hint">Pull down to stop</div>
 </div>
 
 <script>
@@ -1378,48 +1388,98 @@ function beep(freq,dur){if(quiet())return;try{var c=ctx(),o=c.createOscillator()
 document.addEventListener('touchstart',function(){try{ctx()}catch(e){}},{once:true,passive:true});
 
 // ---------- alerta (alarme / fim do timer) ----------
-var ringI=null,ringT=null;
-// ring(what,h,m) for an alarm (its time); ring(what,null,null,mins) for a timer (the time it ended)
-function ring(what,h,m,mins){
+var ringI=null,ringT=null,alBusy=false,alOff=null,alRampI=null;
+function alReduce(){return window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches}
+// ring(what,h,m) for an alarm (its time); ring(what,null,null,mins) for a timer (the time it ended);
+// ring(what,h,m,null,mt) for a meeting heads-up: mt={info:title,at:start} (one chime, closes itself when it starts)
+function ring(what,h,m,mins,mt){
   if(mins!=null){var n=new Date();what=mins+' min timer · done';h=f2(n.getHours());m=f2(n.getMinutes())}
-  $('al-what').textContent=what;$('al-h').textContent=h;$('al-m').textContent=m;
-  var sh=$('al-sheet');sh.style.transform=sh.style.webkitTransform='';$('alert').style.opacity='';$('alert').classList.remove('armed','drag');$('al-hint').textContent='Pull down to stop';
+  alClean();
+  $('al-what').textContent=what;$('al-h').textContent=h;$('al-m').textContent=m;$('al-m').setAttribute('data-t',m);
   $('al-silent').hidden=!quiet();
-  var al=$('alert');al.classList.remove('ringing');al.hidden=false;void al.offsetWidth;al.classList.add('ringing');
-  $('amb').hidden=true;bright(cfg.brightDay);
+  var al=$('alert'),card=$('al-card'),night=!$('amb').hidden&&$('amb').classList.contains('night');
+  al.classList.toggle('night',night);al.classList.toggle('meet',!!mt);al.classList.remove('ringing','in');al.hidden=false;
+  alInfo(mins!=null,mt&&mt.info); // measured once it's laid out, so a long line can glide
+  void al.offsetWidth;al.classList.add('in');
+  if(card.animate&&!alReduce())card.animate([{opacity:0,transform:'translateY(24px) scale(.9)',filter:'blur(6px)'},{opacity:1,transform:'none',filter:'blur(0)'}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'}).onfinish=function(){if(!alBusy)al.classList.add('ringing')};
+  else al.classList.add('ringing');
+  if(night)alRamp();else{$('amb').hidden=true;bright(cfg.brightDay)}
   // beeps start with the first beat so sound and pulse stay in step
   function dbl(){beep(880,.35);setTimeout(function(){beep(880,.35)},450)}
-  clearInterval(ringI);dbl();ringI=setInterval(dbl,1400);
-  clearTimeout(ringT);ringT=setTimeout(stopRing,90*1000);
+  clearInterval(ringI);clearTimeout(ringT);
+  if(mt){beep(660,.5);setTimeout(function(){beep(990,.7)},260);ringT=setTimeout(function(){alDismiss(null)},Math.max(1000,mt.at-Date.now()));return} // a soft rising chime, once
+  dbl();ringI=setInterval(dbl,1400);
+  ringT=setTimeout(function(){alDismiss(null)},90*1000);
 }
-function stopRing(){clearInterval(ringI);clearTimeout(ringT);$('alert').classList.remove('ringing','armed','drag');$('alert').hidden=true;$('alert').style.opacity='';$('al-sheet').style.transform=$('al-sheet').style.webkitTransform='';awake();checkSleep(new Date())}
-// pull the sheet down to stop: follows the finger, springs back if let go early, falls away when stopped
-(function(){
-  var al=$('alert'),sh=$('al-sheet'),y0=null,dy=0,lastY=0,lastT=0,vel=0,raf=0,PULL=110;
-  function draw(d){var shown=d<PULL?d:PULL+(d-PULL)*.3;sh.style.transform=sh.style.webkitTransform='translateY('+shown.toFixed(1)+'px)'}
-  function start(y){cancelAnimationFrame(raf);y0=y;dy=0;lastY=y;lastT=Date.now();vel=0}
-  function move(y){if(y0===null)return;var n=Date.now();vel=(y-lastY)/Math.max(1,n-lastT);lastY=y;lastT=n;dy=Math.max(0,y-y0);
-    if(dy>4)al.classList.add('drag');draw(dy);var armed=dy>PULL;al.classList.toggle('armed',armed);$('al-hint').textContent=armed?'Release to stop':'Pull down to stop'}
-  function end(){if(y0===null)return;y0=null;
-    if(dy>PULL||(dy>40&&vel>.7)){ // fall away with gravity, then stop
-      var y=Math.min(dy,PULL+(dy-PULL)*.3),vy=Math.max(vel*1000,400),prev=Date.now();
-      (function step(){var n=Date.now(),dt=Math.min(.032,(n-prev)/1000);prev=n;vy+=2800*dt;y+=vy*dt;
-        sh.style.transform=sh.style.webkitTransform='translateY('+y.toFixed(1)+'px)';al.style.opacity=Math.max(0,1-y/700);
-        if(y<620){raf=requestAnimationFrame(step);return}stopRing()})();return}
-    if(dy<4){return}
-    al.classList.remove('armed');$('al-hint').textContent='Pull down to stop';
-    var x=dy<PULL?dy:PULL,vx=0,prev=Date.now(); // spring back
-    (function step(){var n=Date.now(),dt=Math.min(.032,(n-prev)/1000);prev=n;var a=-240*x-12*vx;vx+=a*dt;x+=vx*dt;draw(x);
-      if(Math.abs(x)<.4&&Math.abs(vx)<5){sh.style.transform=sh.style.webkitTransform='';al.classList.remove('drag');return}
-      raf=requestAnimationFrame(step)})();
+// from the night's brightness up to the day's over 30 s, like a small sunrise
+function alRamp(){var b0=cfg.brightNight,b1=cfg.brightDay,t0=Date.now();clearInterval(alRampI);
+  alRampI=setInterval(function(){var k=Math.min(1,(Date.now()-t0)/30000);bright(Math.round(b0+(b1-b0)*k));if(k>=1)clearInterval(alRampI)},2000)}
+// the info line (alarms only): where you work today, the first meeting, the weather
+function alInfo(timer,text){
+  var now=new Date(),p=[],td=now.toDateString();
+  function today(e){return !e.all&&e.s.toDateString()===td}
+  if(text)p.push(text); // a meeting: just its title
+  else if(!timer){ // alarms only: a timer needs nothing more than its own line
+    var k=now.getFullYear()+'-'+f2(now.getMonth()+1)+'-'+f2(now.getDate());if(wloc&&wloc[k])p.push(wloc[k]);
+    var first=events&&events.filter(function(e){return today(e)&&e.e>now})[0];if(first)p.push(hhmm(first.s)+' '+first.t);
+    if(mode==='personal'&&typeof fbUpcoming==='function'){var m=fbUpcoming()[0];if(m&&m.d.toDateString()===td)p.push(m.home+' – '+m.away+' '+hhmm(m.d))}
+    if(wxWarn&&!wxWarn.soon)p.push(wxWarn.level+' · '+wxWarn.label+' '+wxWarn.when);
+    else if(wxT.home)p.push(wxT.home+(wxCur?' · high '+wxCur.max+'°'+(wxCur.pop!=null?' · '+wxCur.pop+'% rain':''):''));
   }
-  al.addEventListener('touchstart',function(e){start(e.touches[0].clientY)},{passive:true});
-  al.addEventListener('touchmove',function(e){move(e.touches[0].clientY);e.preventDefault()});
-  al.addEventListener('touchend',function(e){end();e.preventDefault()});
-  al.addEventListener('mousedown',function(e){start(e.clientY);
-    function mv(ev){move(ev.clientY)}function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);end()}
-    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)});
-})();
+  var box=$('al-info'),t=$('al-info-t');t.textContent=p.join(' · ');box.hidden=!p.length;
+  if(t._g){t._g.cancel();t._g=null}box.classList.remove('mq');
+  if(!p.length||!t.animate||alReduce())return;
+  var d=t.offsetWidth-box.clientWidth;if(d<=0)return;
+  box.classList.add('mq'); // long: glides to show the end, pauses, glides back
+  t._g=t.animate([{transform:'translateX(0)'},{transform:'translateX(0)',offset:.2},{transform:'translateX('+(-d)+'px)',offset:.8},{transform:'translateX('+(-d)+'px)'}],{duration:2600+d*40,delay:1200,direction:'alternate',iterations:Infinity,easing:'ease-in-out'});
+}
+function alClean(){alBusy=false;clearTimeout(alOff);var c=$('alert').querySelector('canvas');if(c)c.remove();$('al-card').style.visibility=''}
+function stopRing(){clearInterval(ringI);clearTimeout(ringT);clearInterval(alRampI);var al=$('alert');if(al.classList.contains('night')){manualSleep=false;sleeping=false} // you wake to Home
+  al.classList.remove('ringing','in','night','meet');alClean();al.hidden=true;awake();checkSleep(new Date())}
+// draw the card as it looks into a canvas: its flood, the silent badge, every letter where it really is (filled or outlined)
+function alRaster(card){
+  var r=card.getBoundingClientRect(),W=Math.round(r.width),H=Math.round(r.height),c=document.createElement('canvas');c.width=W;c.height=H;
+  var g=c.getContext('2d'),R=4;
+  g.fillStyle=getComputedStyle(card).backgroundColor;g.beginPath();g.moveTo(R,0);g.arcTo(W,0,W,H,R);g.arcTo(W,H,0,H,R);g.arcTo(0,H,0,0,R);g.arcTo(0,0,W,0,R);g.fill();
+  var sl=$('al-silent');if(!sl.hidden){var b=sl.getBoundingClientRect();g.fillStyle=getComputedStyle(sl).backgroundColor;g.fillRect(b.left-r.left,b.top-r.top,b.width,b.height)}
+  ['al-what','al-h','al-m','al-silent','al-info-t'].forEach(function(id){
+    var el=$(id),node=el.firstChild;if(el.hidden||!node||node.nodeType!==3)return;
+    var cs=getComputedStyle(el),op=parseFloat(cs.opacity),sw=parseFloat(cs.webkitTextStrokeWidth)||0,up=cs.textTransform==='uppercase',rg=document.createRange(),tx=node.nodeValue;
+    g.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;g.textBaseline='middle';g.globalAlpha=op;
+    for(var i=0;i<tx.length;i++){rg.setStart(node,i);rg.setEnd(node,i+1);var q=rg.getBoundingClientRect(),ch=up?tx[i].toUpperCase():tx[i],x=q.left-r.left,y=q.top-r.top+q.height/2;if(x<20||x>W-30)continue;
+      if(sw){g.lineWidth=sw;g.strokeStyle=cs.webkitTextStrokeColor;g.strokeText(ch,x,y);g.fillStyle=cs.color;g.fillText(ch,x,y)}else{g.fillStyle=cs.color;g.fillText(ch,x,y)}}
+    g.globalAlpha=1;
+  });
+  return {c:c,W:W,H:H,r:r};
+}
+// tap to stop: the beeps stop at once, the card crumbles into grain from where you tapped, loosens, bursts and falls
+function alDismiss(pt){
+  if(alBusy)return;alBusy=true;clearInterval(ringI);clearTimeout(ringT);
+  var al=$('alert'),card=$('al-card');
+  if(!window.requestAnimationFrame||alReduce()){stopRing();return}
+  al.classList.remove('ringing');
+  var k=alRaster(card),d=k.c.getContext('2d').getImageData(0,0,k.W,k.H).data,P=[],S=5,PAD=160;
+  var tp=pt?{x:Math.max(0,Math.min(k.W,pt.x-k.r.left)),y:Math.max(0,Math.min(k.H,pt.y-k.r.top))}:{x:k.W/2,y:k.H/2};
+  for(var y=0;y<k.H;y+=S)for(var x=0;x<k.W;x+=S){var i=(y*k.W+x)*4;if(d[i+3]<40)continue;var dx=x-tp.x,dy=y-tp.y,dd=Math.sqrt(dx*dx+dy*dy)||1;
+    P.push({x:x,y:y,c:'rgb('+d[i]+','+d[i+1]+','+d[i+2]+')',t0:dd*1.6,ux:dx/dd,uy:dy/dd,sp:60+Math.random()*160,j:Math.random()*6.28})}
+  var cv=document.createElement('canvas');cv.width=k.W+PAD*2;cv.height=k.H+PAD*2;
+  cv.style.cssText='position:absolute;pointer-events:none;left:'+(k.r.left-PAD)+'px;top:'+(k.r.top-PAD)+'px';al.appendChild(cv);
+  card.style.visibility='hidden';
+  var ctx=cv.getContext('2d'),start=Date.now(),LOOSE=380,faded=false;
+  (function frame(){var tt=Date.now()-start,alive=0;ctx.clearRect(0,0,cv.width,cv.height);
+    for(var n=0;n<P.length;n++){var p=P[n],lt=tt-p.t0,x=p.x,y=p.y,a=1;
+      if(lt>0){
+        if(lt<LOOSE){var q=lt/LOOSE;x+=Math.sin(p.j+lt*.06)*1.6*q+p.ux*4*q*q;y+=Math.cos(p.j+lt*.05)*1.6*q+p.uy*4*q*q} // loosening: tremble, drift
+        else{var e=(lt-LOOSE)/1000;x+=p.ux*4+p.ux*p.sp*e+Math.sin(p.j)*20*e;y+=p.uy*4+p.uy*p.sp*e*.8-40*e+260*e*e;a=Math.max(0,1-e/.9)} // burst, fall
+      }
+      if(a<=0)continue;alive++;ctx.globalAlpha=a;ctx.fillStyle=p.c;ctx.fillRect(x+PAD,y+PAD,S-.5,S-.5)}
+    if(!cv.parentNode)return;
+    if(!faded&&tt>700){faded=true;al.classList.remove('in');if(al.classList.contains('night'))awake()} // the room (Home, even from Sleep) comes back while the grain falls
+    if(alive&&tt<2600)requestAnimationFrame(frame);else stopRing();
+  })();
+}
+$('alert').addEventListener('click',function(ev){alDismiss({x:ev.clientX,y:ev.clientY})});
+
 
 // ---------- timer ----------
 var PRESETS=[5,10,15,25,30,60],tTot=25*60,tLeft=25*60,tRun=false,tI=null;
@@ -1617,7 +1677,17 @@ document.querySelectorAll('.arw button').forEach(function(b){
   b.addEventListener('touchend',stop);b.addEventListener('touchcancel',stop);
   b.addEventListener('click',function(){if(repeated){repeated=false;return}aStep(b)});
 });
-function checkAlarms(now){var s=hhmm(now);alarms.forEach(function(a){if(a.on&&a.t===s){var p=s.split(':');ring('Alarm',p[0],p[1])}})}
+function checkAlarms(now){var s=hhmm(now),rang=false;alarms.forEach(function(a){if(a.on&&a.t===s){var p=s.split(':');ring('Alarm',p[0],p[1]);rang=true}});if(!rang)checkMeet(now)}
+// a heads-up 5 minutes before each WORK meeting (once each), back-to-back ones too; never over an alarm or a timer that is ringing
+var MEET_AHEAD=5,meetSeen='';try{meetSeen=localStorage.getItem('meetSeen')||''}catch(e){}
+function checkMeet(now){
+  if(mode!=='work'||!events||sleeping||!$('alert').hidden)return;
+  var e=events.filter(function(e){var d=e.s-now;return !e.all&&d>30000&&d<=MEET_AHEAD*60000})[0];if(!e)return;
+  var key=e.s.getTime()+'|'+e.t;if(meetSeen===key)return;
+  meetSeen=key;try{localStorage.setItem('meetSeen',key)}catch(x){}
+  var n=Math.max(1,Math.round((e.s-now)/60000));
+  ring('Meeting · in '+n+' min',f2(e.s.getHours()),f2(e.s.getMinutes()),null,{info:e.t,at:e.s.getTime()});
+}
 renderA();
 
 // ---------- ambiente: proteção de ecrã + sono ----------
