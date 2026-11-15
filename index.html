@@ -425,9 +425,13 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #a-s{font-size:54px;color:var(--muted);margin:0 0 6px 16px;letter-spacing:-.03em}
 #a-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:14px var(--bg);z-index:-1}
 #amb .mono{margin:16px 0 0 74px}
-#amb.night .solid{color:var(--accent)}
-#amb.night .outline{-webkit-text-stroke-color:#e2ded5}
-#amb.night .mono{color:var(--muted)}
+/* Sleep at night: the same staircase, in one dim ember tone on true black. No seconds, no weather,
+   no mode colour: nothing moves or glows to pull the eye in a dark bedroom. */
+#amb.night{--bg:#000;--ember:#a8412b}
+#amb.night #a-h{color:var(--ember)!important;text-shadow:none!important;-webkit-animation:none!important;animation:none!important}
+#amb.night #a-m{-webkit-text-stroke:3px var(--ember)!important}
+#amb.night #a-s,#amb.night .wx{display:none}
+#amb.night .mono{color:var(--ember);opacity:.5}
 
 /* mode switch: spark, wash */
 #h-next-blk .card-old{position:absolute;z-index:2;pointer-events:none;overflow:hidden}
@@ -1940,7 +1944,7 @@ function splashTick(){
   var raining=function(el){return el.classList.contains('wx-rain')||el.classList.contains('wx-storm')};
   var any=false;
   splash.cv.forEach(function(k){
-    var show=k.row.id==='a-mrow'?(!$('amb').hidden&&raining($('amb'))):(cur==='home'&&!sleeping&&raining(document.body));
+    var show=k.row.id==='a-mrow'?(!$('amb').hidden&&!$('amb').classList.contains('night')&&raining($('amb'))):(cur==='home'&&!sleeping&&raining(document.body));
     k.c.style.display=show?'block':'none';if(!show)return;any=true;
     var d=$(k.digits),w=d.offsetWidth,H=40;
     if(k.c.width!==w){k.c.width=w;k.c.height=H}
