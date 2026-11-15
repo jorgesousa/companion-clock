@@ -2,6 +2,7 @@
 
 ## Next
 
+- **A new look for the time.** The big digits (hours solid in the accent, minutes outlined and overlapping them in a staircase, seconds beside) have run their course. Explore fresh directions before choosing, in the browser first, with the design skills: `impeccable` (critique of today's Home, then typeset / bolder / overdrive for options), `design-taste-frontend` (directions that don't look templated), `better-typography` (scale, figures, tracking for numbers read from a metre), and `emil-design-eng` / `animate` for how the minute changes. Constraints to keep: 800×480 on WebView 74, readable from across the desk, one accent per mode, and the time stays the hero. Decide with it: where the weather lives (today inside the outlined minutes), how Sleep and the alarm / meeting card follow the new digits, and how the minute change animates.
 - **Reminders and to-dos.** First analyse which source fits how the work actually happens: a MacBook for work, Mindera on Google Workspace, and a client on Microsoft 365. Routes to compare (sign-in and tenant policies, what each one sees, effort), then pick one or merge a few:
   - *Google Tasks*: add Tasks to the existing work Apps Script and return today's tasks with the events; no new sign-in.
   - *Apple Reminders*: a Shortcut on the Mac or iPhone posts due reminders to a private ntfy topic, the same path the steps use; works across accounts, but only for what lands in Reminders.
