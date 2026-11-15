@@ -11,9 +11,9 @@ A Xiaomi Mi Smart Clock turned into a desk companion with two lives. At work: th
 ![WebView 74](https://img.shields.io/badge/WebView-74-555)
 [![License: Sustainable Use 1.0](https://img.shields.io/badge/license-Sustainable%20Use%201.0-8B5CF6)](LICENSE.md)
 
-<a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/two-lives.mp4"><img src="docs/video/two-lives.gif" width="860" alt="Companion Clock demo: a tap on JS switches the clock from WORK to PERSONAL and the colour washes across; tapping the flooded Drink water reminder crumbles it into grain; rain runs inside the outlined minutes and lightning lights the digits; the Sporting card shows the next match with the club crest behind it; and at night the screen fades to a dim ember clock"></a>
+<a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/tour.mp4"><img src="docs/video/tour.gif" width="860" alt="Companion Clock tour: a desk clock that only knew the time is hijacked and given a whole new life. Its old face turns into the new one; at work it burns down to the next meeting, hatches free time, marks office days, counts steps and takes a glass of water with a tap; a tap on JS switches to the personal side with its own calendar, the club's next match and TV; everywhere it shows the weather inside the digits, weather warnings, timer presets, a fuse you drag back, alarms you pull down, settings and a little friend; at night it dims to an ember"></a>
 
-<sub>▶ <a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/two-lives.mp4">Watch with sound</a> · 20 seconds · fictional data</sub>
+<sub>▶ <a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/tour.mp4">Watch with sound</a> · 35 seconds · fictional data</sub>
 
 </div>
 
