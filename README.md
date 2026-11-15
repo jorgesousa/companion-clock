@@ -4,14 +4,16 @@
 
 **The clock on your desk that knows what's next.**
 
-A Xiaomi Mi Smart Clock turned into a work companion: the time, your next meeting and the free time around it, your steps, timers, alarms and a TV player, all served from the clock itself.
+A Xiaomi Mi Smart Clock turned into a desk companion with two lives. At work: the time, your next meeting and the free time around it, your steps and water. After hours: your own calendar, your club and TV. At night, a dim clock you can sleep next to. All served from the clock itself.
 
 [![Check](https://github.com/jorgesousa/companion-clock/actions/workflows/check.yml/badge.svg)](https://github.com/jorgesousa/companion-clock/actions/workflows/check.yml)
 ![Android Things 10](https://img.shields.io/badge/device-Mi%20Smart%20Clock-111)
 ![WebView 74](https://img.shields.io/badge/WebView-74-555)
 [![License: Sustainable Use 1.0](https://img.shields.io/badge/license-Sustainable%20Use%201.0-8B5CF6)](LICENSE.md)
 
-<img src="docs/screenshots/home.jpg" width="800" alt="Home: the time in large type (hours solid, minutes outlined), the date, the next meeting with how long until it starts, today's steps against a 10,000 goal, and a bottom strip with a running timer as a burning fuse and the next alarm">
+<a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/two-lives.mp4"><img src="docs/video/two-lives.gif" width="860" alt="Companion Clock demo: a tap on JS switches the clock from WORK to PERSONAL and the colour washes across; tapping the flooded Drink water reminder crumbles it into grain; rain runs inside the outlined minutes and lightning lights the digits; the Sporting card shows the next match with the club crest behind it; and at night the screen fades to a dim ember clock"></a>
+
+<sub>▶ <a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/two-lives.mp4">Watch with sound</a> · 20 seconds · fictional data</sub>
 
 </div>
 
@@ -21,11 +23,13 @@ A Xiaomi Mi Smart Clock turned into a work companion: the time, your next meetin
 
 A desk clock sees you all day, and all it knew was the time. Companion Clock answers the next three questions at a glance, from a metre away: **what time is it, what's next, am I moving enough.** Everything else (a timer, an alarm, a channel) is one tap away.
 
-## In 20 seconds
+## The first 20 seconds
 
-<a href="docs/video/companion-clock.mp4"><img src="docs/video/companion-clock.jpg" width="800" alt="Video: Companion Clock in 20 seconds. The meeting line burning down, the timer cancelled by dragging the fuse back, and the calendar's free time. Click to play."></a>
+<a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/companion-clock.mp4"><img src="docs/video/companion-clock.jpg" width="800" alt="Video: the first Companion Clock video. The meeting line burning down, the timer cancelled by dragging the fuse back, and the calendar's free time. Click to play."></a>
 
-<sub>Click to play (with sound). Fictional data.</sub>
+<sub>▶ <a href="https://github.com/jorgesousa/companion-clock/raw/main/docs/video/companion-clock.mp4">Watch with sound</a> · 20 seconds · meetings, the fuse and free time · fictional data</sub>
+
+<img src="docs/screenshots/home.jpg" width="800" alt="Home: the time in large type (hours solid, minutes outlined), the date, the next meeting with how long until it starts, today's steps against a 10,000 goal, and a bottom strip with a running timer as a burning fuse and the next alarm">
 
 ## A look around
 
