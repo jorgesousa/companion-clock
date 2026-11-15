@@ -1290,7 +1290,7 @@ function stepsSync(){
 var waterUndo=null,dropBusy=false;
 // (dropBusy is no longer used: kept false)
 function waterDue(){var w=waterNow();return !!(w&&w.due)}
-var wasDue=false,ringT=null,chimed=false;
+var wasDue=false,chimed=false;
 function waterDay(){var d=new Date().getDay();return mode!=='personal'&&(/water=1/.test(location.search)||(d!==0&&d!==6))}
 function renderWater(){
   var on=waterDay(),b=document.body.classList;
@@ -1309,7 +1309,6 @@ function renderWater(){
   // the chime: once each time you fall behind, never during a meeting; if a meeting is on, it plays as soon as it ends (if you're still behind)
   if(!due)chimed=false;
   else if(!chimed&&!inMeeting()&&!quiet()){chimed=true;beep(880,.14);setTimeout(function(){beep(1320,.22)},180)}
-  clearInterval(ringT);
 }
 function ripple(x,y,d){var hw=$('hw'),r=document.createElement('i');r.className='rp';r.style.left=x+'px';r.style.top=y+'px';hw.appendChild(r);
   r.animate([{opacity:.9,transform:'scale(.2)'},{opacity:0,transform:'scale(1.6)'}],{duration:700,delay:d,easing:'cubic-bezier(.2,.7,.2,1)',fill:'both'}).onfinish=function(){r.remove()}}
@@ -1358,7 +1357,7 @@ function crumble(s){
     P.push({x:x,y:y,c:'rgb('+data[i]+','+data[i+1]+','+data[i+2]+')',t0:d*2.2,ux:dx/d,uy:dy/d,sp:60+Math.random()*140,j:Math.random()*6.28})}
   var cv=document.createElement('canvas');cv.width=W;cv.height=H+110;cv.style.cssText='position:absolute;left:0;top:0;z-index:4;pointer-events:none';hw.appendChild(cv);
   var ctx=cv.getContext('2d');
-  hw.classList.remove('due');clearInterval(ringT);row.style.opacity=0;t.style.opacity=0; // still behind? it floods back later, without the chime
+  hw.classList.remove('due');row.style.opacity=0;t.style.opacity=0; // still behind? it floods back later, without the chime
   var start=Date.now(),LOOSE=380,shown=false;
   (function frame(){var tt=Date.now()-start,alive=0;ctx.clearRect(0,0,cv.width,cv.height);
     for(var k=0;k<P.length;k++){var p=P[k],lt=tt-p.t0,x=p.x,y=p.y,a=1;
