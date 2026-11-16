@@ -17,8 +17,12 @@
   - steps far behind late in the work day, once the steps pace is revisited.
   Decide for each: what floods (which cell), whether it chimes, and what "done" means (dismiss, snooze, open).
 - **"Ready for it?" before a meeting.** Ahead of a meeting, the clock asks whether you're ready for it. If not, it suggests using the free time before it to prepare (e.g. "40 min free before Sprint review: prepare now?"), pointing at that Free slot. To decide: how far ahead to ask, which meetings (all, or only some), and what "prepare" turns into (a focus block, a timer).
-- **Claude Code → clock.** `Notification` / `Stop` hooks post to a private ntfy topic; the clock shows "Claude is waiting for you".
-- **Unread email** via the same Apps Script: unread count and the last important sender on Home.
+- **Claude Code → clock.** Claude Code hooks post to a private ntfy topic (its name only in `config.json`); the clock listens live (ntfy's SSE stream, so it arrives in about a second instead of on the next minute poll) and shows it on the same card as the alarm and the meeting heads-up. `Notification` only (a permission request, or waiting for your answer): `Stop` fires after every reply and would never let the clock rest. The same topic can take any message you send yourself.
+- **Hourly email summary.** Working on a client's systems all day, the Mindera inbox goes unwatched: once an hour the clock says what's waiting there. Routes:
+  - *The work Apps Script* (preferred): an hourly trigger in the Mindera Google account reads the unread inbox and builds the summary (how many, who from, the subjects, important first); the clock fetches it like the calendar. The email never leaves Google and the clock, and it runs with the laptop closed. A Claude-written summary would need an API key in the script and send the content to Anthropic: only if Mindera allows it.
+  - *A Claude scheduled task with the Gmail connector*: the best summary, also with the laptop closed, but the content goes through Anthropic and ntfy.
+  - *An hourly `claude -p` job on the Mac*: only while the Mac is on.
+  Decide with it: what counts as important, whether it's a card on the hour or a quiet line on Home, and work days only.
 - **Steps pace, revisited.** "Expected X · N ahead/behind" is switched off for now: it paced 10,000 steps over the working day (08:00 to `dayEndMinute`) every day, weekends too. Decide a pace that fits (work days vs weekends, a different window) or keep just the count.
 - **Microphone indicator.** Replace the assistant's overlay with the clock's own mic-off icon; needs the mute switch state source first.
 - **Type scale pass.** 9 sizes → 5 (18 · 24 · 44 · 84 · 210) and 3 type styles.
