@@ -95,6 +95,22 @@ nav{position:relative}
 #h-m.roller{overflow:visible} /* a clip here cut the minutes' halo in a straight line across the hours */
 #h-m .r.outline:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:12px var(--bg);z-index:-1}
 #h-s{font-size:var(--t-val);color:var(--muted);margin:0 0 4px 14px;letter-spacing:-.03em}
+/* Settings → Time: Beside (hours and minutes side by side, the seconds under the minutes) */
+body.ts-beside #v-home .col-l{flex-direction:row;align-items:center;justify-content:flex-start}
+body.ts-beside #v-home .col-l .big{font-size:140px}
+body.ts-beside #v-home .mrow{margin:0 0 0 12px}
+body.ts-beside #h-m .r.outline:before{display:none}
+body.ts-beside #h-s{position:absolute;right:0;top:100%;margin:18px 0 0}
+/* Settings → Time: Board (a tile per digit, split across the middle; a digit flips when it changes) */
+#h-board{display:none}
+body.ts-board #h-h,body.ts-board #v-home .mrow{display:none}
+body.ts-board #h-board{display:flex;align-items:center}
+#h-board .tl{font-style:normal;position:relative;width:80px;height:150px;margin-right:6px;background:#1b1b18;border-radius:4px;overflow:hidden;-webkit-perspective:400px;perspective:400px}
+#h-board .tl:after{content:"";position:absolute;left:0;right:0;top:74px;height:3px;background:var(--bg)}
+#h-board .tl b{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:124px;color:var(--fg)}
+#h-board .tl.hr b{color:var(--accent);transition:color .8s var(--ease)}
+.attn #h-board .tl.hr b{color:var(--fg)}
+#h-board .gap{width:12px}
 .roller{position:relative;overflow:hidden;padding:.08em .08em .08em 0;margin:-.08em -.08em -.08em 0;flex-shrink:0}
 .roller .r{display:block;will-change:transform}
 .roller .r.in{position:absolute;left:0;top:.08em}
@@ -445,6 +461,23 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #amb.night #a-m{-webkit-text-stroke:3px var(--ember)!important}
 #amb.night #a-s,#amb.night .wx{display:none}
 #amb.night .mono{color:var(--ember);opacity:.5}
+/* Sleep follows Settings → Time */
+body.ts-beside #amb-in{display:flex;flex-wrap:wrap;align-items:flex-end;width:-webkit-max-content;width:max-content}
+body.ts-beside #amb .big{font-size:200px}
+body.ts-beside #a-mrow{margin:0 0 0 16px}
+body.ts-beside #a-m:before{display:none}
+body.ts-beside #a-s{position:absolute;right:0;top:100%;margin:20px 0 0}
+body.ts-beside #a-l{width:0;min-width:100%;margin:22px 0 0 4px}
+#a-board{display:none}
+body.ts-board #a-h,body.ts-board #a-mrow{display:none}
+body.ts-board #a-board{display:flex;align-items:center}
+body.ts-board #amb .mono{margin:22px 0 0 2px}
+#a-board .tl{font-style:normal;position:relative;width:120px;height:220px;margin-right:8px;background:#1b1b18;border-radius:4px;overflow:hidden;-webkit-perspective:600px;perspective:600px}
+#a-board .tl:after{content:"";position:absolute;left:0;right:0;top:108px;height:4px;background:var(--bg)}
+#a-board .tl b{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:184px;color:var(--fg)}
+#a-board .gap{width:16px}
+#amb.night #a-board .tl{background:#0d0c0b}
+#amb.night #a-board .tl b{color:var(--ember)}
 
 /* mode switch: spark, wash */
 #h-next-blk .card-old{position:absolute;z-index:2;pointer-events:none;overflow:hidden}
@@ -516,7 +549,8 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 .pf-pair .pf-sw button{width:68px;font-size:20px}
 #pf-tap button{width:112px}
 #prefs>*{flex-shrink:0} /* more rows than fit: Settings scrolls instead of squeezing */
-#pf-tap-row+.pf-row{margin-bottom:22px}
+#pf-time-row{margin-bottom:22px}
+.pf-sw button+button{margin-left:-1px}
 .pf-pair .pf-row>span{white-space:nowrap;margin-right:12px}
 .pf-sw button{width:96px;height:48px;border:2px solid var(--rule);font:600 var(--t-ui)/1 var(--sans);letter-spacing:-.01em}
 .pf-sw button:first-child{border-radius:4px 0 0 4px}.pf-sw button:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
@@ -577,6 +611,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
   <div class="col-l">
     <div class="num big solid" id="h-h">00</div>
     <div class="mrow"><div class="num big roller" id="h-m"><span class="r outline">00</span></div><span class="num" id="h-s">00</span><span class="num big wx" id="h-wx" aria-hidden="true">00</span></div>
+    <div id="h-board" aria-hidden="true"><i class="tl hr"><b class="num"></b></i><i class="tl hr"><b class="num"></b></i><i class="gap"></i><i class="tl"><b class="num"></b></i><i class="tl"><b class="num"></b></i></div>
   </div>
   <div class="col-r">
     <div class="cap mono muted"><span id="h-date">—</span><span class="cap-side"><span id="h-timer" role="button"></span><span id="h-alarm" class="solid"></span></span></div>
@@ -672,6 +707,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
   <div id="amb-in">
     <div class="num big solid" id="a-h">00</div>
     <div class="mrow" id="a-mrow"><div class="num big outline" id="a-m">00</div><span class="num" id="a-s">00</span><span class="num big wx" id="a-wx" aria-hidden="true">00</span></div>
+    <div id="a-board" aria-hidden="true"><i class="tl"><b class="num"></b></i><i class="tl"><b class="num"></b></i><i class="gap"></i><i class="tl"><b class="num"></b></i><i class="tl"><b class="num"></b></i></div>
     <div class="mono muted" id="a-l"></div>
   </div>
 </div>
@@ -688,6 +724,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
   </div>
   <div class="pf-row" id="pf-tap-row"><span class="mono muted">Tap the temperature</span><div class="pf-sw" id="pf-tap"><button data-v="details">Details</button><button data-v="away" id="pf-tap-away">UK</button></div></div>
   <div class="pf-row"><span class="mono muted">Club logo</span><div class="pf-sw" id="pf-crest"><button data-v="0">Off</button><button data-v="1">On</button></div></div>
+  <div class="pf-row" id="pf-time-row"><span class="mono muted">Time</span><div class="pf-sw" id="pf-time"><button data-v="stairs">Stairs</button><button data-v="board">Board</button><button data-v="beside">Beside</button></div></div>
   <div class="pf-sec mono muted">Health · steps a day</div>
   <div class="pf-bright pf-5" id="pf-steps"></div>
   <div class="pf-sec mono muted">Health · glasses of water on work days (250 ml)</div>
@@ -872,7 +909,7 @@ function tick(){
   $('a-m').textContent=m;$('a-m').setAttribute('data-t',m);$('a-s').textContent=f2(now.getSeconds());
   navBar(); // the header can shift under the line (the temperature arriving, a warning, the TV tab): keep it under the tab
   if($('h-wx').textContent!==m){$('h-wx').textContent=m;$('a-wx').textContent=m}
-  applyMute();fitDate(now);meetLine();
+  boardSet(h,m);applyMute();fitDate(now);meetLine();
   var nb=$('h-next-blk').classList;document.body.classList.toggle('attn',nb.contains('soon')||nb.contains('live')||(tRun&&tLeft<60)||(typeof waterDue==='function'&&waterDue()));
   if(now.getMinutes()!==lastMin){
     setMinute(m,lastMin!==-1);
@@ -1159,8 +1196,9 @@ function renderCal(){
   $('cal-skel').hidden=!!events||evTried;
   if(!events){empty.hidden=!evTried;list.hidden=true;return}
   var now=new Date(),t0=new Date(now);t0.setHours(0,0,0,0);
-  // today → Sunday of next week
-  var days=(7-t0.getDay())%7+8,DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // WORK: today → Sunday of next week; PERSONAL: the next three months (days with nothing are left out)
+  var t3=new Date(t0);t3.setMonth(t3.getMonth()+3);
+  var days=mode==='personal'?Math.round((t3-t0)/864e5):(7-t0.getDay())%7+8,DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   // free time: gaps of 15+ min inside the working day (weekdays 09:00–17:00)
   var WS=9*60,WE=17*60,MINGAP=15;
   function dur(m){return m<60?m+' min':Math.floor(m/60)+'h'+(m%60?' '+f2(m%60):'')}
@@ -1206,9 +1244,9 @@ function renderCal(){
     // big day word (Today / Tomorrow / Mon) with the date small beside it
     var tk=a.getFullYear()+'-'+f2(a.getMonth()+1)+'-'+f2(a.getDate()),tmax=wxDays[tk];
     var lab='<span class="dbig">'+(i===0?'Today':i===1?'Tomorrow':DN[a.getDay()])+'</span>'+(tmax!=null?'<span class="dtemp">'+tmax+'°</span>':'')+'<span class="dsm">'+(i<2?DN[a.getDay()]+' ':'')+a.getDate()+' '+MN[a.getMonth()];
-    // a red rule with the week number marks where next week starts
-    var nw=i>1&&i>=((8-t0.getDay())%7||7)&&!wk,g=grp(lab,a,b);
-    if(nw&&g){wk=true;g=weekRule(a)+g}
+    // a red rule with the week number marks where each later week starts (only above a day that has something)
+    var wn=isoWeek(a),nw=i>1&&i>=((8-t0.getDay())%7||7)&&wk!==wn,g=grp(lab,a,b);
+    if(nw&&g){wk=wn;g=weekRule(a)+g}
     html+=g;
   }
   list.innerHTML=html||(mode==='personal'?'<div class="num empty-title solid">Nothing</div><div class="num empty-title outline" data-t="planned">planned</div>':'<div class="num empty-title solid">Free</div><div class="num empty-title outline" data-t="until later">until later</div>');
@@ -1793,6 +1831,23 @@ var crestOn=false;try{crestOn=localStorage.getItem('crest')==='1'}catch(e){}
 function renderCrestPref(){document.body.classList.toggle('crest',crestOn);[].forEach.call($('pf-crest').children,function(b){b.classList.toggle('on',(b.getAttribute('data-v')==='1')===crestOn)})}
 $('pf-crest').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;crestOn=b.getAttribute('data-v')==='1';try{localStorage.setItem('crest',crestOn?'1':'0')}catch(e){}renderCrestPref()});
 renderCrestPref();
+// Settings → Time: how Home draws the time (the staircase, a board of tiles, or side by side)
+var timeStyle='stairs';try{var ts0=localStorage.getItem('timeStyle');if(ts0==='board'||ts0==='beside')timeStyle=ts0}catch(e){}
+function renderTimePref(){var b=document.body.classList;b.toggle('ts-board',timeStyle==='board');b.toggle('ts-beside',timeStyle==='beside');
+  [].forEach.call($('pf-time').children,function(x){x.classList.toggle('on',x.getAttribute('data-v')===timeStyle)});
+  var n=new Date();boardSet(f2(n.getHours()),f2(n.getMinutes()),true)}
+$('pf-time').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;timeStyle=b.getAttribute('data-v');try{localStorage.setItem('timeStyle',timeStyle)}catch(e){}renderTimePref()});
+// a digit that changes flips: the old one folds away on its axis, the new one unfolds
+function boardSet(h,m,now){
+  if(timeStyle!=='board')return;var bs=document.querySelectorAll('#h-board .tl b,#a-board .tl b'),d=h+m; // Home and Sleep
+  for(var i=0;i<8;i++)(function(b,c){
+    if(b.textContent===c)return;
+    if(now||!b.textContent||!b.animate||alReduce()){b.textContent=c;return}
+    b.animate([{transform:'rotateX(0)'},{transform:'rotateX(90deg)'}],{duration:160,easing:'cubic-bezier(.5,0,1,1)'}).onfinish=function(){
+      b.textContent=c;b.animate([{transform:'rotateX(-90deg)'},{transform:'rotateX(0)'}],{duration:280,easing:'cubic-bezier(.16,1,.3,1)'})};
+  })(bs[i],d[i%4]);
+}
+renderTimePref();
 function wxKind(c,day,cape){
   // models call "thunderstorm" too easily; without real convective energy (CAPE) it's just rain
   if(c>=95)return cape==null||cape>=400?'storm':'rain';

@@ -37,7 +37,7 @@ A desk clock sees you all day, and all it knew was the time. Companion Clock ans
 <tr>
 <td width="50%" valign="top">
 <img src="docs/screenshots/calendar.jpg" alt="Calendar: today's meetings with a coloured square per client, hatched green Free rows between them, and the free slot you are in shown live">
-<b>Calendar.</b> Today to the end of next week. Free time between meetings is hatched in green, and the slot you're in right now counts down.
+<b>Calendar.</b> Today to the end of next week (in PERSONAL, the next three months, with a rule at each week). Free time between meetings is hatched in green, and the slot you're in right now counts down.
 </td>
 <td width="50%" valign="top">
 <img src="docs/screenshots/calendar-week.jpg" alt="Calendar further down: a rule reading Week 47 · 16–22 Nov marks where next week starts; Monday's heading says Office">

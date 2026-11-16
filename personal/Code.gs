@@ -8,7 +8,7 @@
 // which it prints in the execution log. Put in the clock's config.json:
 //   "personalCalUrl": "<web app URL>?f=calendar&k=<KEY>"
 
-var DAYS = 15; // today → end of next week
+var MONTHS = 3; // today → three months ahead
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
@@ -20,7 +20,7 @@ function key() { return PropertiesService.getScriptProperties().getProperty('KEY
 
 function calendar() {
   var start = new Date(); start.setHours(0, 0, 0, 0);
-  var end = new Date(start.getTime() + DAYS * 24 * 60 * 60 * 1000);
+  var end = new Date(start); end.setMonth(end.getMonth() + MONTHS);
   return CalendarApp.getDefaultCalendar().getEvents(start, end)
     .filter(function (ev) { return ev.getMyStatus() !== CalendarApp.GuestStatus.NO; })
     .map(function (ev) {
