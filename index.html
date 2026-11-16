@@ -136,6 +136,15 @@ body.ts-board #h-board{display:flex;align-items:center}
 #al-h{color:var(--accent-ink)}
 #al-m{position:relative;color:var(--accent);-webkit-text-stroke:3px var(--accent-ink);margin-left:14px}
 #al-m:after{content:attr(data-t);position:absolute;left:0;top:0;color:var(--accent);-webkit-text-stroke:0;pointer-events:none} /* as on Home: hides the inner half of the stroke and overlapping contours */
+/* Board: the alarm's time on flip tiles, dark on the accent card */
+#al-board{display:none}
+body.ts-board .al-digits{display:none}
+body.ts-board #al-board{display:flex;align-items:center}
+#al-board .tl{font-style:normal;position:relative;width:80px;height:144px;margin-right:6px;background:var(--accent-ink);border-radius:4px;overflow:hidden}
+#al-board .tl:last-child{margin-right:0}
+#al-board .tl:after{content:"";position:absolute;left:0;right:0;top:70px;height:3px;background:var(--accent)}
+#al-board .tl b{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:120px;color:var(--accent)}
+#al-board .gap{width:12px}
 .al-foot{display:flex;align-items:center;justify-content:center;margin-top:26px}
 #al-silent{margin-left:12px}
 .al-foot .mono{white-space:nowrap}
@@ -405,6 +414,23 @@ body.water #v-home #h-steps-l{white-space:nowrap} /* two equal halves: steps | w
 #a-left .tfill{overflow:visible}
 #a-left.none .num{opacity:1}
 #a-left.none #a-left-h,#a-left.none #a-left-m{opacity:.3} /* off: only the time dims, the arrows stay ready */
+/* Beside and Board: hours and minutes side by side, each with its arrows underneath */
+body.ts-beside #a-left:not([hidden]),body.ts-board #a-left:not([hidden]){display:flex;align-items:flex-start}
+body.ts-beside #a-left .a-row,body.ts-board #a-left .a-row{flex-direction:column;align-items:center}
+body.ts-beside #a-left .tfill,body.ts-board #a-left .tfill{margin:0 0 0 16px}
+body.ts-beside #a-left .arw,body.ts-board #a-left .arw{flex-direction:row;margin:16px 0 0}
+body.ts-beside #a-left .arw button+button,body.ts-board #a-left .arw button+button{margin:0 0 0 6px}
+body.ts-beside #a-left .big{font-size:136px}
+body.ts-beside #a-left-m:before{display:none}
+.a-tl{display:none}
+body.ts-board #a-left-h,body.ts-board #a-left-m{display:none}
+body.ts-board .a-tl{display:flex}
+.a-tl .tl{font-style:normal;position:relative;width:80px;height:150px;background:#1b1b18;border-radius:4px;overflow:hidden;-webkit-perspective:400px;perspective:400px}
+.a-tl .tl+.tl{margin-left:6px}
+.a-tl .tl:after{content:"";position:absolute;left:0;right:0;top:74px;height:3px;background:var(--bg)}
+.a-tl .tl b{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:124px;color:var(--fg);transition:opacity .3s var(--ease)}
+.a-tl.hr .tl b{color:var(--accent)}
+#a-left.none .a-tl .tl b{opacity:.3}
 .alrm{display:flex;align-items:center;height:72px;border-bottom:2px solid var(--rule)}
 .alrm .num{font-size:var(--t-num);flex:1}
 .alrm.off .num{color:var(--muted)}
@@ -664,8 +690,8 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
     </div>
     <!-- Alarms tab: the left column shows the next alarm instead of the timer -->
     <div id="a-left" hidden>
-      <div class="a-row"><div class="num big solid" id="a-left-h">07</div><div class="arw"><button data-s="h" data-d="1" aria-label="Hour up"><svg class="i"><use href="#i-up"/></svg></button><button data-s="h" data-d="-1" aria-label="Hour down"><svg class="i"><use href="#i-down"/></svg></button></div></div>
-      <div class="num big tfill a-row"><span class="outline" id="a-left-m" data-t="00">00</span><div class="arw"><button data-s="m" data-d="5" aria-label="Minutes up"><svg class="i"><use href="#i-up"/></svg></button><button data-s="m" data-d="-5" aria-label="Minutes down"><svg class="i"><use href="#i-down"/></svg></button></div></div>
+      <div class="a-row"><div class="num big solid" id="a-left-h">07</div><div class="a-tl hr" aria-hidden="true"><i class="tl"><b class="num"></b></i><i class="tl"><b class="num"></b></i></div><div class="arw"><button data-s="h" data-d="1" aria-label="Hour up"><svg class="i"><use href="#i-up"/></svg></button><button data-s="h" data-d="-1" aria-label="Hour down"><svg class="i"><use href="#i-down"/></svg></button></div></div>
+      <div class="num big tfill a-row"><span class="outline" id="a-left-m" data-t="00">00</span><div class="a-tl" aria-hidden="true"><i class="tl"><b class="num"></b></i><i class="tl"><b class="num"></b></i></div><div class="arw"><button data-s="m" data-d="5" aria-label="Minutes up"><svg class="i"><use href="#i-up"/></svg></button><button data-s="m" data-d="-5" aria-label="Minutes down"><svg class="i"><use href="#i-down"/></svg></button></div></div>
     </div>
   </div>
   <div class="col-r" style="justify-content:flex-start">
@@ -734,6 +760,7 @@ canvas.splash{position:absolute;pointer-events:none;z-index:3;display:none}
 
 <div id="alert" hidden>
   <div id="al-card">
+    <div id="al-board" aria-hidden="true"><i class="tl"><b class="num"></b></i><i class="tl"><b class="num"></b></i><i class="gap"></i><i class="tl"><b class="num"></b></i><i class="tl"><b class="num"></b></i></div>
     <div class="al-digits"><span class="num" id="al-h">07</span><span class="num" id="al-m">00</span></div>
     <div class="al-foot"><span class="mono" id="al-what">Alarm</span><span class="mono" id="al-silent" hidden>Silent</span></div>
     <div class="mono" id="al-info"><span id="al-info-t"></span></div>
@@ -1433,6 +1460,7 @@ function ring(what,h,m,mins,mt){
   if(mins!=null){var n=new Date();what=mins+' min timer · done';h=f2(n.getHours());m=f2(n.getMinutes())}
   alClean();
   $('al-what').textContent=what;$('al-h').textContent=h;$('al-m').textContent=m;$('al-m').setAttribute('data-t',m);
+  var tb=document.querySelectorAll('#al-board .tl b'),hm=h+m;for(var k=0;k<4;k++)tb[k].textContent=hm.charAt(k);
   $('al-silent').hidden=!quiet();
   var al=$('alert'),card=$('al-card'),night=!$('amb').hidden&&$('amb').classList.contains('night');
   al.classList.toggle('night',night);al.classList.toggle('meet',!!mt);al.classList.remove('ringing','in');al.hidden=false;
@@ -1479,6 +1507,12 @@ function alRaster(card){
   var g=c.getContext('2d'),R=4;
   g.fillStyle=getComputedStyle(card).backgroundColor;g.beginPath();g.moveTo(R,0);g.arcTo(W,0,W,H,R);g.arcTo(W,H,0,H,R);g.arcTo(0,H,0,0,R);g.arcTo(0,0,W,0,R);g.fill();
   var sl=$('al-silent');if(!sl.hidden){var b=sl.getBoundingClientRect();g.fillStyle=getComputedStyle(sl).backgroundColor;g.fillRect(b.left-r.left,b.top-r.top,b.width,b.height)}
+  if(timeStyle==='board')[].forEach.call(card.querySelectorAll('#al-board .tl'),function(t){ // the tiles crumble too
+    var q=t.getBoundingClientRect(),x=q.left-r.left,y=q.top-r.top,b=t.firstChild,cs=getComputedStyle(b);
+    g.fillStyle=getComputedStyle(t).backgroundColor;g.fillRect(x,y,q.width,q.height);
+    g.fillStyle=getComputedStyle(card).backgroundColor;g.fillRect(x,y+70,q.width,3);
+    g.font=cs.fontWeight+' '+cs.fontSize+' '+cs.fontFamily;g.textAlign='center';g.textBaseline='middle';g.fillStyle=cs.color;g.fillText(b.textContent,x+q.width/2,y+q.height/2);g.textAlign='start';
+  });
   ['al-what','al-h','al-m','al-silent','al-info-t'].forEach(function(id){
     var el=$(id),node=el.firstChild;if(el.hidden||!node||node.nodeType!==3)return;
     var cs=getComputedStyle(el),op=parseFloat(cs.opacity),sw=parseFloat(cs.webkitTextStrokeWidth)||0,up=cs.textTransform==='uppercase',rg=document.createRange(),tx=node.nodeValue;
@@ -1683,6 +1717,7 @@ function renderALeft(){ // the time is always shown; dimmed when the alarm is of
   var a=alarms[0],t=a?a.t:f2(aH)+':'+f2(aM),p=t.split(':');
   $('a-left').classList.toggle('none',!(a&&a.on));
   $('a-left-h').textContent=p[0];$('a-left-m').textContent=p[1];$('a-left-m').setAttribute('data-t',p[1]);
+  var tb=document.querySelectorAll('#a-left .tl b'),hm=p[0]+p[1];for(var k=0;k<4;k++)flipTo(tb[k],hm.charAt(k),cur!=='timer'); // the tiles flip as the arrows step
 }
 function alarmIn(t){
   var now=new Date(),p=t.split(':'),at=new Date(now);at.setHours(+p[0],+p[1],0,0);if(at<=now)at.setDate(at.getDate()+1);
@@ -1840,12 +1875,13 @@ $('pf-time').addEventListener('click',function(ev){var b=ev.target.closest('butt
 // a digit that changes flips: the old one folds away on its axis, the new one unfolds
 function boardSet(h,m,now){
   if(timeStyle!=='board')return;var bs=document.querySelectorAll('#h-board .tl b,#a-board .tl b'),d=h+m; // Home and Sleep
-  for(var i=0;i<8;i++)(function(b,c){
-    if(b.textContent===c)return;
-    if(now||!b.textContent||!b.animate||alReduce()){b.textContent=c;return}
-    b.animate([{transform:'rotateX(0)'},{transform:'rotateX(90deg)'}],{duration:160,easing:'cubic-bezier(.5,0,1,1)'}).onfinish=function(){
-      b.textContent=c;b.animate([{transform:'rotateX(-90deg)'},{transform:'rotateX(0)'}],{duration:280,easing:'cubic-bezier(.16,1,.3,1)'})};
-  })(bs[i],d[i%4]);
+  for(var i=0;i<8;i++)flipTo(bs[i],d[i%4],now);
+}
+function flipTo(b,c,now){
+  if(b.textContent===c)return;
+  if(now||!b.textContent||!b.animate||alReduce()){b.textContent=c;return}
+  b.animate([{transform:'rotateX(0)'},{transform:'rotateX(90deg)'}],{duration:160,easing:'cubic-bezier(.5,0,1,1)'}).onfinish=function(){
+    b.textContent=c;b.animate([{transform:'rotateX(-90deg)'},{transform:'rotateX(0)'}],{duration:280,easing:'cubic-bezier(.16,1,.3,1)'})};
 }
 renderTimePref();
 function wxKind(c,day,cape){
