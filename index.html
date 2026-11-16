@@ -479,18 +479,18 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #a-mrow{margin:-45px 0 0 70px;position:relative;z-index:1}
 #a-s{font-size:54px;color:var(--muted);margin:0 0 6px 16px;letter-spacing:-.03em}
 #a-m:before{content:attr(data-t);position:absolute;left:0;top:0;color:var(--bg);-webkit-text-stroke:14px var(--bg);z-index:-1}
-#amb .mono{margin:16px 0 0 74px}
+#amb .mono{margin:16px 0 0 74px;font-size:28px} /* read from across the room, like the time */
 /* Sleep at night: the same staircase, in one dim ember tone on true black. No seconds, no weather,
    no mode colour: nothing moves or glows to pull the eye in a dark bedroom. */
 #amb.night{--bg:#000;--ember:#a8412b}
 #amb.night #a-h{color:var(--ember)!important;text-shadow:none!important;-webkit-animation:none!important;animation:none!important}
-#amb.night #a-m{-webkit-text-stroke:3px var(--ember)!important}
+#amb.night #a-m{-webkit-text-stroke:4px var(--ember)!important}
 #amb.night #a-s,#amb.night .wx{display:none}
-#amb.night .mono{color:var(--ember);opacity:.5}
+#amb.night .mono{color:var(--ember);opacity:.85}
 /* Sleep follows Settings → Time */
 body.ts-beside #amb-in{display:flex;flex-wrap:wrap;align-items:flex-end;width:-webkit-max-content;width:max-content}
-body.ts-beside #amb .big{font-size:200px}
-body.ts-beside #a-mrow{margin:0 0 0 16px}
+body.ts-beside #amb .big{font-size:285px}
+body.ts-beside #a-mrow{margin:0 0 0 20px}
 body.ts-beside #a-m:before{display:none}
 body.ts-beside #a-s{position:absolute;right:0;top:100%;margin:20px 0 0}
 body.ts-beside #a-l{width:0;min-width:100%;margin:22px 0 0 4px}
@@ -498,10 +498,10 @@ body.ts-beside #a-l{width:0;min-width:100%;margin:22px 0 0 4px}
 body.ts-board #a-h,body.ts-board #a-mrow{display:none}
 body.ts-board #a-board{display:flex;align-items:center}
 body.ts-board #amb .mono{margin:22px 0 0 2px}
-#a-board .tl{font-style:normal;position:relative;width:120px;height:220px;margin-right:8px;background:#1b1b18;border-radius:4px;overflow:hidden;-webkit-perspective:600px;perspective:600px}
-#a-board .tl:after{content:"";position:absolute;left:0;right:0;top:108px;height:4px;background:var(--bg)}
-#a-board .tl b{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:184px;color:var(--fg)}
-#a-board .gap{width:16px}
+#a-board .tl{font-style:normal;position:relative;width:160px;height:290px;margin-right:10px;background:#1b1b18;border-radius:4px;overflow:hidden;-webkit-perspective:600px;perspective:600px}
+#a-board .tl:after{content:"";position:absolute;left:0;right:0;top:143px;height:4px;background:var(--bg)}
+#a-board .tl b{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:250px;color:var(--fg)}
+#a-board .gap{width:20px}
 #amb.night #a-board .tl{background:#0d0c0b}
 #amb.night #a-board .tl b{color:var(--ember)}
 
