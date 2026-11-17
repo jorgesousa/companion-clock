@@ -485,7 +485,17 @@ video::-internal-media-controls-overlay-cast-button{display:none}
 #amb.night{--bg:#000;--ember:#a8412b}
 #amb.night #a-h{color:var(--ember)!important;text-shadow:none!important;-webkit-animation:none!important;animation:none!important}
 #amb.night #a-m{-webkit-text-stroke:4px var(--ember)!important}
-#amb.night #a-s,#amb.night .wx{display:none}
+#amb.night #a-s{display:none}
+/* at night the weather stays; lightning only warms the digits */
+/* the same weather drawn in the ember, so it doesn't light the room */
+#amb.night.wx-rain .wx,#amb.night.wx-storm .wx{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='120'%3E%3Cg stroke='%23a8412b' stroke-linecap='round' stroke-width='2.4'%3E%3Cline x1='8' y1='6' x2='8' y2='32' opacity='.95'/%3E%3Cline x1='31' y1='50' x2='31' y2='70' opacity='.6'/%3E%3Cline x1='50' y1='16' x2='50' y2='46' opacity='.85'/%3E%3Cline x1='20' y1='82' x2='20' y2='104' opacity='.7'/%3E%3Cline x1='43' y1='90' x2='43' y2='116' opacity='.5'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='170'%3E%3Cg stroke='%23a8412b' stroke-linecap='round' stroke-width='1.6'%3E%3Cline x1='6' y1='20' x2='6' y2='38' opacity='.5'/%3E%3Cline x1='27' y1='96' x2='27' y2='118' opacity='.45'/%3E%3Cline x1='38' y1='140' x2='38' y2='156' opacity='.35'/%3E%3C/g%3E%3C/svg%3E")}
+#amb.night.wx-snow .wx{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='90'%3E%3Cg fill='%23a8412b'%3E%3Ccircle cx='10' cy='12' r='3'/%3E%3Ccircle cx='44' cy='34' r='2.2' opacity='.7'/%3E%3Ccircle cx='26' cy='62' r='2.6' opacity='.85'/%3E%3Ccircle cx='60' cy='80' r='1.8' opacity='.6'/%3E%3C/g%3E%3C/svg%3E")}
+#amb.night.wx-stars .wx{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='70'%3E%3Cg fill='%23a8412b'%3E%3Ccircle cx='12' cy='14' r='1.6'/%3E%3Ccircle cx='52' cy='30' r='1.1'/%3E%3Ccircle cx='30' cy='56' r='1.4'/%3E%3Ccircle cx='70' cy='60' r='.9'/%3E%3C/g%3E%3C/svg%3E")}
+#amb.night.wx-haze .wx{background-image:linear-gradient(90deg,rgba(168,65,43,0),rgba(168,65,43,.32),rgba(168,65,43,0));background-size:320px 100%}
+#amb.night.flash .wx{-webkit-filter:brightness(1.4);filter:brightness(1.4)}
+#amb.night.flash #a-h{color:#d4603e!important}
+#amb.night.flash #a-m{-webkit-text-stroke-color:#d4603e!important}
 #amb.night .mono{color:var(--ember);opacity:.85}
 /* Sleep follows Settings → Time */
 body.ts-beside #amb-in{display:flex;flex-wrap:wrap;align-items:flex-end;width:-webkit-max-content;width:max-content}
@@ -2111,7 +2121,7 @@ function splashTick(){
   var raining=function(el){return el.classList.contains('wx-rain')||el.classList.contains('wx-storm')};
   var any=false;
   splash.cv.forEach(function(k){
-    var show=k.row.id==='a-mrow'?(!$('amb').hidden&&!$('amb').classList.contains('night')&&raining($('amb'))):(cur==='home'&&!sleeping&&raining(document.body));
+    var show=k.row.id==='a-mrow'?(!$('amb').hidden&&raining($('amb'))):(cur==='home'&&!sleeping&&raining(document.body));
     k.c.style.display=show?'block':'none';if(!show)return;any=true;
     var d=$(k.digits),w=d.offsetWidth,H=40;
     if(k.c.width!==w){k.c.width=w;k.c.height=H}
@@ -2122,11 +2132,11 @@ function splashTick(){
     if(k.cols.length&&k.ps.length<14&&Math.random()<.35){var x=k.cols[Math.floor(Math.random()*k.cols.length)];
       k.ps.push({x:x,y:H-6,r:0,life:0,max:16});                      // the ripple
       for(var i=0;i<3;i++)k.ps.push({x:x,y:H-7,vx:(Math.random()-.5)*1.2,vy:-1.4-Math.random()*1.6,life:0,max:14,drop:1})} // droplets
-    var g=k.g;g.clearRect(0,0,w,H);
+    var g=k.g,rc=k.row.id==='a-mrow'&&$('amb').classList.contains('night')?'168,65,43,':'188,211,234,';g.clearRect(0,0,w,H); // ember drops at night
     k.ps=k.ps.filter(function(p){return p.life<p.max});
     k.ps.forEach(function(p){p.life++;var a=1-p.life/p.max;
-      if(p.drop){p.vy+=.22;p.x+=p.vx;p.y+=p.vy;g.fillStyle='rgba(188,211,234,'+(.85*a).toFixed(2)+')';g.fillRect(p.x,p.y,1.6,1.6)}
-      else{p.r+=.9;g.strokeStyle='rgba(188,211,234,'+(.7*a).toFixed(2)+')';g.lineWidth=1.2;g.beginPath();g.ellipse?g.ellipse(p.x,p.y,p.r*1.6,p.r*.35,0,0,Math.PI*2):g.arc(p.x,p.y,p.r,0,Math.PI*2);g.stroke()}});
+      if(p.drop){p.vy+=.22;p.x+=p.vx;p.y+=p.vy;g.fillStyle='rgba('+rc+(.85*a).toFixed(2)+')';g.fillRect(p.x,p.y,1.6,1.6)}
+      else{p.r+=.9;g.strokeStyle='rgba('+rc+(.7*a).toFixed(2)+')';g.lineWidth=1.2;g.beginPath();g.ellipse?g.ellipse(p.x,p.y,p.r*1.6,p.r*.35,0,0,Math.PI*2):g.arc(p.x,p.y,p.r,0,Math.PI*2);g.stroke()}});
   });
   splash.on=any;
   setTimeout(function(){requestAnimationFrame(splashTick)},any?33:500); // ~30 fps while it rains, idle otherwise
