@@ -85,5 +85,5 @@ Don't unbind and rebind the `tlsc6x` driver instead. It does reset the panel wit
 
 When the panel sticks again and again (it did after the clock was knocked, dozens of times an hour), resetting it blinks the screen just as often. Two things keep that down:
 
-- **The touch filter** (`device/tpfilter.c`). It takes over the panel and passes every touch on to Android through a virtual touchscreen, except a touch that starts on the top 8 pixels. A touch stuck on the top edge then never reaches Android, taps keep working, and the watchdog doesn't reset the panel for it. `boot.sh` starts the filter and restarts it if it stops; if it isn't running, the panel goes straight back to Android.
+- **The touch filter** (`device/tpfilter.c`). It takes over the panel and passes every touch on to Android through a virtual touchscreen, except a touch that starts on the top 8 pixels. A touch stuck on the top edge then never reaches Android. While stuck, though, the panel loses real fingers (a press arrives, its moves and lift don't), so the watchdog still resets it. `boot.sh` starts the filter and restarts it if it stops; if it isn't running, the panel goes straight back to Android.
 - **Back-off.** If the panel keeps sticking within 10 minutes of a reset, the watchdog waits longer before the next one: 2, 4, 8, then 20 minutes at most.

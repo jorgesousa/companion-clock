@@ -59,8 +59,8 @@ irq(){ grep tlsc6x /proc/interrupts | tr -s ' ' | cut -d' ' -f3; }
       if [ "$edge" -eq 0 ] || [ "$pts" -le 1 ]; then sus=$((sus + 1)); else sus=0; fi
       # a panel that keeps sticking (damp, pressure on the edge) would blink the screen every few seconds:
       # while it keeps coming back within 10 min of a reset, wait longer between resets (2, 4, 8, then 20 min at most)
-      # with the touch filter running, a touch stuck on the top edge never reaches Android: no need to blink the screen
-      if [ "$sus" -ge 2 ] && [ "$edge" -eq 0 ] && pgrep -x tpfilter >/dev/null; then sus=0; fi
+      # the touch filter hides a stuck touch from Android, but while stuck the panel loses real fingers (a press
+      # arrives, its moves and lift don't), so the panel still needs the reset
       now=$(date +%s)
       if [ "$sus" -ge 2 ] && [ $((now - lr)) -lt "$gap" ]; then sus=0; fi
       if [ "$sus" -ge 2 ]; then
