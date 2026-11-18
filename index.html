@@ -8,7 +8,7 @@
 <script src="a/hls.min.js" defer></script>
 <style>
 :root{--water:#7cc8ff;
-  --bg:#0e0e0c;--rule:#5c5850;--bg2:#161614;--fg:#f2efe8;--muted:#8f8b80;--line:#2a2925;
+  --bg:#0e0e0c;--rule:#5c5850;--bg2:#161614;--fg:#f2efe8;--muted:#d2cec3;--line:#2a2925;
   --accent:#e8473a;--accent-ink:#0e0e0c;--ok:#5ee07a;
   --sans:"Inter Tight",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
   --ease:cubic-bezier(.22,1,.36,1);
@@ -1932,7 +1932,7 @@ var WARN_T={'Precipitação':'Rain','Vento':'Wind','Trovoada':'Thunder','Nevoeir
 function loadWarn(){
   var o=(location.search.match(/warn=(\w+):([^&]+)/)||[]);if(o[1]){wxWarn={level:o[1],label:WARN_T[decodeURIComponent(o[2])]||decodeURIComponent(o[2]),soon:/soon=1/.test(location.search),when:/soon=1/.test(location.search)?untilTxt(new Date(Date.now()+20*36e5)):'until '+untilTxt(new Date(Date.now()+5*36e5)),text:decodeURIComponent((location.search.match(/wtxt=([^&]+)/)||[])[1]||'')};showTemp();return}
   var area=cfg.ipmaArea;if(!area)return; // district code, e.g. LSB, CBR, PTO
-  fetch('https://api.ipma.pt/open-data/forecast/warnings/warnings_www.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(list){
+  fetch('http://api.ipma.pt/open-data/forecast/warnings/warnings_www.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(list){
     // the worst warning on now; with none, the next one coming (IPMA looks up to 3 days ahead), shown as a hollow dot
     var now=Date.now(),best=null,next=null;
     (list||[]).forEach(function(x){
@@ -2007,7 +2007,7 @@ function wxApply(){var k=wxModel;if(!k)return;if((k==='rain'||k==='storm'||k==='
 function nearStation(){
   if(obsSt)return Promise.resolve(obsSt);
   if(cfg.ipmaStation){obsSt=String(cfg.ipmaStation);return Promise.resolve(obsSt)}
-  return fetch('https://api.ipma.pt/open-data/observation/meteorology/stations/stations.json').then(function(r){return r.json()}).then(function(list){
+  return fetch('http://api.ipma.pt/open-data/observation/meteorology/stations/stations.json').then(function(r){return r.json()}).then(function(list){
     var best=null,bd=1e9,k=Math.cos(cfg.lat*Math.PI/180);
     list.forEach(function(x){var c=x.geometry.coordinates,dx=(c[0]-cfg.lon)*k,dy=c[1]-cfg.lat,dd=dx*dx+dy*dy;if(dd<bd){bd=dd;best=x}});
     obsSt=best&&Math.sqrt(bd)*111<30?String(best.properties.idEstacao):''; // within 30 km, or none
@@ -2019,7 +2019,7 @@ function loadObs(){
   if(cfg.lat==null||/wx=/.test(location.search))return;
   nearStation().then(function(id){
     if(!id)return null;
-    return fetch('https://api.ipma.pt/open-data/observation/meteorology/stations/observations.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+    return fetch('http://api.ipma.pt/open-data/observation/meteorology/stations/observations.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
       var ks=Object.keys(d).sort().reverse(),wet=null;
       for(var i=0;i<ks.length&&i<3;i++){var o=d[ks[i]]&&d[ks[i]][id];if(o&&o.precAcumulada>=0){wet=o.precAcumulada>0;obsMm=o.precAcumulada;break}} // latest hour with a valid reading
       obsWet=wet;wxApply();
