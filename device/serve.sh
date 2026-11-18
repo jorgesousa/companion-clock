@@ -12,6 +12,9 @@ case "$p" in
     n=${p#/a/}; case "$n" in *[!A-Za-z0-9.-]*|.*|'') nf;; esac
     f=$D/assets/$n
     case "$n" in *.woff2) t=font/woff2;; *.css) t=text/css;; *.js) t=application/javascript;; *) nf;; esac;;
+  /lab/*)
+    n=${p#/lab/}; case "$n" in *[!A-Za-z0-9.-]*|.*|'') nf;; esac
+    case "$n" in *.html) f=$D/lab/$n; t=text/html;; *) nf;; esac;;
   /bright)
     q=${p0#*\?}; n=${q#v=}; case "$n" in ''|*[!0-9]*) nf;; esac
     [ "$n" -gt 255 ] && n=255
