@@ -8,3 +8,6 @@ events.json
 .impeccable/hook.cache.json
 
 .DS_Store
+
+# Built from device/tpfilter.c (device/build-tpfilter.sh)
+device/tpfilter

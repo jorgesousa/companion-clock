@@ -36,6 +36,14 @@ adb push device/boot.sh /data/local/tmp/
 adb shell 'su -c "cp /data/local/tmp/boot.sh /data/adb/service.d/companion-clock.sh; chmod 755 /data/adb/service.d/companion-clock.sh"'
 ```
 
+Then the touch filter (see the ghost-touch section below), built with the Android NDK from Android Studio:
+
+```bash
+sh device/build-tpfilter.sh
+adb push device/tpfilter /data/local/tmp/
+adb shell 'su -c "cp /data/local/tmp/tpfilter /data/local/companion-clock/; chmod 755 /data/local/companion-clock/tpfilter"'
+```
+
 Magisk runs `service.d` scripts at boot with its own BusyBox, from `/data/adb/magisk`. If that folder is empty, scripts never run: Magisk logs `Magisk environment incomplete, abort` in `/cache/magisk.log`. Fill it from the Magisk APK of the same version (`lib/<abi>/lib*.so` → `busybox`, `magisk32`, `magiskboot`, `magiskinit`, `magiskpolicy`, plus `assets/*.sh` and `stub.apk`).
 
 Optional: ADB over Wi-Fi, firewalled to one computer. Write that computer's IP to `/data/local/companion-clock/adb_from` and the boot script opens port 5555 to it only.
@@ -74,3 +82,8 @@ adb shell input keyevent 223; sleep 2; adb shell input keyevent 224
 Don't unbind and rebind the `tlsc6x` driver instead. It does reset the panel with the screen on, but the driver leaves a dangling `tlsc6x_wakelock` behind. The next time Android reads the kernel's wakelock list, `system_server` hangs in the kernel, and minutes later the hardware watchdog reboots the clock (`sys.boot.reason` is `reboot,wdt_hw`).
 
 `device/boot.sh` does this on its own. Every 2 seconds it counts the panel's interrupts; when the panel has been reporting continuously and, in two checks in a row, the last reports are all on the top edge or all on the same point, it resets the panel and writes a line to `/data/local/companion-clock/touch.log`. A real finger always moves a little, so normal taps and long presses aren't affected.
+
+When the panel sticks again and again (it did after the clock was knocked, dozens of times an hour), resetting it blinks the screen just as often. Two things keep that down:
+
+- **The touch filter** (`device/tpfilter.c`). It takes over the panel and passes every touch on to Android through a virtual touchscreen, except a touch that starts on the top 8 pixels. A touch stuck on the top edge then never reaches Android, taps keep working, and the watchdog doesn't reset the panel for it. `boot.sh` starts the filter and restarts it if it stops; if it isn't running, the panel goes straight back to Android.
+- **Back-off.** If the panel keeps sticking within 10 minutes of a reset, the watchdog waits longer before the next one: 2, 4, 8, then 20 minutes at most.
