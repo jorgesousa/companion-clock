@@ -78,6 +78,11 @@ nav{position:relative}
 @keyframes hourHit{0%{filter:brightness(1)}25%{filter:brightness(1.6)}100%{filter:brightness(1)}}
 .attn #v-home #h-h{color:var(--fg)}
 #v-home .col-l{justify-content:center;padding-bottom:14px}
+/* tap the time: it grows to fill the screen and everything else fades out; a tap anywhere brings Home back */
+#v-home .col-l{-webkit-transition:-webkit-transform .55s cubic-bezier(.2,.8,.2,1);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+header,#v-home>*{-webkit-transition:opacity .35s;transition:opacity .35s}
+body.tfull header,body.tfull #v-home>*:not(.col-l),body.tfull #minder{opacity:0!important;pointer-events:none}
+body.tfull #v-home .col-l{position:relative;z-index:20}
 /* a single hairline separates the clock from the information; the column keeps its full width for long meeting names */
 #v-home .col-r{align-self:center;justify-content:flex-start;margin-left:26px;padding-left:20px;border-left:2px solid var(--rule)}
 #h-next.free{color:var(--ok)}
@@ -1894,6 +1899,24 @@ function flipTo(b,c,now){
     b.textContent=c;b.animate([{transform:'rotateX(-90deg)'},{transform:'rotateX(0)'}],{duration:280,easing:'cubic-bezier(.16,1,.3,1)'})};
 }
 renderTimePref();
+(function(){
+  var c=document.querySelector('#v-home .col-l');
+  // the digits' own box (the column is wider than the digits)
+  function box(){var r=null;[].forEach.call(c.querySelectorAll('#h-h,#h-m,#h-s,#h-board'),function(e){if(!e.offsetWidth&&!e.offsetHeight)return;var b=e.getBoundingClientRect();if(!b.width)return;
+    r=r?{l:Math.min(r.l,b.left),t:Math.min(r.t,b.top),r:Math.max(r.r,b.right),b:Math.max(r.b,b.bottom)}:{l:b.left,t:b.top,r:b.right,b:b.bottom}});return r}
+  function on(){if(document.body.classList.contains('tfull'))return;c.style.transform=c.style.webkitTransform='';var r=box(),cr=c.getBoundingClientRect();if(!r)return;
+    var w=r.r-r.l,h=r.b-r.t,cx=(r.l+r.r)/2,cy=(r.t+r.b)/2,W=innerWidth,H=innerHeight,k=Math.min((W-60)/w,(H-60)/h);
+    c.style.transformOrigin=c.style.webkitTransformOrigin=(cx-cr.left)+'px '+(cy-cr.top)+'px';
+    c.style.transform=c.style.webkitTransform='translate('+(W/2-cx)+'px,'+(H/2-cy)+'px) scale('+k+')';
+    document.body.classList.add('tfull')}
+  function off(){document.body.classList.remove('tfull');c.style.transform=c.style.webkitTransform=''}
+  c.addEventListener('click',function(e){if(cur==='home'&&!document.body.classList.contains('tfull')){e.stopPropagation();on()}});
+  // full screen: the next tap anywhere only brings Home back (it doesn't also press what is under it)
+  document.addEventListener('click',function(e){if(!document.body.classList.contains('tfull'))return;e.stopPropagation();e.preventDefault();off()},true);
+  document.addEventListener('pointerdown',function(e){if(document.body.classList.contains('tfull'))e.stopPropagation()},true);
+  window.timeFullOff=off;
+  setInterval(function(){if(cur!=='home'&&document.body.classList.contains('tfull'))off()},1000); // never leave the bar hidden on another screen
+})();
 function wxKind(c,day,cape){
   // models call "thunderstorm" too easily; without real convective energy (CAPE) it's just rain
   if(c>=95)return cape==null||cape>=400?'storm':'rain';
