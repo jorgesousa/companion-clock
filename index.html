@@ -1943,9 +1943,9 @@ function showTemp(){
   // tap the temperature: with a warning, the meeting card turns into it; otherwise it shows the second place
   var b=$('hdr-temp'),w=wxWarn;
   var away=wxAway&&!w&&wxT.away,t=away?wxT.away:wxT.home;if(!t)return;b.hidden=false;
-  // a warning colours the temperature: solid while it's on, outlined (like the minutes) while it's still to come
   b.innerHTML='<b>'+t+'</b>'+(away?'<i>'+esc(cfg.place2||'UK')+'</i>':'');
-  if(w&&!away){var tb=b.querySelector('b'),c=WARN_C[w.level];if(w.soon){tb.style.color='var(--bg)';tb.style.webkitTextStroke='1.5px '+c}else tb.style.color=c}
+  // a weather warning colours the temperature, always as a solid fill (the outlined "coming" look read as odd; 19 Nov)
+  if(w&&!away)b.querySelector('b').style.color=WARN_C[w.level];
   b.setAttribute('aria-label','Temperature'+(w&&!away?', '+w.level+' weather warning'+(w.soon?' coming':'')+': tap to see it':(typeof tapPref!=='undefined'&&tapPref==='away'?': tap to switch place':': tap for details')));
 }
 function untilTxt(d){var n=new Date(),hm=hhmm(d);var t=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1);return d.toDateString()===n.toDateString()?hm:(d.toDateString()===t.toDateString()?'tomorrow ':DAYS[d.getDay()].slice(0,3)+' ')+hm}
